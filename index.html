@@ -1,9 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-
-  <body>
-  <a href="test.html">TEST</a> <br><br><br><br>
-  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-  </body>
-  
+    <!DOCTYPE html>
+<html>
+<head>
+    <title>Login page</title>
+</head>
+<body>
+<form>
+    <label for="pswd">Enter your password: </label>
+    <input type="password" id="pswd">
+    <input type="button" value="Submit" onclick="checkPswd();" />
+</form>
+<!--Function to check password the already set password is admin-->
+<script type="text/javascript">
+    function checkPswd() {
+        var confirmPassword = "niedziel";
+        var password = document.getElementById("pswd").value;
+        if (password == confirmPassword) {
+             window.location="niedziel.html";
+        }
+        else{
+            alert("Passwords do not match.");
+        }
+    }
+</script>
+</body>
 </html>
