@@ -10,8 +10,8 @@
         <link rel="stylesheet" href="css/qgis2web.css"><link rel="stylesheet" href="css/fontawesome-all.min.css">
         <style>
         #map {
-            width: 1611px;
-            height: 856px;
+            width: 1556px;
+            height: 817px;
         }
         </style>
         <title></title>
@@ -28,10 +28,11 @@
         <script src="js/rbush.min.js"></script>
         <script src="js/labelgun.min.js"></script>
         <script src="js/labels.js"></script>
+        <script src="data/punkty_widokowe_szczyty_250_las_1.js"></script>
         <script>
         var map = L.map('map', {
             zoomControl:true, maxZoom:28, minZoom:1
-        }).fitBounds([[49.498490708528394,18.746285761548165],[49.78871474325621,19.586557620190863]]);
+        }).fitBounds([[49.20853476479546,19.51681467360489],[49.60436250409059,20.65119157571509]]);
         var hash = new L.Hash(map);
         map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
         var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
@@ -51,20 +52,129 @@
         });
         layer_OpenTopoMap_0;
         map.addLayer(layer_OpenTopoMap_0);
-        map.createPane('pane_dem_100m_1');
-        map.getPane('pane_dem_100m_1').style.zIndex = 401;
-        var img_dem_100m_1 = 'data/dem_100m_1.png';
-        var img_bounds_dem_100m_1 = [[49.50165939330517,18.711522648010973],[49.777782090093815,19.511605513216185]];
-        var layer_dem_100m_1 = new L.imageOverlay(img_dem_100m_1,
-                                              img_bounds_dem_100m_1,
-                                              {pane: 'pane_dem_100m_1'});
-        bounds_group.addLayer(layer_dem_100m_1);
-        map.addLayer(layer_dem_100m_1);
-        setBounds();
-        L.ImageOverlay.include({
-            getBounds: function () {
-                return this._bounds;
+        function pop_punkty_widokowe_szczyty_250_las_1(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['id'] !== null ? autolinker.link(feature.properties['id'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['left'] !== null ? autolinker.link(feature.properties['left'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['top'] !== null ? autolinker.link(feature.properties['top'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['right'] !== null ? autolinker.link(feature.properties['right'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bottom'] !== null ? autolinker.link(feature.properties['bottom'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['SAMPLE_1'] !== null ? autolinker.link(feature.properties['SAMPLE_1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['x'] !== null ? autolinker.link(feature.properties['x'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['y'] !== null ? autolinker.link(feature.properties['y'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['ajdi'] !== null ? autolinker.link(feature.properties['ajdi'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['view_summs'] !== null ? autolinker.link(feature.properties['view_summs'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+        }
+
+        function style_punkty_widokowe_szczyty_250_las_1_0(feature) {
+            if (feature.properties['view_summs'] >= 0.000000 && feature.properties['view_summs'] <= 2.000000 ) {
+                return {
+                pane: 'pane_punkty_widokowe_szczyty_250_las_1',
+                radius: 1.6,
+                stroke: false,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(240,249,33,0.5)',
+                interactive: true,
             }
+            }
+            if (feature.properties['view_summs'] >= 2.000000 && feature.properties['view_summs'] <= 7.000000 ) {
+                return {
+                pane: 'pane_punkty_widokowe_szczyty_250_las_1',
+                radius: 1.6,
+                stroke: false,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(248,149,65,0.5)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['view_summs'] >= 7.000000 && feature.properties['view_summs'] <= 11.000000 ) {
+                return {
+                pane: 'pane_punkty_widokowe_szczyty_250_las_1',
+                radius: 1.6,
+                stroke: false,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(203,71,120,0.5)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['view_summs'] >= 11.000000 && feature.properties['view_summs'] <= 16.000000 ) {
+                return {
+                pane: 'pane_punkty_widokowe_szczyty_250_las_1',
+                radius: 1.6,
+                stroke: false,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(126,3,168,0.5)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['view_summs'] >= 16.000000 && feature.properties['view_summs'] <= 26.000000 ) {
+                return {
+                pane: 'pane_punkty_widokowe_szczyty_250_las_1',
+                radius: 1.6,
+                stroke: false,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(13,8,135,0.5)',
+                interactive: true,
+            }
+            }
+        }
+        map.createPane('pane_punkty_widokowe_szczyty_250_las_1');
+        map.getPane('pane_punkty_widokowe_szczyty_250_las_1').style.zIndex = 401;
+        map.getPane('pane_punkty_widokowe_szczyty_250_las_1').style['mix-blend-mode'] = 'normal';
+        var layer_punkty_widokowe_szczyty_250_las_1 = new L.geoJson(json_punkty_widokowe_szczyty_250_las_1, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_punkty_widokowe_szczyty_250_las_1',
+            layerName: 'layer_punkty_widokowe_szczyty_250_las_1',
+            pane: 'pane_punkty_widokowe_szczyty_250_las_1',
+            onEachFeature: pop_punkty_widokowe_szczyty_250_las_1,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_punkty_widokowe_szczyty_250_las_1_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_punkty_widokowe_szczyty_250_las_1);
+        map.addLayer(layer_punkty_widokowe_szczyty_250_las_1);
+        setBounds();
+        resetLabels([layer_punkty_widokowe_szczyty_250_las_1]);
+        map.on("zoomend", function(){
+            resetLabels([layer_punkty_widokowe_szczyty_250_las_1]);
+        });
+        map.on("layeradd", function(){
+            resetLabels([layer_punkty_widokowe_szczyty_250_las_1]);
+        });
+        map.on("layerremove", function(){
+            resetLabels([layer_punkty_widokowe_szczyty_250_las_1]);
         });
         </script>
     </body>
