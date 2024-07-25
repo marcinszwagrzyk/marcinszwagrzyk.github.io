@@ -12,3 +12,9 @@ FROM polygons
 """)
 result.show()
 
+# transform
+val transformed = spark.sql("""
+SELECT ST_Transform(geometry, 'EPSG:4326', 'EPSG:3035') AS transformed_geometry
+FROM spatial_data
+""")
+transformed.show()
