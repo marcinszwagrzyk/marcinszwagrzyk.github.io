@@ -1,3 +1,6 @@
+
+df['prev_year_date'] = df['date'] - pd.DateOffset(years=1)
+
 # Połącz na podstawie daty poprzedniego roku, stanu i firmy
 df_merged = df.merge(df, left_on=['prev_year_date', 'state', 'company'], right_on=['date', 'state', 'company'], suffixes=('', '_prev'))
 
