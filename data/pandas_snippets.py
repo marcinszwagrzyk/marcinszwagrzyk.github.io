@@ -16,3 +16,11 @@ print(df_merged[['date_x', 'state', 'company', 'value', 'value_prev', 'YoY']])
 df_melted = df.melt(id_vars=['a', 'b', 'c'], value_vars=['x', 'y', 'z'], var_name='column_name', value_name='value')
 
 print(df_melted)
+
+
+# renaming
+df['kolumna1'] = df['kolumna1'].str.replace('strin1', 'strin2', regex=False)
+
+# renaming
+zamiany = {'strin1': 'strin2', 'jest': 'był'}
+df['kolumna1'] = df['kolumna1'].replace(zamiany, regex=False)
