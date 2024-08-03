@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/qgis2web.css"><link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <style>
+        #map {
+            width: 1289px;
+            height: 810px;
+        }
+        </style>
+        <title></title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="data/pois_tas_1.js"></script>
+        <script src="data/Pois_2.js"></script>
+        <script>
+        var map = L.map('map', {
+            zoomControl:true, maxZoom:28, minZoom:1
+        }).fitBounds([[45.6066731907691,10.218564091467746],[46.92019820698853,12.998884224457607]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        map.createPane('pane_OpenTopoMap_0');
+        map.getPane('pane_OpenTopoMap_0').style.zIndex = 400;
+        var layer_OpenTopoMap_0 = L.tileLayer('https://tile.opentopomap.org/{z}/{x}/{y}.png', {
+            pane: 'pane_OpenTopoMap_0',
+            opacity: 1.0,
+            attribution: '',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 1,
+            maxNativeZoom: 17
+        });
+        layer_OpenTopoMap_0;
+        map.addLayer(layer_OpenTopoMap_0);
+        function pop_pois_tas_1(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['id'] !== null ? autolinker.link(feature.properties['id'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['name'] !== null ? autolinker.link(feature.properties['name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+        }
+
+        function style_pois_tas_1_0(feature) {
+            switch(String(feature.properties['id'])) {
+                case '0':
+                    return {
+                pane: 'pane_pois_tas_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.5)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(253,255,111,0.5)',
+                interactive: false,
+            }
+                    break;
+                case '1':
+                    return {
+                pane: 'pane_pois_tas_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.5)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,127,0,0.5)',
+                interactive: false,
+            }
+                    break;
+                case '2':
+                    return {
+                pane: 'pane_pois_tas_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.5)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(51,160,44,0.5)',
+                interactive: false,
+            }
+                    break;
+                default:
+                    return {
+                pane: 'pane_pois_tas_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.5)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(79,216,234,0.5)',
+                interactive: false,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_pois_tas_1');
+        map.getPane('pane_pois_tas_1').style.zIndex = 401;
+        map.getPane('pane_pois_tas_1').style['mix-blend-mode'] = 'normal';
+        var layer_pois_tas_1 = new L.geoJson(json_pois_tas_1, {
+            attribution: '',
+            interactive: false,
+            dataVar: 'json_pois_tas_1',
+            layerName: 'layer_pois_tas_1',
+            pane: 'pane_pois_tas_1',
+            onEachFeature: pop_pois_tas_1,
+            style: style_pois_tas_1_0,
+        });
+        bounds_group.addLayer(layer_pois_tas_1);
+        map.addLayer(layer_pois_tas_1);
+        function pop_Pois_2(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">name</th>\
+                        <td>' + (feature.properties['name'] !== null ? autolinker.link(feature.properties['name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['co'] !== null ? autolinker.link(feature.properties['co'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">link2</th>\
+                        <td>' + (feature.properties['link2'] !== null ? autolinker.link(feature.properties['link2'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+        }
+
+        function style_Pois_2_0(feature) {
+            switch(String(feature.properties['co'])) {
+                case 'ferrata':
+                    return {
+                pane: 'pane_Pois_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(207,116,193,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'jezioro':
+                    return {
+                pane: 'pane_Pois_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(231,62,33,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'miasto':
+                    return {
+                pane: 'pane_Pois_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(138,228,151,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'nocleg':
+                    return {
+                pane: 'pane_Pois_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(191,204,116,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'pidlo':
+                    return {
+                pane: 'pane_Pois_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(137,216,230,1.0)',
+                interactive: true,
+            }
+                    break;
+                default:
+                    return {
+                pane: 'pane_Pois_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(77,49,237,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_Pois_2');
+        map.getPane('pane_Pois_2').style.zIndex = 402;
+        map.getPane('pane_Pois_2').style['mix-blend-mode'] = 'normal';
+        var layer_Pois_2 = new L.geoJson(json_Pois_2, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Pois_2',
+            layerName: 'layer_Pois_2',
+            pane: 'pane_Pois_2',
+            onEachFeature: pop_Pois_2,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_Pois_2_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_Pois_2);
+        map.addLayer(layer_Pois_2);
+        map.createPane('pane_dolomity_3');
+        map.getPane('pane_dolomity_3').style.zIndex = 403;
+        var img_dolomity_3 = 'data/dolomity_3.png';
+        var img_bounds_dolomity_3 = [[45.905218078254,10.845771697530736],[46.60079342053284,12.269081165144582]];
+        var layer_dolomity_3 = new L.imageOverlay(img_dolomity_3,
+                                              img_bounds_dolomity_3,
+                                              {pane: 'pane_dolomity_3'});
+        bounds_group.addLayer(layer_dolomity_3);
+        map.addLayer(layer_dolomity_3);
+        setBounds();
+        var i = 0;
+        layer_Pois_2.eachLayer(function(layer) {
+            var context = {
+                feature: layer.feature,
+                variables: {}
+            };
+            layer.bindTooltip((layer.feature.properties['name'] !== null?String('<div style="color: #323232; font-size: 10pt; font-family: \'Liberation Sans\', sans-serif;">' + layer.feature.properties['name']) + '</div>':''), {permanent: true, offset: [-0, -16], className: 'css_Pois_2'});
+            labels.push(layer);
+            totalMarkers += 1;
+              layer.added = true;
+              addLabel(layer, i);
+              i++;
+        });
+        L.ImageOverlay.include({
+            getBounds: function () {
+                return this._bounds;
+            }
+        });
+        resetLabels([layer_Pois_2]);
+        map.on("zoomend", function(){
+            resetLabels([layer_Pois_2]);
+        });
+        map.on("layeradd", function(){
+            resetLabels([layer_Pois_2]);
+        });
+        map.on("layerremove", function(){
+            resetLabels([layer_Pois_2]);
+        });
+        </script>
+    </body>
+</html>
