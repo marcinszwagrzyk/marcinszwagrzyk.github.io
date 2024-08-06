@@ -24,3 +24,8 @@ df['kolumna1'] = df['kolumna1'].str.replace('strin1', 'strin2', regex=False)
 # renaming
 zamiany = {'strin1': 'strin2', 'jest': 'był'}
 df['kolumna1'] = df['kolumna1'].replace(zamiany, regex=False)
+
+scaler = StandardScaler()
+scaler.fit(df_data_winter_joined[features])
+X_scaled = scaler.transform(df_data_winter_joined[features])
+
