@@ -10,8 +10,8 @@
         <link rel="stylesheet" href="css/qgis2web.css"><link rel="stylesheet" href="css/fontawesome-all.min.css">
         <style>
         #map {
-            width: 1289px;
-            height: 810px;
+            width: 1290px;
+            height: 812px;
         }
         </style>
         <title></title>
@@ -30,10 +30,12 @@
         <script src="js/labels.js"></script>
         <script src="data/pois_tas_1.js"></script>
         <script src="data/Pois_2.js"></script>
+        <script src="data/trade_areas_prywatne_3.js"></script>
+        <script src="data/priv_tas_4.js"></script>
         <script>
         var map = L.map('map', {
             zoomControl:true, maxZoom:28, minZoom:1
-        }).fitBounds([[45.6066731907691,10.218564091467746],[46.92019820698853,12.998884224457607]]);
+        }).fitBounds([[45.71157823587893,10.606162188283026],[46.62887169419681,12.54091657926317]]);
         var hash = new L.Hash(map);
         map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
         var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
@@ -79,7 +81,7 @@
                 fill: true,
                 fillOpacity: 1,
                 fillColor: 'rgba(253,255,111,0.5)',
-                interactive: false,
+                interactive: true,
             }
                     break;
                 case '1':
@@ -94,7 +96,7 @@
                 fill: true,
                 fillOpacity: 1,
                 fillColor: 'rgba(255,127,0,0.5)',
-                interactive: false,
+                interactive: true,
             }
                     break;
                 case '2':
@@ -109,7 +111,7 @@
                 fill: true,
                 fillOpacity: 1,
                 fillColor: 'rgba(51,160,44,0.5)',
-                interactive: false,
+                interactive: true,
             }
                     break;
                 default:
@@ -124,7 +126,7 @@
                 fill: true,
                 fillOpacity: 1,
                 fillColor: 'rgba(79,216,234,0.5)',
-                interactive: false,
+                interactive: true,
             }
                     break;
             }
@@ -134,7 +136,7 @@
         map.getPane('pane_pois_tas_1').style['mix-blend-mode'] = 'normal';
         var layer_pois_tas_1 = new L.geoJson(json_pois_tas_1, {
             attribution: '',
-            interactive: false,
+            interactive: true,
             dataVar: 'json_pois_tas_1',
             layerName: 'layer_pois_tas_1',
             pane: 'pane_pois_tas_1',
@@ -280,15 +282,141 @@
         });
         bounds_group.addLayer(layer_Pois_2);
         map.addLayer(layer_Pois_2);
-        map.createPane('pane_dolomity_3');
-        map.getPane('pane_dolomity_3').style.zIndex = 403;
-        var img_dolomity_3 = 'data/dolomity_3.png';
-        var img_bounds_dolomity_3 = [[45.905218078254,10.845771697530736],[46.60079342053284,12.269081165144582]];
-        var layer_dolomity_3 = new L.imageOverlay(img_dolomity_3,
-                                              img_bounds_dolomity_3,
-                                              {pane: 'pane_dolomity_3'});
-        bounds_group.addLayer(layer_dolomity_3);
-        map.addLayer(layer_dolomity_3);
+        function pop_trade_areas_prywatne_3(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['name'] !== null ? autolinker.link(feature.properties['name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['co'] !== null ? autolinker.link(feature.properties['co'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['link2'] !== null ? autolinker.link(feature.properties['link2'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+        }
+
+        function style_trade_areas_prywatne_3_0() {
+            return {
+                pane: 'pane_trade_areas_prywatne_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(152,125,183,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_trade_areas_prywatne_3');
+        map.getPane('pane_trade_areas_prywatne_3').style.zIndex = 403;
+        map.getPane('pane_trade_areas_prywatne_3').style['mix-blend-mode'] = 'normal';
+        var layer_trade_areas_prywatne_3 = new L.geoJson(json_trade_areas_prywatne_3, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_trade_areas_prywatne_3',
+            layerName: 'layer_trade_areas_prywatne_3',
+            pane: 'pane_trade_areas_prywatne_3',
+            onEachFeature: pop_trade_areas_prywatne_3,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_trade_areas_prywatne_3_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_trade_areas_prywatne_3);
+        map.addLayer(layer_trade_areas_prywatne_3);
+        function pop_priv_tas_4(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['id'] !== null ? autolinker.link(feature.properties['id'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['name'] !== null ? autolinker.link(feature.properties['name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+        }
+
+        function style_priv_tas_4_0(feature) {
+            switch(String(feature.properties['name'])) {
+                case '30':
+                    return {
+                pane: 'pane_priv_tas_4',
+                opacity: 1,
+                color: 'rgba(82,82,82,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 3.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(247,247,247,0.0)',
+                interactive: true,
+            }
+                    break;
+                case '60':
+                    return {
+                pane: 'pane_priv_tas_4',
+                opacity: 1,
+                color: 'rgba(31,120,255,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 3.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(247,247,247,0.0)',
+                interactive: true,
+            }
+                    break;
+                case '90':
+                    return {
+                pane: 'pane_priv_tas_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(85,33,174,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_priv_tas_4');
+        map.getPane('pane_priv_tas_4').style.zIndex = 404;
+        map.getPane('pane_priv_tas_4').style['mix-blend-mode'] = 'normal';
+        var layer_priv_tas_4 = new L.geoJson(json_priv_tas_4, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_priv_tas_4',
+            layerName: 'layer_priv_tas_4',
+            pane: 'pane_priv_tas_4',
+            onEachFeature: pop_priv_tas_4,
+            style: style_priv_tas_4_0,
+        });
+        bounds_group.addLayer(layer_priv_tas_4);
+        map.addLayer(layer_priv_tas_4);
+        map.createPane('pane_dolomity_5');
+        map.getPane('pane_dolomity_5').style.zIndex = 405;
+        var img_dolomity_5 = 'data/dolomity_5.png';
+        var img_bounds_dolomity_5 = [[45.905218078254,10.845771697530736],[46.60079342053284,12.269081165144582]];
+        var layer_dolomity_5 = new L.imageOverlay(img_dolomity_5,
+                                              img_bounds_dolomity_5,
+                                              {pane: 'pane_dolomity_5'});
+        bounds_group.addLayer(layer_dolomity_5);
+        map.addLayer(layer_dolomity_5);
         setBounds();
         var i = 0;
         layer_Pois_2.eachLayer(function(layer) {
