@@ -59,3 +59,45 @@ print("Accuracy:", accuracy_score(y_test, y_pred))
 print(classification_report(y_test, y_pred))
 
 
+from sklearn.datasets import make_classification
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.svm import SVC
+
+# Generowanie danych
+X, y = make_classification(n_samples=1000, n_features=20, n_informative=2, n_redundant=10, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Lista modeli do przetestowania
+models = [
+    ('LogisticRegression', LogisticRegression()),
+    ('RandomForest', RandomForestClassifier()),
+    ('GradientBoosting', GradientBoostingClassifier()),
+    ('SVC', SVC())
+]
+
+# Pętla do oceny każdego modelu
+results = []
+model_names = []
+for name, model in models:
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),  # Wszystkie dane będą normalizowane
+        ('classifier', model)
+    ])
+    cv_scores = cross_val_score(pipeline, X_train, y_train, cv=5, scoring='accuracy')  # Można zmienić 'accuracy' na inną metrykę
+    results.append(cv_scores)
+    model_names.append(name)
+    print(f"{name}: {cv_scores.mean()} +/- {cv_scores.std()}")
+
+# Opcjonalnie, można użyć biblioteki matplotlib do wizualizacji wyników
+import matplotlib.pyplot as plt
+
+fig = plt.figure()
+fig.suptitle('Porównanie modeli')
+ax = fig.add_subplot(111)
+plt.boxplot(results)
+ax.set_xticklabels(model_names)
+plt.show()
