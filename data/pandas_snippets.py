@@ -133,4 +133,18 @@ for name, model in models:
         ('scaler', StandardScaler()),  # Normalizacja danych
         ('regressor', model)
     ])
-    cv
+    cv_scores = cross_val_score(pipeline, X_train, y_train, cv=5, scoring='neg_mean_squared_error')  # Użyj MSE jako metryki
+    results.append(cv_scores)
+    model_names.append(name)
+    print(f"{name}: {cv_scores.mean()} +/- {cv_scores.std()}")
+
+# Opcjonalnie, wizualizacja wyników
+import matplotlib.pyplot as plt
+
+fig = plt.figure()
+fig.suptitle('Porównanie modeli regresji')
+ax = fig.add_subplot(111)
+plt.boxplot(results)
+ax.set_xticklabels(model_names)
+plt.show()
+
