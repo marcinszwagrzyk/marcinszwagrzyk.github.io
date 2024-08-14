@@ -148,3 +148,10 @@ plt.boxplot(results)
 ax.set_xticklabels(model_names)
 plt.show()
 
+
+
+from sklearn.model_selection import GridSearchCV
+
+grid={"C":np.logspace(-3,3,7), "penalty":["l2"]} # l2 ridge
+logreg=LogisticRegression()
+logreg_cv=GridSearchCV(logreg, grid, scoring='roc_auc',cv=10)
