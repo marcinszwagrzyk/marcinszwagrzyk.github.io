@@ -101,3 +101,36 @@ ax = fig.add_subplot(111)
 plt.boxplot(results)
 ax.set_xticklabels(model_names)
 plt.show()
+
+
+
+# regresja
+from sklearn.datasets import make_regression
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from sklearn.svm import SVR
+
+# Generowanie danych
+X, y = make_regression(n_samples=1000, n_features=20, n_informative=10, noise=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Lista modeli do przetestowania
+models = [
+    ('LinearRegression', LinearRegression()),
+    ('RandomForestRegressor', RandomForestRegressor()),
+    ('GradientBoostingRegressor', GradientBoostingRegressor()),
+    ('SVR', SVR())
+]
+
+# Pętla do oceny każdego modelu
+results = []
+model_names = []
+for name, model in models:
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),  # Normalizacja danych
+        ('regressor', model)
+    ])
+    cv
