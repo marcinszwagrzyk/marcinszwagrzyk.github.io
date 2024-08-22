@@ -155,3 +155,27 @@ from sklearn.model_selection import GridSearchCV
 grid={"C":np.logspace(-3,3,7), "penalty":["l2"]} # l2 ridge
 logreg=LogisticRegression()
 logreg_cv=GridSearchCV(logreg, grid, scoring='roc_auc',cv=10)
+
+import pickle
+
+# Zapisz model do pliku
+with open('model_pipeline.pkl', 'wb') as file:
+    pickle.dump(model, file)
+
+# Wczytaj model z pliku
+with open('model_pipeline.pkl', 'rb') as file:
+    model = pickle.load(file)
+
+
+# Discretize the 'Age' variable into bins
+bins = [0, 20, 30, 40, 50, 60, 70]
+labels = ['0-20', '21-30', '31-40', '41-50', '51-60', '61-70']
+df['Age Group'] = pd.cut(df['Age'], bins=bins, labels=labels, right=False)
+
+# Create the boxplot
+plt.figure(figsize=(10, 6))
+sns.boxplot(x='Age Group', y='Salary', data=df)
+plt.title('Salary Distribution by Age Group')
+plt.xlabel('Age Group')
+plt.ylabel('Salary')
+plt.show()
