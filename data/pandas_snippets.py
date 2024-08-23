@@ -179,3 +179,8 @@ plt.title('Salary Distribution by Age Group')
 plt.xlabel('Age Group')
 plt.ylabel('Salary')
 plt.show()
+
+
+for index, row in df.iterrows():
+			sensor_id = row.sensor_id
+      df.loc[index, 'kolumna'] = wartosc
