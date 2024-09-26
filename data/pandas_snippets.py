@@ -198,3 +198,17 @@ df = pd.DataFrame(data)
 df['scaled'] = (df['column'] - df['column'].min()) / (df['column'].max() - df['column'].min()) * 100
 
 print(df)
+
+
+def classify_quantile(column):
+    high_threshold = column.quantile(0.75)
+    return pd.Series(["high" if x > high_threshold else "low" for x in column])
+
+# Apply the classification function to each column
+df['class1'] = classify_quantile(df['column1'])
+df['class2'] = classify_quantile(df['column2'])
+
+# Create master classification
+df['master_class'] = df['class1'] + '-' + df['class2']
+
+print(df)
