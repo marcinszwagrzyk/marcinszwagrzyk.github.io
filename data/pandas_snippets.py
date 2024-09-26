@@ -184,3 +184,17 @@ plt.show()
 for index, row in df.iterrows():
 			sensor_id = row.sensor_id
       df.loc[index, 'kolumna'] = wartosc
+
+
+import pandas as pd
+
+# Przykładowe dane
+data = {
+    'column': [10, 20, 30, 40, 50]
+}
+df = pd.DataFrame(data)
+
+# Skalowanie wartości do zakresu 0-100, gdzie min to 0, a max to 100
+df['scaled'] = (df['column'] - df['column'].min()) / (df['column'].max() - df['column'].min()) * 100
+
+print(df)
