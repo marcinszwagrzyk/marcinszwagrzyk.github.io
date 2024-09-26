@@ -212,3 +212,20 @@ df['class2'] = classify_quantile(df['column2'])
 df['master_class'] = df['class1'] + '-' + df['class2']
 
 print(df)
+
+offset_x = 0.1
+offset_y = 0
+
+x_pict = x + offset_x
+y_pict = y + offset_y
+
+if row['direction'] == 'up':
+    marker = '^'
+elif row['direction'] == 'down':
+    marker = 'v'
+else:
+    marker = 'o'
+
+ax.scatter(x_pict, y_pict, s=50, marker=marker, color='white',
+            edgecolors='black', linewidths=1, zorder=5)
+    
