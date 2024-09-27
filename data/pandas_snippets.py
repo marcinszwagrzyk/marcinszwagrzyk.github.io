@@ -228,4 +228,32 @@ else:
 
 ax.scatter(x_pict, y_pict, s=50, marker=marker, color='white',
             edgecolors='black', linewidths=1, zorder=5)
-    
+
+
+# 4.0
+# Konwersja wartości SHAP do DataFrame
+shap_df = pd.DataFrame(shap_values[1], columns=X_test.columns, index=X_test.index)  # Dla klasy 1
+
+# Dodanie kolumny z wynikami predykcji
+X_test['prediction'] = model.predict(X_test)
+
+# Łączenie DataFrame'ów
+result_df = pd.concat([X_test, shap_df.add_suffix('_shap')], axis=1)
+
+# o1
+# Wybór wartości SHAP dla klasy pozytywnej (np. indeks 1)
+shap_values_class = shap_values[..., 1]
+
+# 4. Konwersja wartości SHAP do DataFrame
+shap_df = pd.DataFrame(shap_values_class.values, columns=X_test.columns)
+shap_df.columns = [str(col) + '_SHAP' for col in shap_df.columns]
+
+# 5. Dodanie wyników predykcji do danych testowych
+X_test = X_test.reset_index(drop=True)
+X_test['Prediction'] = model.predict(X_test)
+
+# 6. Połączenie oryginalnych danych z wartościami SHAP i wynikami
+result_df = pd.concat([X_test, shap_df], axis=1)
+
+# 7. Wyświetlenie wynikowego DataFrame
+print(result_df.head())
