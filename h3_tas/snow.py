@@ -1,29 +1,41 @@
 import pandas as pd
 
-# Załóżmy, że DataFrame ma kolumny:
+# Załóżmy, że DataFrame (df) ma kolumny:
 # "date", "temp", "precip"
-# i jest już wczytany np. z CSV:
+# Odczyt z pliku i parsowanie dat:
 # df = pd.read_csv('dane.csv', parse_dates=['date'])
-
-# Ustaw datę jako indeks (o ile nie jest już ustawiona)
 df = df.set_index('date').sort_index()
 
-temp_threshold = 0.0  # próg temperatury
-melt_rate = 0.5       # współczynnik topnienia
+# Parametry modelu
+temp_threshold = 0.0   # Próg temperatury, poniżej którego opad to śnieg
+                       # Przyjmijmy np. 0°C, choć w literaturze stosuje się i inne wartości
 
-# Inicjalizacja kolumny na pokrywę śnieżną
+# Wybór współczynnika topnienia (DDF - Degree-Day Factor)
+# Literaturowo wartości wahają się np. 2-6 mm/°C/dzień dla śniegu
+# Przyjmijmy wartość początkową 3 mm/°C/dzień i będziemy ją kalibrować
+melt_rate = 3.0  # mm/d/°C - wartość przykładowa z literatury
+
+# Opcjonalnie: skalibruj melt_rate na podstawie lokalnych danych obserwacyjnych.
+# Proces kalibracji:
+# 1. Mamy serię obserwowaną pokrywy śnieżnej (snow_obs), np. z pomiarów.
+# 2. Dla różnych wartości melt_rate dokonujemy symulacji i sprawdzamy błąd (np. RMSE).
+# 3. Wybieramy tę wartość melt_rate, która minimalizuje błąd.
+# To wykracza poza prosty przykład, ale w praktyce wykorzystywane są metody optymalizacji (np. scipy.optimize).
+
+# Tutaj jednak prezentujemy tylko samą symulację z założonym melt_rate.
+
 snowpack_list = []
-
 previous_snowpack = 0.0
+
 for idx, row in df.iterrows():
     t = row['temp']
     p = row['precip']
     
     if t <= temp_threshold:
-        # Dodajemy śnieg do pokrywy
+        # Opad uznawany za śnieg – dodaj do pokrywy
         current_snowpack = previous_snowpack + p
     else:
-        # Topnienie śniegu
+        # Dodatnia temperatura – topnienie wg metody degree-day
         melted_amount = melt_rate * t
         current_snowpack = previous_snowpack - melted_amount
         if current_snowpack < 0:
@@ -34,4 +46,4 @@ for idx, row in df.iterrows():
 
 df['snowpack'] = snowpack_list
 
-print(df)
+print(df[['temp', 'precip', 'snowpack']])
