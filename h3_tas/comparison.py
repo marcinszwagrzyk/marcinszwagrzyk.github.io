@@ -44,6 +44,21 @@ for i, (prog, group) in enumerate(df.groupby('Prog')):
     plt.title(f'Wykres punktowy dla progu {prog}')
     plt.legend()
 
+# Boxplots
+for i, (prog, group) in enumerate(df.groupby('Prog')):
+    plt.subplot(3, 3, i + 4)
+    sns.boxplot(data=group[['Populacja X', 'Populacja Y']], orient='h', palette='pastel')
+    plt.title(f'Boxplot dla progu {prog}')
+    plt.yticks([0, 1], ['Populacja X', 'Populacja Y'])
+
+# Histograms
+for i, (prog, group) in enumerate(df.groupby('Prog')):
+    plt.subplot(3, 3, i + 7)
+    sns.histplot(group['Populacja X'], kde=True, color='blue', label='Populacja X', alpha=0.6, bins=15)
+    sns.histplot(group['Populacja Y'], kde=True, color='orange', label='Populacja Y', alpha=0.6, bins=15)
+    plt.title(f'Histogram dla progu {prog}')
+    plt.legend()
+
 plt.tight_layout()
 plt.show()
 
