@@ -1,4 +1,8 @@
-df["zgodnosc"] = ((df["kolumna1"] > 0) & (df["kolumna2"] > 0)).astype(int)
+df["zgodnosc"] = (
+    ((df["kolumna1"] > 0) & (df["kolumna2"] > 0)) |  # Obie dodatnie
+    ((df["kolumna1"] < 0) & (df["kolumna2"] < 0))   # Obie ujemne
+).astype(int)
+
 
 # Upewnij się, że indeks to tygodniowy DateTimeIndex
 df = df.asfreq('W')  # Ustaw częstotliwość indeksu na tygodniową, jeśli nie jest
