@@ -1,3 +1,17 @@
+# Upewnij się, że indeks to tygodniowy DateTimeIndex
+df = df.asfreq('W')  # Ustaw częstotliwość indeksu na tygodniową, jeśli nie jest
+
+# Wybrane kolumny do obliczenia YoY
+columns_to_calculate = ["kolumna1", "kolumna2"]
+
+# Oblicz dokładny YoY dla każdej kolumny
+for col in columns_to_calculate:
+    df[f"{col}_YoY"] = ((df[col] - df[col].shift(52)) / df[col].shift(52)) * 100
+
+# Wyświetl dane
+print(df)
+
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
