@@ -1,3 +1,49 @@
+import pandas as pd
+import numpy as np
+
+# Przykładowe dane
+data = {
+    'station_id': ['A', 'A', 'A', 'B', 'B', 'C', 'C', 'C', 'C'],
+    'timestamp': [
+        '2025-01-01', '2025-01-02', '2025-01-03',  # Stacja A
+        '2025-01-01', '2025-01-03',                # Stacja B (brak 2025-01-02)
+        '2025-01-01', '2025-01-02', '2025-01-03', '2025-01-04'  # Stacja C
+    ],
+    'value': [1, 2, 3, 4, 5, 6, 7, 8, 9]
+}
+
+# Konwersja danych na DataFrame
+df = pd.DataFrame(data)
+df['timestamp'] = pd.to_datetime(df['timestamp'])
+
+# Definiujemy pełny zakres czasu
+start_date = df['timestamp'].min()
+end_date = df['timestamp'].max()
+full_time_range = pd.date_range(start=start_date, end=end_date, freq='D')
+
+# Obliczamy pokrycie czasowe dla każdej stacji
+results = []
+for station_id, group in df.groupby('station_id'):
+    station_time_range = group['timestamp']
+    coverage = len(np.intersect1d(station_time_range, full_time_range)) / len(full_time_range)
+    results.append({'station_id': station_id, 'coverage': coverage})
+
+# Tworzymy DataFrame wynikowy
+coverage_df = pd.DataFrame(results)
+
+# Filtrujemy stacje z pokryciem >= 90%
+stations_with_high_coverage = coverage_df[coverage_df['coverage'] >= 0.9]
+
+print("Stacje z pełnym pokryciem czasowym (>90%):")
+print(stations_with_high_coverage)
+
+
+
+
+
+
+
+
 df["zgodnosc"] = (
     ((df["kolumna1"] > 0) & (df["kolumna2"] > 0)) |  # Obie dodatnie
     ((df["kolumna1"] < 0) & (df["kolumna2"] < 0))   # Obie ujemne
