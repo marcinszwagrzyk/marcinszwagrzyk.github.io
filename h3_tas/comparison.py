@@ -1,4 +1,34 @@
 
+
+import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
+from matplotlib.lines import Line2D
+
+# Create some data
+x = [1, 2, 3, 4]
+y1 = [1, 4, 9, 16]
+y2 = [2, 4, 6, 8]
+
+# Create the plot
+fig, ax = plt.subplots()
+line1, = ax.plot(x, y1, label='Line 1', color='blue')
+line2, = ax.plot(x, y2, label='Line 2', color='green')
+
+# Add a polygon (e.g., a rectangle or custom patch)
+polygon = Patch(facecolor='red', edgecolor='black', label='Polygon')
+
+# Combine the handles and labels for the legend
+handles = [line1, line2, polygon]
+labels = ['Line 1', 'Line 2', 'Polygon']
+
+# Add the legend to the plot
+ax.legend(handles=handles, labels=labels)
+
+# Display the plot
+plt.show()
+
+
+
 import geopandas as gpd
 from shapely.geometry import Point
 
