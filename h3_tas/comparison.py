@@ -1,5 +1,15 @@
 
 
+# Tworzenie zmiennych dummy
+dummies = pd.get_dummies(df['Category'], prefix='Category')
+
+# Dodanie zmiennych dummy do oryginalnego DataFrame
+df = pd.concat([df, dummies], axis=1)
+
+# Lista nazw nowych kolumn
+dummy_columns = dummies.columns.tolist()
+
+
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 from matplotlib.lines import Line2D
