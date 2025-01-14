@@ -1,3 +1,33 @@
+
+import geopandas as gpd
+from shapely.geometry import Point
+
+# Przykładowe dane: punkty
+data = {
+    "geometry": [Point(0, 0), Point(1, 1), Point(2, 2)],
+    "id": [1, 2, 3]
+}
+gdf = gpd.GeoDataFrame(data, crs="EPSG:4326")
+
+# Tworzenie buforów o promieniu 1
+gdf["buffer"] = gdf.geometry.buffer(1)
+
+# Tworzenie rozłącznych buforów
+disjoint_buffers = []
+for index, row in gdf.iterrows():
+    buffer = row["buffer"]
+    for other_buffer in disjoint_buffers:
+        buffer = buffer.difference(other_buffer)
+    disjoint_buffers.append(buffer)
+
+# Przekształcenie wyników w GeoDataFrame
+gdf["disjoint_buffer"] = disjoint_buffers
+
+# Wizualizacja lub zapis wyników
+gdf.set_geometry("disjoint_buffer").plot()
+
+
+
 import pandas as pd
 import numpy as np
 
