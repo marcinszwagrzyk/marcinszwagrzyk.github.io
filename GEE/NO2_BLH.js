@@ -1,50 +1,80 @@
-// 1) Kraków (z buforem 5 km)
+// 1) Kraków (bufor 5 km)
 var krakow = ee.Geometry.Point([19.9450, 50.0647]).buffer(5000);
 
-// 2) Zakres czasowy: cały 2023
-var start = ee.Date('2023-01-01');
+// 2) Zakres czasowy: 2018–2023
+var start = ee.Date('2018-01-01');
 var end   = ee.Date('2024-01-01');
 
 // 3) Sentinel‑5P – dzienne NO₂
-var no2Daily = ee.ImageCollection('COPERNICUS/S5P/NRTI/L3_NO2')
+var no2Raw = ee.ImageCollection('COPERNICUS/S5P/NRTI/L3_NO2')
+  .filterDate(start, end)
   .select('NO2_column_number_density')
-  .filterDate(start, end);
+  .filterBounds(krakow);
 
 // 4) ERA5 – hourly PBLH
-var pblhHourly = ee.ImageCollection("ECMWF/ERA5/HOURLY")
+var pblhRaw = ee.ImageCollection("ECMWF/ERA5/HOURLY")
   .filterDate(start, end)
-  .select('boundary_layer_height');
+  .select('boundary_layer_height')
+  .filterBounds(krakow);
 
-// 5) Funkcja: miesięczne uśrednianie z fallbackiem
-function monthlyAverage(collection, bandName) {
+// 5) Funkcja: miesięczne uśrednianie
+function monthlyMean(collection, bandName) {
   var months = ee.List.sequence(0, end.difference(start, 'month').subtract(1));
-  return ee.ImageCollection.fromImages(months.map(function(m) {
-    var mStart = start.advance(m, 'month');
-    var mEnd = mStart.advance(1, 'month');
-    var mean = collection.filterDate(mStart, mEnd).mean();
-    var safe = ee.Algorithms.If(
-      mean.bandNames().size().gt(0),
-      mean.unmask(0),
-      ee.Image.constant(0).rename(bandName)
-    );
-    return ee.Image(safe).rename(bandName).set('system:time_start', mStart.millis());
-  }));
+  return ee.ImageCollection.fromImages(
+    months.map(function(m) {
+      var mStart = start.advance(m, 'month');
+      var mEnd = mStart.advance(1, 'month');
+      var mean = collection.filterDate(mStart, mEnd).mean();
+      var safe = ee.Algorithms.If(
+        mean.bandNames().size().gt(0),
+        mean.unmask(0),
+        ee.Image.constant(0).rename(bandName)
+      );
+      return ee.Image(safe).set('system:time_start', mStart.millis());
+    })
+  );
 }
 
-// ========== 1) NO₂ z PBLH = 1000 m ==========
+// 6) Stałe parametry chemiczne
+var molarMass = 46.0055;
+var mixingHeight = 1000;
 
-var molarMass = 46.0055; // g/mol
-var mixingHeight = 1000; // m
-
-var no2Fixed = no2Daily.map(function(img) {
+// 7) NO₂ przeliczony na µg/m³ przy założonym PBLH = 1000 m
+var no2Fixed = no2Raw.map(function(img) {
   return img.multiply(molarMass * 1e6)
             .divide(mixingHeight)
             .rename('NO2_ugm3_fixed')
-            .set('system:time_start', img.date().millis());
+            .copyProperties(img, ['system:time_start']);
 });
-var no2MonthlyFixed = monthlyAverage(no2Fixed, 'NO2_ugm3_fixed');
+var no2MonthlyFixed = monthlyMean(no2Fixed, 'NO2_ugm3_fixed');
 
-var chartNO2fixed = ui.Chart.image.series({
+// 8) Miesięczne PBLH
+var pblhMonthly = monthlyMean(pblhRaw, 'PBLH');
+
+// 9) Miesięczny NO₂ (mol/m²) – surowy
+var no2MonthlyRaw = monthlyMean(no2Raw, 'NO2_column_number_density');
+
+// 10) Łączenie NO₂ + PBLH miesięcznie za pomocą ee.List.zip
+var zipped = ee.List(no2MonthlyRaw.toList(no2MonthlyRaw.size()))
+  .zip(pblhMonthly.toList(pblhMonthly.size()));
+
+var no2MonthlyDynamic = ee.ImageCollection(zipped.map(function(pair) {
+  var no2 = ee.Image(ee.List(pair).get(0));
+  var pblh = ee.Image(ee.List(pair).get(1));
+
+  var fallback = ee.Image.constant(500).rename('PBLH');
+  var usePBLH = ee.Algorithms.If(pblh.bandNames().size().gt(0), pblh, fallback);
+  pblh = ee.Image(usePBLH);
+
+  var ugm3 = no2.multiply(molarMass * 1e6)
+                .divide(pblh)
+                .rename('NO2_ugm3_dyn')
+                .set('system:time_start', no2.get('system:time_start'));
+  return ugm3;
+}));
+
+// 11) Wykres NO₂ przy PBLH = 1000 m
+var chartFixed = ui.Chart.image.series({
   imageCollection: no2MonthlyFixed,
   region: krakow,
   reducer: ee.Reducer.mean(),
@@ -56,20 +86,9 @@ var chartNO2fixed = ui.Chart.image.series({
   hAxis: {title: 'Miesiąc', format: 'YYYY-MM'},
   colors: ['#d62728']
 });
-print(chartNO2fixed);
+print(chartFixed);
 
-// ========== 2) PBLH z ERA5 ==========
-
-var pblhDaily = ee.ImageCollection(
-  ee.List.sequence(0, end.difference(start, 'day').subtract(1)).map(function(d) {
-    var dStart = start.advance(d, 'day');
-    var dEnd = dStart.advance(1, 'day');
-    var mean = pblhHourly.filterDate(dStart, dEnd).mean();
-    return ee.Image(mean).set('system:time_start', dStart.millis());
-  })
-);
-var pblhMonthly = monthlyAverage(pblhDaily, 'PBLH');
-
+// 12) Wykres PBLH
 var chartPBLH = ui.Chart.image.series({
   imageCollection: pblhMonthly,
   region: krakow,
@@ -84,27 +103,8 @@ var chartPBLH = ui.Chart.image.series({
 });
 print(chartPBLH);
 
-// ========== 3) NO₂ z dynamiczną PBLH ==========
-
-var no2WithDynamic = ee.ImageCollection(
-  no2Daily.map(function(img) {
-    var date = img.date();
-    var pblhImg = pblhDaily.filterDate(date, date.advance(1, 'day')).first();
-
-    var fallback = ee.Image.constant(500).rename('boundary_layer_height');
-    var pblh = ee.Algorithms.If(pblhImg, ee.Image(pblhImg), fallback);
-    pblh = ee.Image(pblh);
-
-    var conc = img.multiply(molarMass * 1e6)
-                  .divide(pblh)
-                  .rename('NO2_ugm3_dyn')
-                  .set('system:time_start', img.date().millis());
-    return conc;
-  })
-);
-var no2MonthlyDynamic = monthlyAverage(no2WithDynamic, 'NO2_ugm3_dyn');
-
-var chartNO2dyn = ui.Chart.image.series({
+// 13) Wykres NO₂ z dynamiczną PBLH
+var chartDynamic = ui.Chart.image.series({
   imageCollection: no2MonthlyDynamic,
   region: krakow,
   reducer: ee.Reducer.mean(),
@@ -116,4 +116,4 @@ var chartNO2dyn = ui.Chart.image.series({
   hAxis: {title: 'Miesiąc', format: 'YYYY-MM'},
   colors: ['#2ca02c']
 });
-print(chartNO2dyn);
+print(chartDynamic);
