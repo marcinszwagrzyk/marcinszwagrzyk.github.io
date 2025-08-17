@@ -1,0 +1,51 @@
+1. BG ma inny profil działalności niż ADM
+
+Choć obie firmy działają w sektorze agrobiznesu, Bunge jest bardziej zdywersyfikowana międzynarodowo, szczególnie w Ameryce Południowej (głównie Brazylia i Argentyna), gdzie:
+
+Marże bywają wyższe,
+
+Koszty są niższe (np. tania logistyka rzeczna),
+
+Przewaga nad ADM w eksporcie śruty sojowej i olejów.
+
+ADM z kolei ma większy udział w USA, a więc silniejszą korelację z ceną soi na CBOT i lokalnymi marżami przetwórczymi.
+
+2. Różna ekspozycja na zmienność rynkową
+Firma	Korelacja z ceną soi (ZS=F)	Główne źródło zysków
+Bunge (BG)	Umiarkowana, zmienna	Eksport, oleje roślinne, międzynarodowy handel
+ADM	Wyższa	Przetwórstwo nasion, logistyka USA, etanol
+
+Jeśli ceny soi spadają, ADM traci bardziej, bo ich marże przetwórcze są bezpośrednio zależne od różnicy między ceną nasion a ceną końcowego produktu.
+Bunge może natomiast zyskać na tańszym surowcu, zwłaszcza jeśli popyt na oleje i mączki pozostaje silny.
+
+3. Inwestorzy wyceniają przejęcie Viterra (synergia)
+
+Bunge finalizuje mega-fuzję z firmą Viterra (kanadyjski gigant handlu zbożem) – to powoduje:
+
+Efekt synergii – oczekiwane oszczędności kosztów i ekspansja globalna
+
+Pozytywny sentyment inwestorów – przyszły wzrost zysku, mimo chwilowego spadku cen surowców
+
+👉 ADM nie ma takiego triggera wzrostowego.
+
+4. Buyback / Dywidendy / Fundamenty
+
+Bunge prowadził agresywniejszy skup akcji własnych niż ADM.
+
+Buyback → ograniczenie liczby akcji → zwiększenie EPS
+
+Dobra relacja długu do kapitału → inwestorzy czują się bezpieczniej
+
+5. Ceny soi ≠ zyski firm
+
+To częsty błąd inwestorów: spadek ceny surowca ≠ spadek marży producenta / przetwórcy.
+
+Dla firm takich jak BG czy ADM liczy się:
+
+Spread między ceną surowca a produktem (marża crushingowa)
+
+Koszty transportu, zapasy, wolumeny
+
+Warunki pogodowe (np. żniwa w USA i Brazylii)
+
+Ruchy walutowe (Bunge działa w BRL, ADM głównie w USD)
