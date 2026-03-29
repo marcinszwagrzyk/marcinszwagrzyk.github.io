@@ -56,6 +56,18 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
   font-size: 10px; color: rgba(255,255,255,0.28); line-height: 2; }
 #loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
   font-size: 15px; color: #666; letter-spacing: 2px; text-align: center; line-height: 1.8; }
+.marker-label {
+  font-size: 11px; color: #fff;
+  background: rgba(0,0,0,0.65); padding: 2px 7px;
+  border-radius: 4px; pointer-events: none; white-space: nowrap;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+#reload-markers {
+  width: 100%; margin-top: 6px; padding: 5px 8px;
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+  color: #ccc; border-radius: 6px; cursor: pointer; font-size: 11px;
+}
+#reload-markers:hover { background: rgba(255,255,255,0.13); }
 </style>
 </head>
 <body>
@@ -111,6 +123,16 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
     <input type="range" id="exag-in" min="1" max="2.5" step="0.05" value="1">
   </div>
 
+  <div class="sep">📍 Markery</div>
+  <div class="toggle-row">
+    <span>Pokaż markery</span>
+    <label class="toggle">
+      <input type="checkbox" id="markers-toggle" checked>
+      <span class="slider-toggle"></span>
+    </label>
+  </div>
+  <button id="reload-markers">🔄 Przeładuj markery</button>
+
   <div class="sep">ℹ Dane</div>
   <div class="stat"><span>DEM</span><b>GUGiK LiDAR 0.5 m</b></div>
   <div class="stat"><span>Ortofoto</span><b>GUGiK 25 cm</b></div>
@@ -131,13 +153,15 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 
 const LAT = 49.2185, LNG = 20.0241;
 const STEP = 2;
 
-let scene, camera, renderer, controls;
+let scene, camera, renderer, labelRenderer, controls;
 let sunLight, ambientLight;
 let terrainMesh, terrainMat;
+let markersGroup;
 let rawHeights = null;
 let currentExag = 1.0;
 let meta;
@@ -155,8 +179,17 @@ async function init() {
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.1;
 
+  labelRenderer = new CSS2DRenderer();
+  labelRenderer.setSize(window.innerWidth, window.innerHeight);
+  labelRenderer.domElement.style.position = 'absolute';
+  labelRenderer.domElement.style.top = '0';
+  labelRenderer.domElement.style.pointerEvents = 'none';
+  document.body.appendChild(labelRenderer.domElement);
+
   scene = new THREE.Scene();
   scene.fog = new THREE.FogExp2(0x1a2030, 0.00025);
+  markersGroup = new THREE.Group();
+  scene.add(markersGroup);
   camera = new THREE.PerspectiveCamera(52, window.innerWidth / window.innerHeight, 1, 60000);
 
   ambientLight = new THREE.AmbientLight(0x405070, 0.4);
@@ -204,13 +237,47 @@ async function init() {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('ui').style.display = 'block';
   initUI();
+  await loadMarkers();
 
   window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    labelRenderer.setSize(window.innerWidth, window.innerHeight);
   });
   animate();
+}
+
+const MARKER_COLORS = {
+  szczyt: 0xff3333, przelecz: 0xffdd00,
+  stanowisko: 0x44aaff, droga: 0x44dd88, punkt: 0xcccccc
+};
+
+async function loadMarkers(bustCache = false) {
+  markersGroup.clear();
+  const url = bustCache ? `markers.json?t=${Date.now()}` : 'markers.json';
+  const data = await fetch(url).then(r => r.json());
+  const b = meta.bounds_wgs84;
+  const lonRange = b.east - b.west;
+  const latRange = b.north - b.south;
+  for (const m of data.markers) {
+    const x = ((m.lon - b.west) / lonRange - 0.5) * physW;
+    const z = ((b.north - m.lat) / latRange - 0.5) * physD;
+    const y = m.elevation_m * currentExag;
+    const color = MARKER_COLORS[m.type] ?? 0xffffff;
+    const sphere = new THREE.Mesh(
+      new THREE.SphereGeometry(7, 10, 10),
+      new THREE.MeshStandardMaterial({ color, roughness: 0.35, metalness: 0.2, emissive: color, emissiveIntensity: 0.25 })
+    );
+    sphere.position.set(x, y + 10, z);
+    markersGroup.add(sphere);
+    const div = document.createElement('div');
+    div.className = 'marker-label';
+    div.textContent = m.name;
+    const label = new CSS2DObject(div);
+    label.position.set(x, y + 28, z);
+    markersGroup.add(label);
+  }
 }
 
 function loadImg(src) {
@@ -345,12 +412,19 @@ function initUI() {
     }
     terrainMat.needsUpdate = true;
   });
+  document.getElementById('markers-toggle').addEventListener('change', e => {
+    markersGroup.visible = e.target.checked;
+  });
+  document.getElementById('reload-markers').addEventListener('click', () => {
+    loadMarkers(true);
+  });
 }
 
 function animate() {
   requestAnimationFrame(animate);
   controls.update();
   renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
 }
 
 init().catch(err => {
