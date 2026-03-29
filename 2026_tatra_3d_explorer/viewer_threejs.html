@@ -111,24 +111,6 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
     <input type="range" id="exag-in" min="1" max="2.5" step="0.05" value="1">
   </div>
 
-  <div class="sep">🧗 Topo ściany</div>
-  <div class="toggle-row">
-    <span>Pokaż topo</span>
-    <label class="toggle">
-      <input type="checkbox" id="wall-toggle">
-      <span class="slider-toggle"></span>
-    </label>
-  </div>
-  <div class="field">
-    <label><span>Przezroczystość</span><b id="wall-op-disp">90%</b></label>
-    <input type="range" id="wall-op-in" min="0.1" max="1" step="0.05" value="0.9">
-  </div>
-  <div class="field">
-    <label><span>FOV projektora</span><b id="proj-fov-disp">52°</b></label>
-    <input type="range" id="proj-fov-in" min="15" max="100" step="1" value="52">
-  </div>
-  <button id="proj-set-btn" style="width:100%;padding:6px 8px;margin-top:2px;background:rgba(255,160,0,0.15);border:1px solid rgba(255,160,0,0.35);color:#ffa;border-radius:6px;cursor:pointer;font-size:11px;">📐 Ustaw projektor z aktualnej kamery</button>
-  <div style="font-size:10px;color:#555;margin-top:5px;">Ustaw widok jak na zdjęciu, kliknij.</div>
 
   <div class="sep">ℹ Dane</div>
   <div class="stat"><span>DEM</span><b>GUGiK LiDAR 0.5 m</b></div>
@@ -157,8 +139,6 @@ const STEP = 2;
 let scene, camera, renderer, controls;
 let sunLight, ambientLight;
 let terrainMesh, terrainMat;
-let projMesh, topoTex;
-let projFOV = 52;
 let rawHeights = null;
 let currentExag = 1.0;
 let meta;
@@ -225,7 +205,6 @@ async function init() {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('ui').style.display = 'block';
   initUI();
-  await initProjectedTopo();
 
   window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -236,61 +215,6 @@ async function init() {
 }
 
 
-async function initProjectedTopo() {
-  topoTex = await new Promise(res => new THREE.TextureLoader().load('zdjecie.jpg', res));
-  topoTex.colorSpace = THREE.SRGBColorSpace;
-
-  const mat = new THREE.ShaderMaterial({
-    uniforms: {
-      projTex:    { value: topoTex },
-      projMatrix: { value: new THREE.Matrix4() },
-      opacity:    { value: 0.9 }
-    },
-    vertexShader: `
-      uniform mat4 projMatrix;
-      varying vec4 projCoords;
-      void main() {
-        vec4 worldPos = modelMatrix * vec4(position, 1.0);
-        projCoords = projMatrix * worldPos;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-    fragmentShader: `
-      uniform sampler2D projTex;
-      uniform float opacity;
-      varying vec4 projCoords;
-      void main() {
-        if (projCoords.w <= 0.0) discard;
-        vec2 uv = projCoords.xy / projCoords.w * 0.5 + 0.5;
-        if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) discard;
-        vec4 col = texture2D(projTex, uv);
-        gl_FragColor = vec4(col.rgb, opacity);
-      }
-    `,
-    transparent: true,
-    depthWrite: false,
-    polygonOffset: true,
-    polygonOffsetFactor: -2,
-    polygonOffsetUnits: -2
-  });
-
-  projMesh = new THREE.Mesh(terrainMesh.geometry, mat);
-  projMesh.visible = false;
-  scene.add(projMesh);
-  setProjector(); // domyślnie z aktualnej kamery
-}
-
-function setProjector() {
-  if (!projMesh) return;
-  const pc = new THREE.PerspectiveCamera(projFOV, 1600 / 1200, 1, 60000);
-  pc.position.copy(camera.position);
-  pc.quaternion.copy(camera.quaternion);
-  pc.updateMatrixWorld();
-  pc.updateProjectionMatrix();
-  const m = new THREE.Matrix4();
-  m.multiplyMatrices(pc.projectionMatrix, pc.matrixWorldInverse);
-  projMesh.material.uniforms.projMatrix.value.copy(m);
-}
 
 function loadImg(src) {
   return new Promise((res, rej) => {
@@ -415,24 +339,6 @@ function initUI() {
     const v = parseFloat(e.target.value);
     document.getElementById('exag-disp').textContent = v + ' ×';
     setExag(v);
-  });
-  document.getElementById('wall-toggle').addEventListener('change', e => {
-    if (projMesh) projMesh.visible = e.target.checked;
-  });
-  document.getElementById('wall-op-in').addEventListener('input', e => {
-    const v = parseFloat(e.target.value);
-    document.getElementById('wall-op-disp').textContent = Math.round(v * 100) + '%';
-    if (projMesh) projMesh.material.uniforms.opacity.value = v;
-  });
-  document.getElementById('proj-fov-in').addEventListener('input', e => {
-    projFOV = parseFloat(e.target.value);
-    document.getElementById('proj-fov-disp').textContent = projFOV + '°';
-    setProjector();
-  });
-  document.getElementById('proj-set-btn').addEventListener('click', () => {
-    setProjector();
-    document.getElementById('proj-set-btn').textContent = '✓ Projektor ustawiony';
-    setTimeout(() => { document.getElementById('proj-set-btn').textContent = '📐 Ustaw projektor z aktualnej kamery'; }, 1500);
   });
   document.getElementById('orto-toggle').addEventListener('change', e => {
     if (e.target.checked && orthoTex) {
