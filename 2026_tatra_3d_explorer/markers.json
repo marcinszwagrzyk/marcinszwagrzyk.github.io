@@ -1,41 +1,32 @@
 {
-  "_comment": "Markery 3D dla Zamarłej Turni. Typy: szczyt | przelecz | stanowisko | droga | punkt",
+  "_comment": "Wygenerowane automatycznie z zamarla_markery.gpkg – nie edytuj ręcznie.",
   "markers": [
     {
-      "id": "zamarla_szczyt",
-      "name": "Zamarła Turnia",
-      "type": "szczyt",
-      "lat": 49.218326,
-      "lon": 20.028649,
-      "elevation_m": 2290,
-      "description": "Zamarła Turnia 2290 m n.p.m."
-    },
-    {
-      "id": "zamarla_SE_grzbiet",
-      "name": "Grzbiet SE",
+      "id": "marker_0",
+      "name": "Zamarla Sczyt",
       "type": "punkt",
-      "lat": 49.217884,
-      "lon": 20.027816,
-      "elevation_m": 2204,
-      "description": "Grzbiet południowo-wschodni"
+      "lat": 49.219422,
+      "lon": 20.02436,
+      "elevation_m": 2179.0,
+      "description": ""
     },
     {
-      "id": "zamarla_polka",
-      "name": "Półka wschodnia",
-      "type": "stanowisko",
-      "lat": 49.217425,
-      "lon": 20.028837,
-      "elevation_m": 2230,
-      "description": "Stanowisko / charakterystyczna półka"
-    },
-    {
-      "id": "dno_kotla",
-      "name": "Dno Kotła",
+      "id": "marker_1",
+      "name": "stanowisko",
       "type": "punkt",
-      "lat": 49.216700,
-      "lon": 20.024500,
-      "elevation_m": 1975,
-      "description": "Dno Doliny pod Zamarłą"
+      "lat": 49.2195399,
+      "lon": 20.0235411,
+      "elevation_m": 2119.0,
+      "description": ""
+    },
+    {
+      "id": "marker_2",
+      "name": "zjazd",
+      "type": "punkt",
+      "lat": 49.2196814,
+      "lon": 20.0235299,
+      "elevation_m": 2148.0,
+      "description": ""
     }
   ]
 }
