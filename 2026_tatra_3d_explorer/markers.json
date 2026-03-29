@@ -4,7 +4,7 @@
     {
       "id": "marker_0",
       "name": "Zamarla Sczyt",
-      "type": "punkt",
+      "type": "szczyt",
       "lat": 49.219422,
       "lon": 20.02436,
       "elevation_m": 2179.0,
@@ -13,7 +13,7 @@
     {
       "id": "marker_1",
       "name": "stanowisko",
-      "type": "punkt",
+      "type": "stanowisko",
       "lat": 49.2195399,
       "lon": 20.0235411,
       "elevation_m": 2119.0,
@@ -22,7 +22,7 @@
     {
       "id": "marker_2",
       "name": "zjazd",
-      "type": "punkt",
+      "type": "zjazd",
       "lat": 49.2196814,
       "lon": 20.0235299,
       "elevation_m": 2148.0,

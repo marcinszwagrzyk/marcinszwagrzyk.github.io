@@ -248,11 +248,6 @@ async function init() {
   animate();
 }
 
-const MARKER_COLORS = {
-  szczyt: 0xff3333, przelecz: 0xffdd00,
-  stanowisko: 0x44aaff, droga: 0x44dd88, punkt: 0xcccccc
-};
-
 async function loadMarkers(bustCache = false) {
   markersGroup.clear();
   const url = bustCache ? `markers.json?t=${Date.now()}` : 'markers.json';
@@ -264,18 +259,26 @@ async function loadMarkers(bustCache = false) {
     const x = ((m.lon - b.west) / lonRange - 0.5) * physW;
     const z = ((b.north - m.lat) / latRange - 0.5) * physD;
     const y = m.elevation_m * currentExag;
-    const color = MARKER_COLORS[m.type] ?? 0xffffff;
-    const sphere = new THREE.Mesh(
-      new THREE.SphereGeometry(7, 10, 10),
-      new THREE.MeshStandardMaterial({ color, roughness: 0.35, metalness: 0.2, emissive: color, emissiveIntensity: 0.25 })
-    );
-    sphere.position.set(x, y + 10, z);
-    markersGroup.add(sphere);
+    let mesh;
+    if (m.type === 'szczyt') {
+      mesh = new THREE.Mesh(
+        new THREE.ConeGeometry(0.7, 2, 4),
+        new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.6, metalness: 0.1 })
+      );
+      mesh.rotation.y = Math.PI / 4;
+    } else {
+      mesh = new THREE.Mesh(
+        new THREE.SphereGeometry(0.7, 8, 8),
+        new THREE.MeshStandardMaterial({ color: 0xff2222, roughness: 0.35, metalness: 0.1, emissive: 0xff2222, emissiveIntensity: 0.3 })
+      );
+    }
+    mesh.position.set(x, y + 1, z);
+    markersGroup.add(mesh);
     const div = document.createElement('div');
     div.className = 'marker-label';
     div.textContent = m.name;
     const label = new CSS2DObject(div);
-    label.position.set(x, y + 28, z);
+    label.position.set(x, y + 4, z);
     markersGroup.add(label);
   }
 }

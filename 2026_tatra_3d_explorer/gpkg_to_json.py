@@ -10,6 +10,27 @@ from pathlib import Path
 GPKG = Path(__file__).parent / "markers" / "zamarla_markery.gpkg"
 OUT  = Path(__file__).parent / "markers.json"
 
+KNOWN_TYPES = {"szczyt", "przelecz", "stanowisko", "droga", "punkt", "zjazd"}
+
+def _infer_type(row):
+    t = str(row.get("type") or "").strip().lower()
+    if t in KNOWN_TYPES:
+        return t
+    name = str(row.get("name") or "").lower()
+    for kw in ("szczyt", "sczyt", "turnia", "wierch"):
+        if kw in name:
+            return "szczyt"
+    for kw in ("przelecz", "przel"):
+        if kw in name:
+            return "przelecz"
+    if "stanowisko" in name:
+        return "stanowisko"
+    if "zjazd" in name:
+        return "zjazd"
+    if "droga" in name:
+        return "droga"
+    return "punkt"
+
 gdf = gpd.read_file(GPKG)
 if gdf.crs and gdf.crs.to_epsg() != 4326:
     gdf = gdf.to_crs(epsg=4326)
@@ -19,7 +40,7 @@ for i, row in gdf.iterrows():
     markers.append({
         "id":          str(row.get("id") or f"marker_{i}"),
         "name":        str(row.get("name") or f"Punkt {i}"),
-        "type":        str(row.get("type") or "punkt"),
+        "type":        _infer_type(row),
         "lat":         round(row.geometry.y, 7),
         "lon":         round(row.geometry.x, 7),
         "elevation_m": float(row["elevation_m"]) if row.get("elevation_m") is not None else 0,
