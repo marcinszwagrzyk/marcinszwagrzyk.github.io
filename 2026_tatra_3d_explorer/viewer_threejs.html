@@ -123,6 +123,22 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
     <label><span>Przezroczystość</span><b id="wall-op-disp">90%</b></label>
     <input type="range" id="wall-op-in" min="0.1" max="1" step="0.05" value="0.9">
   </div>
+  <div class="field">
+    <label><span>Pozycja X</span><b id="wall-x-disp">10</b></label>
+    <input type="range" id="wall-x-in" min="-250" max="250" step="5" value="10">
+  </div>
+  <div class="field">
+    <label><span>Pozycja Z (przód/tył)</span><b id="wall-z-disp">-45</b></label>
+    <input type="range" id="wall-z-in" min="-250" max="100" step="5" value="-45">
+  </div>
+  <div class="field">
+    <label><span>Szerokość</span><b id="wall-w-disp">1.0×</b></label>
+    <input type="range" id="wall-w-in" min="0.2" max="3" step="0.05" value="1">
+  </div>
+  <div class="field">
+    <label><span>Przesuń góra/dół</span><b id="wall-y-disp">0</b></label>
+    <input type="range" id="wall-y-in" min="-300" max="300" step="5" value="0">
+  </div>
 
   <div class="sep">ℹ Dane</div>
   <div class="stat"><span>DEM</span><b>GUGiK LiDAR 0.5 m</b></div>
@@ -152,6 +168,7 @@ let scene, camera, renderer, controls;
 let sunLight, ambientLight;
 let terrainMesh, terrainMat;
 let wallMesh;
+let wallX = 10, wallZ = -45, wallScaleX = 1.0, wallYOff = 0;
 let rawHeights = null;
 let currentExag = 1.0;
 let meta;
@@ -198,9 +215,9 @@ async function init() {
 
   // Widok z południa na północ (spod ściany Zamarłej)
   const baseY = meta.elev_min * currentExag;
-  camera.position.set(0, baseY + 180, physD * 0.9);
+  camera.position.set(0, baseY + 520, physD * 0.42);
   controls = new OrbitControls(camera, renderer.domElement);
-  controls.target.set(0, baseY + 380, -physD * 0.15);
+  controls.target.set(0, baseY + 260, -physD * 0.22);
   controls.enableDamping = true; controls.dampingFactor = 0.07;
   controls.maxPolarAngle = Math.PI * 0.88;
   controls.update();
@@ -233,17 +250,22 @@ async function initWall() {
   const tex = await new Promise(res => new THREE.TextureLoader().load('zdjecie.jpg', res));
   tex.colorSpace = THREE.SRGBColorSpace;
   const h = meta.elev_max - meta.elev_min;
-  // szerokość płaszczyzny ~szerokość widocznej ściany na zdjęciu
   const geo = new THREE.PlaneGeometry(480, h);
   const mat = new THREE.MeshBasicMaterial({
     map: tex, transparent: true, opacity: 0.9,
     side: THREE.DoubleSide, depthWrite: false
   });
   wallMesh = new THREE.Mesh(geo, mat);
-  // pozycja: wyśrodkowana na ścianie Zamarłej, lekko przed nią (od południa)
-  wallMesh.position.set(10, meta.elev_min + h / 2, -45);
   wallMesh.visible = false;
   scene.add(wallMesh);
+  updateWallTransform();
+}
+
+function updateWallTransform() {
+  if (!wallMesh) return;
+  const h = meta.elev_max - meta.elev_min;
+  wallMesh.position.set(wallX, (meta.elev_min + h / 2) * currentExag + wallYOff, wallZ);
+  wallMesh.scale.set(wallScaleX, currentExag, 1);
 }
 
 function loadImg(src) {
@@ -311,11 +333,7 @@ function setExag(exag) {
   pos.needsUpdate = true;
   terrainMesh.geometry.computeVertexNormals();
   terrainMesh.geometry.attributes.normal.needsUpdate = true;
-  if (wallMesh) {
-    const h = meta.elev_max - meta.elev_min;
-    wallMesh.scale.y = exag;
-    wallMesh.position.y = (meta.elev_min + h / 2) * exag;
-  }
+  updateWallTransform();
 }
 
 function updateSun() {
@@ -382,6 +400,26 @@ function initUI() {
     const v = parseFloat(e.target.value);
     document.getElementById('wall-op-disp').textContent = Math.round(v * 100) + '%';
     if (wallMesh) wallMesh.material.opacity = v;
+  });
+  document.getElementById('wall-x-in').addEventListener('input', e => {
+    wallX = parseFloat(e.target.value);
+    document.getElementById('wall-x-disp').textContent = wallX;
+    updateWallTransform();
+  });
+  document.getElementById('wall-z-in').addEventListener('input', e => {
+    wallZ = parseFloat(e.target.value);
+    document.getElementById('wall-z-disp').textContent = wallZ;
+    updateWallTransform();
+  });
+  document.getElementById('wall-w-in').addEventListener('input', e => {
+    wallScaleX = parseFloat(e.target.value);
+    document.getElementById('wall-w-disp').textContent = wallScaleX.toFixed(2) + '×';
+    updateWallTransform();
+  });
+  document.getElementById('wall-y-in').addEventListener('input', e => {
+    wallYOff = parseFloat(e.target.value);
+    document.getElementById('wall-y-disp').textContent = wallYOff;
+    updateWallTransform();
   });
   document.getElementById('orto-toggle').addEventListener('change', e => {
     if (e.target.checked && orthoTex) {
