@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Zamarła Turnia – 3D Explorer | Deck.gl</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #07080d; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; color: #ccc; }
+#deckgl-canvas { position: absolute; left: 0; top: 0; }
+#ui {
+  position: absolute; top: 16px; right: 16px;
+  background: rgba(6,8,16,0.90); border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 12px; padding: 16px; width: 252px;
+  backdrop-filter: blur(10px); z-index: 10;
+}
+#ui h1 { font-size: 12px; letter-spacing: 2.5px; color: #999; text-transform: uppercase; margin-bottom: 14px; }
+.sep { font-size: 10px; letter-spacing: 1.5px; color: #666; text-transform: uppercase;
+       margin: 14px 0 8px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px; }
+.field { margin-bottom: 9px; }
+.field label { display: flex; justify-content: space-between; font-size: 11px; color: #888; margin-bottom: 4px; }
+.field label b { color: #ffd; }
+input[type=date], input[type=range] {
+  width: 100%; background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1); color: #ccc;
+  padding: 5px 8px; border-radius: 6px; font-size: 12px; outline: none;
+}
+input[type=range] { padding: 2px 0; cursor: pointer; accent-color: #f90; }
+input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
+#compass-wrap { display: flex; align-items: center; gap: 12px; margin: 6px 0 10px; }
+#sun-info { flex: 1; font-size: 11px; }
+.irow { display: flex; justify-content: space-between; margin: 2px 0; }
+.ival { color: #ffd; font-weight: 600; }
+#sun-label { font-size: 11px; text-align: center; padding: 5px 8px; margin: 4px 0 6px;
+  background: rgba(255,255,255,0.04); border-radius: 6px; }
+#times { display: flex; justify-content: space-between; font-size: 11px; margin-top: 4px; }
+#times span { color: #888; } #times b { color: #ffd; }
+.toggle-row { display: flex; align-items: center; justify-content: space-between; margin: 8px 0; }
+.toggle-row span { font-size: 11px; color: #888; }
+.toggle { position: relative; display: inline-block; width: 38px; height: 20px; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.slider-toggle { position: absolute; cursor: pointer; inset: 0;
+  background: rgba(255,255,255,0.1); border-radius: 20px; transition: 0.2s; }
+.slider-toggle:before { content: ''; position: absolute; height: 14px; width: 14px;
+  left: 3px; bottom: 3px; background: #888; border-radius: 50%; transition: 0.2s; }
+.toggle input:checked + .slider-toggle { background: rgba(80,200,120,0.4); }
+.toggle input:checked + .slider-toggle:before { transform: translateX(18px); background: #8de; }
+.stat { display: flex; justify-content: space-between; font-size: 11px; margin: 2px 0; }
+.stat span { color: #777; } .stat b { color: #aaa; }
+#help { position: absolute; bottom: 16px; left: 16px;
+  font-size: 10px; color: rgba(255,255,255,0.28); line-height: 2; z-index: 10; }
+#loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  font-size: 15px; color: #666; letter-spacing: 2px; text-align: center; line-height: 1.8; z-index: 20; }
+</style>
+</head>
+<body>
+<canvas id="deckgl-canvas"></canvas>
+<div id="loading">ŁADOWANIE TERENU…</div>
+
+<div id="ui">
+  <h1>Zamarła Turnia · Deck.gl</h1>
+
+  <div class="sep">☀ Pozycja słońca</div>
+  <div id="compass-wrap">
+    <svg width="72" height="72" viewBox="0 0 72 72">
+      <circle cx="36" cy="36" r="32" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+      <circle cx="36" cy="36" r="1.5" fill="#555"/>
+      <text x="36" y="9"  text-anchor="middle" font-size="8" fill="#777">N</text>
+      <text x="36" y="69" text-anchor="middle" font-size="8" fill="#777">S</text>
+      <text x="6"  y="40" text-anchor="middle" font-size="8" fill="#777">W</text>
+      <text x="66" y="40" text-anchor="middle" font-size="8" fill="#777">E</text>
+      <line id="sun-needle" x1="36" y1="36" x2="36" y2="7" stroke="#ffa" stroke-width="1.5" stroke-linecap="round"/>
+      <circle id="sun-dot" cx="36" cy="7" r="4.5" fill="#ffcc00"/>
+    </svg>
+    <div id="sun-info">
+      <div class="irow"><span>Azymut</span><span class="ival" id="v-az">–</span></div>
+      <div class="irow"><span>Wys.</span><span class="ival" id="v-alt">–</span></div>
+      <div id="sun-label">–</div>
+    </div>
+  </div>
+  <div class="field">
+    <label>Data</label>
+    <input type="date" id="date-in">
+  </div>
+  <div class="field">
+    <label><span>Godzina</span><b id="hour-disp">12:00</b></label>
+    <input type="range" id="hour-in" min="0" max="24" step="0.25" value="12">
+  </div>
+  <div id="times">
+    <div><span>↑ </span><b id="v-rise">–</b></div>
+    <div><b id="v-set">–</b><span> ↓</span></div>
+  </div>
+
+  <div class="sep">🗺 Ortofoto GUGiK 25 cm</div>
+  <div class="toggle-row">
+    <span>Ortofoto (pansharp)</span>
+    <label class="toggle">
+      <input type="checkbox" id="orto-toggle">
+      <span class="slider-toggle"></span>
+    </label>
+  </div>
+
+  <div class="sep">⛰ Widok</div>
+  <div class="field">
+    <label><span>Exaggeracja</span><b id="exag-disp">1 ×</b></label>
+    <input type="range" id="exag-in" min="1" max="2.5" step="0.05" value="1">
+  </div>
+  <div class="field">
+    <label><span>Pitch</span><b id="pitch-disp">72°</b></label>
+    <input type="range" id="pitch-in" min="0" max="85" step="1" value="72">
+  </div>
+  <div class="field">
+    <label><span>Bearing</span><b id="bearing-disp">0°</b></label>
+    <input type="range" id="bearing-in" min="-180" max="180" step="1" value="0">
+  </div>
+
+  <div class="sep">ℹ Dane</div>
+  <div class="stat"><span>DEM</span><b>GUGiK LiDAR 0.5 m</b></div>
+  <div class="stat"><span>Ortofoto</span><b>GUGiK 25 cm</b></div>
+  <div class="stat"><span>Obszar</span><b>~900 × 500 m</b></div>
+  <div class="stat"><span>Zakres el.</span><b>1955 – 2290 m</b></div>
+</div>
+<div id="help">Drag: obracanie &nbsp;·&nbsp; Ctrl+Drag / prawy: przesuwanie &nbsp;·&nbsp; Scroll: zoom</div>
+
+<script src="https://cdn.jsdelivr.net/npm/suncalc@1.9.0/suncalc.min.js"></script>
+<script src="https://unpkg.com/deck.gl@9.0.0/dist.min.js"></script>
+<script>
+const { Deck, MapView, LightingEffect, DirectionalLight, AmbientLight } = deck;
+const { TerrainLayer } = deck;
+
+const LAT = 49.2185, LNG = 20.0241;
+const BOUNDS = [20.017916823262567, 49.21623759486894, 20.030374774314026, 49.22083179034023];
+
+let deckInst = null;
+let exag = 1.0;
+let ortoOn = false;
+
+function buildLayer() {
+  return new TerrainLayer({
+    id: 'terrain',
+    elevationDecoder: {
+      rScaler: 6553.6 * exag, gScaler: 25.6 * exag,
+      bScaler: 0.1   * exag, offset: -10000 * exag
+    },
+    elevationData: 'dem/zamarla_terrain_rgb.png',
+    texture: ortoOn ? 'dem/zamarla_pansharp_25cm.jpg' : null,
+    bounds: BOUNDS,
+    meshMaxError: 0.3,
+    color: ortoOn ? [255,255,255] : [155,143,131],
+    material: { ambient: 0.35, diffuse: 0.8, shininess: 10, specularColor: [40,40,40] }
+  });
+}
+
+function makeLightEffect(dateObj) {
+  const pos = SunCalc.getPosition(dateObj, LAT, LNG);
+  const alt = pos.altitude, az = pos.azimuth;
+  const sunX = -Math.sin(az)*Math.cos(alt);
+  const sunY =  Math.cos(az)*Math.cos(alt);
+  const sunZ =  Math.sin(alt);
+  const dir = [-sunX,-sunY,-sunZ];
+  let ambColor, ambI, dirColor, dirI, bgColor;
+  if (alt < -0.12) {
+    ambColor=[30,40,90]; ambI=0.3; dirColor=[60,80,180]; dirI=0.0; bgColor=[4,5,14];
+    setLabel('🌙 Noc','#7799ff');
+  } else if (alt < 0.18) {
+    const t=(alt+.12)/.30;
+    ambColor=[Math.round(100+t*50),Math.round(90+t*60),Math.round(160+t*40)]; ambI=0.3+t*.5;
+    dirColor=[255,Math.round(100+t*130),Math.round(30+t*160)]; dirI=t*2.2;
+    bgColor=[Math.round(10+t*20),Math.round(10+t*15),Math.round(20+t*30)];
+    setLabel(alt>0?'🌅 Złota godzina':'🌆 Zmierzch/Świt','#ffaa44');
+  } else {
+    const t=Math.min(1,(alt-.18)/.5);
+    ambColor=[180+Math.round(t*40),200+Math.round(t*30),255]; ambI=0.6+t*.3;
+    dirColor=[255,245,220]; dirI=1.8+t*1.0;
+    bgColor=[Math.round(20+t*30),Math.round(28+t*35),Math.round(55+t*65)];
+    setLabel('☀ Dzień','#ffffaa');
+  }
+  const amb = new AmbientLight({ color: ambColor, intensity: ambI });
+  const sun = new DirectionalLight({ color: dirColor, intensity: dirI, direction: dir });
+  return { effect: new LightingEffect({ amb, sun }), bgColor };
+}
+function setLabel(t,c){const e=document.getElementById('sun-label');e.textContent=t;e.style.color=c;}
+
+function updateSun() {
+  const dateStr = document.getElementById('date-in').value;
+  const h = parseFloat(document.getElementById('hour-in').value);
+  document.getElementById('hour-disp').textContent =
+    String(Math.floor(h)).padStart(2,'0') + ':' + String(Math.round((h%1)*60)).padStart(2,'0');
+  const dt = new Date(`${dateStr}T12:00:00`);
+  dt.setHours(Math.floor(h), Math.round((h%1)*60), 0, 0);
+  const { effect, bgColor } = makeLightEffect(dt);
+  if (deckInst) deckInst.setProps({
+    effects: [effect],
+    parameters: { clearColor: [bgColor[0]/255, bgColor[1]/255, bgColor[2]/255, 1] }
+  });
+  const pos = SunCalc.getPosition(dt, LAT, LNG);
+  const azN=(((pos.azimuth*180/Math.PI)+180)%360);
+  document.getElementById('v-az').textContent=azN.toFixed(1)+'°';
+  document.getElementById('v-alt').textContent=(pos.altitude*180/Math.PI).toFixed(1)+'°';
+  const r2=azN*Math.PI/180, sx=36+26*Math.sin(r2), sy=36-26*Math.cos(r2);
+  document.getElementById('sun-needle').setAttribute('x2',sx.toFixed(1));
+  document.getElementById('sun-needle').setAttribute('y2',sy.toFixed(1));
+  document.getElementById('sun-dot').setAttribute('cx',sx.toFixed(1));
+  document.getElementById('sun-dot').setAttribute('cy',sy.toFixed(1));
+  const vis=pos.altitude<0?.2:.9;
+  document.getElementById('sun-dot').setAttribute('opacity',vis);
+  document.getElementById('sun-needle').setAttribute('opacity',vis*.8);
+  const times=SunCalc.getTimes(dt,LAT,LNG);
+  const fmt=d=>isNaN(d)?'–':`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  document.getElementById('v-rise').textContent=fmt(times.sunrise);
+  document.getElementById('v-set').textContent=fmt(times.sunset);
+}
+
+function getViewState() {
+  return {
+    longitude: LNG,
+    latitude: 49.2164,   // spod ściany – południe
+    zoom: 13.6,
+    pitch:   parseFloat(document.getElementById('pitch-in').value),
+    bearing: parseFloat(document.getElementById('bearing-in').value),
+    minZoom: 11, maxZoom: 18
+  };
+}
+
+document.getElementById('date-in').value = new Date().toISOString().split('T')[0];
+document.getElementById('date-in').addEventListener('input', updateSun);
+document.getElementById('hour-in').addEventListener('input', updateSun);
+document.getElementById('exag-in').addEventListener('input', e => {
+  exag = parseFloat(e.target.value);
+  document.getElementById('exag-disp').textContent = exag + ' ×';
+  if (deckInst) deckInst.setProps({ layers: [buildLayer()] });
+});
+document.getElementById('orto-toggle').addEventListener('change', e => {
+  ortoOn = e.target.checked;
+  if (deckInst) deckInst.setProps({ layers: [buildLayer()] });
+});
+document.getElementById('pitch-in').addEventListener('input', e => {
+  document.getElementById('pitch-disp').textContent = e.target.value+'°';
+  if (deckInst) deckInst.setProps({ initialViewState: getViewState() });
+});
+document.getElementById('bearing-in').addEventListener('input', e => {
+  document.getElementById('bearing-disp').textContent = e.target.value+'°';
+  if (deckInst) deckInst.setProps({ initialViewState: getViewState() });
+});
+
+window.addEventListener('load', () => {
+  const dt = new Date();
+  const { effect, bgColor } = makeLightEffect(dt);
+  deckInst = new Deck({
+    canvas: 'deckgl-canvas', width: '100%', height: '100%',
+    controller: true,
+    views: new MapView({ repeat: false }),
+    initialViewState: getViewState(),
+    parameters: { clearColor: [bgColor[0]/255, bgColor[1]/255, bgColor[2]/255, 1] },
+    effects: [effect],
+    layers: [buildLayer()],
+    onLoad: () => { document.getElementById('loading').style.display = 'none'; }
+  });
+  updateSun();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+{
+  "_comment": "Markery 3D dla Zamarłej Turni. Typy: szczyt | przelecz | stanowisko | droga | punkt",
+  "markers": [
+    {
+      "id": "zamarla_szczyt",
+      "name": "Zamarła Turnia",
+      "type": "szczyt",
+      "lat": 49.218326,
+      "lon": 20.028649,
+      "elevation_m": 2290,
+      "description": "Zamarła Turnia 2290 m n.p.m."
+    },
+    {
+      "id": "zamarla_SE_grzbiet",
+      "name": "Grzbiet SE",
+      "type": "punkt",
+      "lat": 49.217884,
+      "lon": 20.027816,
+      "elevation_m": 2204,
+      "description": "Grzbiet południowo-wschodni"
+    },
+    {
+      "id": "zamarla_polka",
+      "name": "Półka wschodnia",
+      "type": "stanowisko",
+      "lat": 49.217425,
+      "lon": 20.028837,
+      "elevation_m": 2230,
+      "description": "Stanowisko / charakterystyczna półka"
+    },
+    {
+      "id": "dno_kotla",
+      "name": "Dno Kotła",
+      "type": "punkt",
+      "lat": 49.216700,
+      "lon": 20.024500,
+      "elevation_m": 1975,
+      "description": "Dno Doliny pod Zamarłą"
+    }
+  ]
+}
