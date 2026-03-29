@@ -111,6 +111,19 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
     <input type="range" id="exag-in" min="1" max="2.5" step="0.05" value="1">
   </div>
 
+  <div class="sep">🧗 Topo ściany</div>
+  <div class="toggle-row">
+    <span>Pokaż topo</span>
+    <label class="toggle">
+      <input type="checkbox" id="wall-toggle">
+      <span class="slider-toggle"></span>
+    </label>
+  </div>
+  <div class="field">
+    <label><span>Przezroczystość</span><b id="wall-op-disp">90%</b></label>
+    <input type="range" id="wall-op-in" min="0.1" max="1" step="0.05" value="0.9">
+  </div>
+
   <div class="sep">ℹ Dane</div>
   <div class="stat"><span>DEM</span><b>GUGiK LiDAR 0.5 m</b></div>
   <div class="stat"><span>Ortofoto</span><b>GUGiK 25 cm</b></div>
@@ -138,6 +151,7 @@ const STEP = 2;
 let scene, camera, renderer, controls;
 let sunLight, ambientLight;
 let terrainMesh, terrainMat;
+let wallMesh;
 let rawHeights = null;
 let currentExag = 1.0;
 let meta;
@@ -204,6 +218,7 @@ async function init() {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('ui').style.display = 'block';
   initUI();
+  await initWall();
 
   window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -213,6 +228,23 @@ async function init() {
   animate();
 }
 
+
+async function initWall() {
+  const tex = await new Promise(res => new THREE.TextureLoader().load('zdjecie.jpg', res));
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const h = meta.elev_max - meta.elev_min;
+  // szerokość płaszczyzny ~szerokość widocznej ściany na zdjęciu
+  const geo = new THREE.PlaneGeometry(480, h);
+  const mat = new THREE.MeshBasicMaterial({
+    map: tex, transparent: true, opacity: 0.9,
+    side: THREE.DoubleSide, depthWrite: false
+  });
+  wallMesh = new THREE.Mesh(geo, mat);
+  // pozycja: wyśrodkowana na ścianie Zamarłej, lekko przed nią (od południa)
+  wallMesh.position.set(10, meta.elev_min + h / 2, -45);
+  wallMesh.visible = false;
+  scene.add(wallMesh);
+}
 
 function loadImg(src) {
   return new Promise((res, rej) => {
@@ -279,6 +311,11 @@ function setExag(exag) {
   pos.needsUpdate = true;
   terrainMesh.geometry.computeVertexNormals();
   terrainMesh.geometry.attributes.normal.needsUpdate = true;
+  if (wallMesh) {
+    const h = meta.elev_max - meta.elev_min;
+    wallMesh.scale.y = exag;
+    wallMesh.position.y = (meta.elev_min + h / 2) * exag;
+  }
 }
 
 function updateSun() {
@@ -337,6 +374,14 @@ function initUI() {
     const v = parseFloat(e.target.value);
     document.getElementById('exag-disp').textContent = v + ' ×';
     setExag(v);
+  });
+  document.getElementById('wall-toggle').addEventListener('change', e => {
+    if (wallMesh) wallMesh.visible = e.target.checked;
+  });
+  document.getElementById('wall-op-in').addEventListener('input', e => {
+    const v = parseFloat(e.target.value);
+    document.getElementById('wall-op-disp').textContent = Math.round(v * 100) + '%';
+    if (wallMesh) wallMesh.material.opacity = v;
   });
   document.getElementById('orto-toggle').addEventListener('change', e => {
     if (e.target.checked && orthoTex) {
