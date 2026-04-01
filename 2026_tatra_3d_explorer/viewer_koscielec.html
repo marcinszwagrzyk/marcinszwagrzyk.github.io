@@ -432,7 +432,7 @@ uniform sampler2D orthoTex;uniform float useOrtho;
       vec2 uv2=vUv;
       float fx=smoothstep(0.0,0.04,uv2.x)*smoothstep(1.0,0.96,uv2.x);
       float fy=smoothstep(0.0,0.04,uv2.y)*smoothstep(1.0,0.96,uv2.y);
-      float slopeFade=smoothstep(0.55,0.20,wallBlend);
+      float slopeFade=smoothstep(0.92,0.65,wallBlend);
       float blend=fx*fy*0.78*slopeFade;
       vec3 orthoSample=texture2D(orthoTex,clamp(uv2,0.001,0.999)).rgb;
       diffuseColor.rgb=mix(rockSample,orthoSample,blend);
