@@ -422,17 +422,15 @@ async function init() {
       cb(tex);
     });
   };
-  _loadTex('dem/zamarla_orto.jpg', tex => {
-    orthoTex = tex;
-    if (shaderUniforms) {
-      shaderUniforms.orthoTex.value = tex;
-      shaderUniforms.useOrtho.value = 1.0;  // włącz po załadowaniu (shader już skompilowany)
-    }
-  });
-  _loadTex('dem/zamarla_ortho.jpg', tex => {
-    orthoTex2 = tex;
-    if (shaderUniforms) shaderUniforms.orthoTex2.value = tex;
-  });
+  _loadTex('dem/zamarla_orto.jpg',  tex => { orthoTex  = tex; });
+  _loadTex('dem/zamarla_ortho.jpg', tex => { orthoTex2 = tex; });
+  (function waitOrtho() {
+    if (shaderUniforms && orthoTex) {
+      shaderUniforms.orthoTex.value  = orthoTex;
+      if (orthoTex2) shaderUniforms.orthoTex2.value = orthoTex2;
+      shaderUniforms.useOrtho.value  = 1.0;
+    } else { requestAnimationFrame(waitOrtho); }
+  })();
 
   // auto-load rysunki topo
   fetch('drawings.json?_=' + Date.now())

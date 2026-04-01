@@ -574,17 +574,16 @@ async function init() {
       cb(tex);
     });
   };
-  _loadTex('dem/zamarla_orto.jpg', tex => {
-    orthoTex = tex;
-    if (shaderUniforms) {
-      shaderUniforms.orthoTex.value = tex;
-      shaderUniforms.useOrtho.value = 1.0;
-    }
-  });
-  _loadTex('dem/zamarla_ortho.jpg', tex => {
-    orthoTex2 = tex;
-    if (shaderUniforms) shaderUniforms.orthoTex2.value = tex;
-  });
+  _loadTex('dem/zamarla_orto.jpg',  tex => { orthoTex  = tex; });
+  _loadTex('dem/zamarla_ortho.jpg', tex => { orthoTex2 = tex; });
+  // włącz ortofoto natychmiast gdy shader skompilowany + tekstura gotowa
+  (function waitOrtho() {
+    if (shaderUniforms && orthoTex) {
+      shaderUniforms.orthoTex.value  = orthoTex;
+      if (orthoTex2) shaderUniforms.orthoTex2.value = orthoTex2;
+      shaderUniforms.useOrtho.value  = 1.0;
+    } else { requestAnimationFrame(waitOrtho); }
+  })();
 
   document.getElementById('loading').style.display = 'none';
   document.getElementById('export-btn').style.display = 'block';
@@ -727,6 +726,7 @@ function makeMarkerMesh(pos, color) {
   const mat  = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.4, depthTest: false });
   const mesh = new THREE.Mesh(MARKER_GEO, mat);
   mesh.position.copy(pos);
+  mesh.visible = false;  // niewidoczna – tylko do raycasting w edit mode
   return mesh;
 }
 
@@ -1015,8 +1015,10 @@ function initDrawMode() {
       getMouse(e);
       raycaster.setFromCamera(_mouse, camera);
       // sprawdź markery
-      const markerMeshes = allMarkers.map(m => m.markerObj);
+      const markerMeshes = allMarkers.map(m => m.markerObj).filter(Boolean);
+      markerMeshes.forEach(m => m.visible = true);
       const mHit = raycaster.intersectObjects(markerMeshes);
+      markerMeshes.forEach(m => m.visible = false);
       if (mHit.length) {
         const idx = markerMeshes.indexOf(mHit[0].object);
         selectItem('point', idx); return;
