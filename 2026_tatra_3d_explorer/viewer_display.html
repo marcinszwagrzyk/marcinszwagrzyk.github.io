@@ -82,6 +82,14 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
       <span class="slider-toggle"></span>
     </label>
   </div>
+  <div class="sep">🏷 Etykiety</div>
+  <div class="toggle-row">
+    <span>Pokaż etykiety</span>
+    <label class="toggle">
+      <input type="checkbox" id="labels-toggle" checked>
+      <span class="slider-toggle"></span>
+    </label>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/suncalc@1.9.0/suncalc.min.js"></script>
@@ -288,17 +296,13 @@ function makeLabel(text, position, lColor, lSize) {
   const tex = new THREE.CanvasTexture(cv);
   const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true }));
   spr.position.copy(position);
+  spr.center.set(0.5, 0);  // anchor u dołu — tekst rośnie w górę, brak kółka
   const scale = lSize / 32;
   spr.scale.set((cv.width / 90) * 9 * scale, 9 * scale, 1);
   return spr;
 }
 
-function makeMarkerMesh(pos, color) {
-  const mat = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.4, depthTest: false });
-  const mesh = new THREE.Mesh(MARKER_GEO, mat);
-  mesh.position.copy(pos);
-  return mesh;
-}
+let allSprites = [];
 
 function loadDrawingsFromData(data) {
   (data.lines || []).forEach(ld => {
@@ -306,22 +310,19 @@ function loadDrawingsFromData(data) {
     for (let i = 0; i < ld.pts.length; i += 3)
       pts.push(new THREE.Vector3(ld.pts[i], ld.pts[i+1], ld.pts[i+2]));
     const geo = new THREE.BufferGeometry().setFromPoints(pts);
-    const lineObj = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: ld.color, depthTest: false }));
-    scene.add(lineObj);
+    scene.add(new THREE.Line(geo, new THREE.LineBasicMaterial({ color: ld.color, depthTest: false })));
     if (ld.label) {
       const lp = pts[Math.floor(pts.length/2)].clone(); lp.y += 5;
-      scene.add(makeLabel(ld.label, lp, ld.labelColor||ld.color, ld.labelSize||32));
+      const s = makeLabel(ld.label, lp, ld.labelColor||ld.color, ld.labelSize||32);
+      scene.add(s); allSprites.push(s);
     }
   });
   (data.markers || []).forEach(md => {
+    if (!md.label) return;  // brak etykiety — pomijamy całkowicie
     const pos = new THREE.Vector3(...md.pos);
-    if (!md.labelOnly) {
-      const m = makeMarkerMesh(pos, md.color); scene.add(m);
-    }
-    if (md.label) {
-      const lp = pos.clone(); lp.y += 6;
-      scene.add(makeLabel(md.label, lp, md.labelColor||md.color, md.labelSize||32));
-    }
+    const lp = pos.clone(); lp.y += 6;
+    const s = makeLabel(md.label, lp, md.labelColor||md.color, md.labelSize||32);
+    scene.add(s); allSprites.push(s);
   });
 }
 
@@ -445,6 +446,7 @@ async function init() {
   document.getElementById('date-in').addEventListener('input', updateSun);
   document.getElementById('hour-in').addEventListener('input', updateSun);
   document.getElementById('sun-toggle').addEventListener('change', e => { sunLight.visible = e.target.checked; });
+  document.getElementById('labels-toggle').addEventListener('change', e => { allSprites.forEach(s => s.visible = e.target.checked); });
   document.getElementById('orto-toggle').addEventListener('change', e => {
     if (!shaderUniforms) return;
     if (e.target.checked) {
