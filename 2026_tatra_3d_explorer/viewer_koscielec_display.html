@@ -247,12 +247,14 @@ uniform sampler2D orthoTex;uniform float useOrtho;
     float sA=rockScale*0.22;
     vec3 rA=texture2D(map,vWP.xy*sA).rgb*tpW.z+texture2D(map,vWP.xz*sA).rgb*tpW.y+texture2D(map,vWP.zy*sA).rgb*tpW.x;
     vec3 rB=texture2D(map,vWP.xy*rockScale).rgb*tpW.z+texture2D(map,vWP.xz*rockScale).rgb*tpW.y+texture2D(map,vWP.zy*rockScale).rgb*tpW.x;
-    vec3 rockSample=mix(2.0*rA*rB,1.0-2.0*(1.0-rA)*(1.0-rB),step(0.5,rA))*vec3(0.96,0.97,1.00);
+    vec3 rockSample=mix(2.0*rA*rB,1.0-2.0*(1.0-rA)*(1.0-rB),step(0.5,rA))*vec3(1.08,1.09,1.12);
+    rockSample=clamp(rockSample,0.0,1.0);
     if(useOrtho>0.5){
       vec2 uv2=vUv;
       float fx=smoothstep(0.0,0.04,uv2.x)*smoothstep(1.0,0.96,uv2.x);
       float fy=smoothstep(0.0,0.04,uv2.y)*smoothstep(1.0,0.96,uv2.y);
-      float blend=fx*fy*mix(0.65,0.80,1.0-wallBlend);
+      float slopeFade=smoothstep(0.85,0.45,wallBlend);
+      float blend=fx*fy*0.78*slopeFade;
       vec3 orthoSample=texture2D(orthoTex,clamp(uv2,0.001,0.999)).rgb;
       diffuseColor.rgb=mix(rockSample,orthoSample,blend);
     }else{
