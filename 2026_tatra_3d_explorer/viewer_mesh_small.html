@@ -848,7 +848,7 @@ function loadDrawingsFromData(data) {
     const pos = new THREE.Vector3(...md.pos);
     const markerObj = makeMarkerMesh(pos, md.color);
     const isLabelOnly = !md.label || md.labelOnly;
-    markerObj.visible = !isLabelOnly;
+    markerObj.visible = false;
     scene.add(markerObj);
     let labelSprite = null;
     if (md.label) {
