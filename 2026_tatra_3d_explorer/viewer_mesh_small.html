@@ -590,6 +590,7 @@ async function init() {
   document.getElementById('load-btn').addEventListener('click', () => document.getElementById('file-input').click());
   document.getElementById('file-input').addEventListener('change', onFileSelected);
   initUI();
+  autoLoadDrawings();
 
   window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth/window.innerHeight;
@@ -740,12 +741,14 @@ function finishLine() {
   const lineObj = currentLineObj;
   currentLineObj = null; currentPts = [];
   allLines.push({ pts: lineObj.geometry.attributes.position.array.slice(), lineObj, labelSprite: null, color: drawColor, label: '', labelColor, labelSize });
+  autoSave();
 }
 
 function addMarker(pos) {
   const markerObj = makeMarkerMesh(pos, drawColor);
   scene.add(markerObj);
   allMarkers.push({ pos: pos.toArray(), markerObj, labelSprite: null, color: drawColor, label: '', labelColor, labelSize });
+  autoSave();
 }
 
 // ── zaznaczanie (edit) ────────────────────────────────────────────────────────
@@ -778,6 +781,7 @@ function deleteSelected() {
     allMarkers.splice(selected.idx, 1);
   }
   clearSelection();
+  autoSave();
 }
 
 function renameSelected() {
@@ -799,70 +803,83 @@ function renameSelected() {
     scene.add(item.labelSprite);
   }
   selectItem(selected.type, selected.idx);
+  autoSave();
 }
 
 // ── eksport / import ──────────────────────────────────────────────────────────
-function exportDrawings() {
-  const data = {
+const DRAWINGS_LS_KEY = 'zamarla_topo_drawings';
+
+function getDrawingsData() {
+  return {
     version: 1,
-    lines: allLines.map(l => ({
-      pts:   Array.from(l.pts),
-      color: l.color,
-      label: l.label
-    })),
-    markers: allMarkers.map(m => ({
-      pos:   m.pos,
-      color: m.color,
-      label: m.label
-    }))
+    lines: allLines.map(l => ({ pts: Array.from(l.pts), color: l.color, label: l.label, labelColor: l.labelColor||'#ffffff', labelSize: l.labelSize||32 })),
+    markers: allMarkers.map(m => ({ pos: m.pos, color: m.color, label: m.label, labelColor: m.labelColor||'#ffffff', labelSize: m.labelSize||32 }))
   };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+}
+
+function autoSave() {
+  try { localStorage.setItem(DRAWINGS_LS_KEY, JSON.stringify(getDrawingsData())); } catch(_) {}
+}
+
+function loadDrawingsFromData(data) {
+  allLines.forEach(l => { scene.remove(l.lineObj); if (l.labelSprite) scene.remove(l.labelSprite); });
+  allMarkers.forEach(m => { scene.remove(m.markerObj); if (m.labelSprite) scene.remove(m.labelSprite); });
+  allLines = []; allMarkers = [];
+  (data.lines || []).forEach(ld => {
+    const pts = [];
+    for (let i = 0; i < ld.pts.length; i += 3)
+      pts.push(new THREE.Vector3(ld.pts[i], ld.pts[i+1], ld.pts[i+2]));
+    const geo = new THREE.BufferGeometry().setFromPoints(pts);
+    const lineObj = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: ld.color, depthTest: false }));
+    scene.add(lineObj);
+    let labelSprite = null;
+    if (ld.label) {
+      const lp = pts[Math.floor(pts.length/2)].clone(); lp.y += 5;
+      labelSprite = makeLabel(ld.label, lp, ld.labelColor||ld.color, ld.labelSize||32);
+      scene.add(labelSprite);
+    }
+    allLines.push({ pts: new Float32Array(ld.pts), lineObj, labelSprite, color: ld.color, label: ld.label||'', labelColor: ld.labelColor||'#ffffff', labelSize: ld.labelSize||32 });
+  });
+  (data.markers || []).forEach(md => {
+    const pos = new THREE.Vector3(...md.pos);
+    const markerObj = makeMarkerMesh(pos, md.color);
+    const isLabelOnly = !md.label || md.labelOnly;
+    markerObj.visible = !isLabelOnly;
+    scene.add(markerObj);
+    let labelSprite = null;
+    if (md.label) {
+      const lp = pos.clone(); lp.y += 6;
+      labelSprite = makeLabel(md.label, lp, md.labelColor||md.color, md.labelSize||32);
+      scene.add(labelSprite);
+    }
+    allMarkers.push({ pos: md.pos, markerObj, labelSprite, color: md.color, label: md.label||'', labelColor: md.labelColor||'#ffffff', labelSize: md.labelSize||32, labelOnly: isLabelOnly });
+  });
+}
+
+function exportDrawings() {
+  const blob = new Blob([JSON.stringify(getDrawingsData(), null, 2)], { type: 'application/json' });
   const url  = URL.createObjectURL(blob);
-  Object.assign(document.createElement('a'), { href: url, download: 'zamarla_topo.json' }).click();
+  Object.assign(document.createElement('a'), { href: url, download: 'drawings.json' }).click();
   URL.revokeObjectURL(url);
 }
 
 function importDrawings(file) {
   const reader = new FileReader();
   reader.onload = ev => {
-    try {
-      const data = JSON.parse(ev.target.result);
-      // wyczyść obecne
-      allLines.forEach(l => { scene.remove(l.lineObj); if (l.labelSprite) scene.remove(l.labelSprite); });
-      allMarkers.forEach(m => { scene.remove(m.markerObj); if (m.labelSprite) scene.remove(m.labelSprite); });
-      allLines = []; allMarkers = [];
-
-      (data.lines || []).forEach(ld => {
-        const pts = [];
-        for (let i = 0; i < ld.pts.length; i += 3)
-          pts.push(new THREE.Vector3(ld.pts[i], ld.pts[i+1], ld.pts[i+2]));
-        const geo = new THREE.BufferGeometry().setFromPoints(pts);
-        const lineObj = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: ld.color, depthTest: false }));
-        scene.add(lineObj);
-        let labelSprite = null;
-        if (ld.label) {
-          const lp = pts[pts.length-1].clone(); lp.y += 4;
-          labelSprite = makeLabel(ld.label, lp, ld.color);
-          scene.add(labelSprite);
-        }
-        allLines.push({ pts: new Float32Array(ld.pts), lineObj, labelSprite, color: ld.color, label: ld.label });
-      });
-
-      (data.markers || []).forEach(md => {
-        const pos = new THREE.Vector3(...md.pos);
-        const markerObj = makeMarkerMesh(pos, md.color);
-        scene.add(markerObj);
-        let labelSprite = null;
-        if (md.label) {
-          const lp = pos.clone(); lp.y += 6;
-          labelSprite = makeLabel(md.label, lp, md.color);
-          scene.add(labelSprite);
-        }
-        allMarkers.push({ pos: md.pos, markerObj, labelSprite, color: md.color, label: md.label });
-      });
-    } catch(err) { alert('Błąd wczytywania: ' + err.message); }
+    try { loadDrawingsFromData(JSON.parse(ev.target.result)); autoSave(); }
+    catch(err) { alert('Błąd wczytywania: ' + err.message); }
   };
   reader.readAsText(file);
+}
+
+function autoLoadDrawings() {
+  fetch('drawings.json?_=' + Date.now())
+    .then(r => { if (!r.ok) throw new Error('brak'); return r.json(); })
+    .then(data => { loadDrawingsFromData(data); })
+    .catch(() => {
+      const saved = localStorage.getItem(DRAWINGS_LS_KEY);
+      if (saved) try { loadDrawingsFromData(JSON.parse(saved)); } catch(_) {}
+    });
 }
 
 // ── inicjalizacja UI rysowania ────────────────────────────────────────────────
@@ -933,6 +950,7 @@ function initDrawMode() {
     item.labelSprite = makeLabel(name.trim(), pos, labelColor, labelSize);
     scene.add(item.labelSprite);
     selectItem(selected.type, selected.idx);
+    autoSave();
   });
 
   document.getElementById('rename-btn').addEventListener('click', renameSelected);
@@ -942,7 +960,7 @@ function initDrawMode() {
     if (!confirm('Wyczyścić wszystkie linie i punkty?')) return;
     allLines.forEach(l => { scene.remove(l.lineObj); if (l.labelSprite) scene.remove(l.labelSprite); });
     allMarkers.forEach(m => { scene.remove(m.markerObj); if (m.labelSprite) scene.remove(m.labelSprite); });
-    allLines = []; allMarkers = []; currentPts = []; rebuildPreviewLine(); clearSelection();
+    allLines = []; allMarkers = []; currentPts = []; rebuildPreviewLine(); clearSelection(); autoSave();
   });
 
   document.getElementById('export-draw-btn').addEventListener('click', exportDrawings);
@@ -991,7 +1009,8 @@ function initDrawMode() {
       const markerObj = makeMarkerMesh(pt, labelColor);
       markerObj.visible = false;
       scene.add(markerObj);
-      allMarkers.push({ pos: pt.toArray(), markerObj, labelSprite: sprite, color: labelColor, label: txt.trim(), labelColor, labelSize });
+      allMarkers.push({ pos: pt.toArray(), markerObj, labelSprite: sprite, color: labelColor, label: txt.trim(), labelColor, labelSize, labelOnly: true });
+      autoSave();
 
     } else if (drawTool === 'edit') {
       getMouse(e);
