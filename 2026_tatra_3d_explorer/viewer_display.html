@@ -78,7 +78,7 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
   <div class="toggle-row">
     <span>Ortofoto</span>
     <label class="toggle">
-      <input type="checkbox" id="orto-toggle">
+      <input type="checkbox" id="orto-toggle" checked>
       <span class="slider-toggle"></span>
     </label>
   </div>
@@ -440,6 +440,12 @@ async function init() {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('ui').style.display = 'block';
 
+  // ortofoto domyślnie włączone
+  if (shaderUniforms) {
+    if (orthoTex)  shaderUniforms.orthoTex.value  = orthoTex;
+    if (orthoTex2) shaderUniforms.orthoTex2.value = orthoTex2;
+    shaderUniforms.useOrtho.value = 1.0;
+  }
   document.getElementById('date-in').value = new Date().toISOString().split('T')[0];
   updateSun();
   document.getElementById('date-in').addEventListener('input', updateSun);

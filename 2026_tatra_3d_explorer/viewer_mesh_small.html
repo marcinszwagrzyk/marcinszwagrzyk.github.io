@@ -176,7 +176,7 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
   <div class="toggle-row">
     <span>Ortofoto</span>
     <label class="toggle">
-      <input type="checkbox" id="orto-toggle">
+      <input type="checkbox" id="orto-toggle" checked>
       <span class="slider-toggle"></span>
     </label>
   </div>
@@ -653,6 +653,12 @@ function initUI() {
     }
   });
   document.getElementById('ui').style.display = 'block';
+  // ortofoto domyślnie włączone
+  if (shaderUniforms) {
+    if (orthoTex)  shaderUniforms.orthoTex.value  = orthoTex;
+    if (orthoTex2) shaderUniforms.orthoTex2.value = orthoTex2;
+    shaderUniforms.useOrtho.value = 1.0;
+  }
   initDrawMode();
 }
 
@@ -777,7 +783,7 @@ function deleteSelected() {
     allLines.splice(selected.idx, 1);
   } else {
     const { markerObj, labelSprite } = allMarkers[selected.idx];
-    scene.remove(markerObj); if (labelSprite) scene.remove(labelSprite);
+    if (markerObj) scene.remove(markerObj); if (labelSprite) scene.remove(labelSprite);
     allMarkers.splice(selected.idx, 1);
   }
   clearSelection();
@@ -1005,11 +1011,7 @@ function initDrawMode() {
       if (!txt || !txt.trim()) return;
       const sprite = makeLabel(txt.trim(), pt, labelColor, labelSize);
       scene.add(sprite);
-      // Zapisz jako pseudo-marker z etykietą (do eksportu/edycji)
-      const markerObj = makeMarkerMesh(pt, labelColor);
-      markerObj.visible = false;
-      scene.add(markerObj);
-      allMarkers.push({ pos: pt.toArray(), markerObj, labelSprite: sprite, color: labelColor, label: txt.trim(), labelColor, labelSize, labelOnly: true });
+      allMarkers.push({ pos: pt.toArray(), markerObj: null, labelSprite: sprite, color: labelColor, label: txt.trim(), labelColor, labelSize, labelOnly: true });
       autoSave();
 
     } else if (drawTool === 'edit') {
