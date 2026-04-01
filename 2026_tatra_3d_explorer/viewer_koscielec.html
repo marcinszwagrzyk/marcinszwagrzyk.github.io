@@ -451,12 +451,17 @@ uniform sampler2D orthoTex;uniform float useOrtho;
       _h=dot(texture2D(map,vWP.zy*rockScale).rgb,_L);
       vec3 _bZY=vec3(0.0,_h-dot(texture2D(map,(vWP.zy+vec2(0,_bE))*rockScale).rgb,_L),_h-dot(texture2D(map,(vWP.zy+vec2(_bE,0))*rockScale).rgb,_L));
       vec3 fineBump=(_bXY*tpW.z+_bXZ*tpW.y+_bZY*tpW.x)*_bS;
-      // coarse ledge bump (~10-20m horizontal bands) — gives overhang impression
-      float _cSc=0.008;float _cE=_cSc*0.90;float _cStr=wallBlend*6.0;
-      float _ch=dot(texture2D(map,vWP.xz*_cSc).rgb,_L);
-      vec3 coarseBump=vec3(_ch-dot(texture2D(map,(vWP.xz+vec2(_cE,0))*_cSc).rgb,_L),0.0,_ch-dot(texture2D(map,(vWP.xz+vec2(0,_cE))*_cSc).rgb,_L))*tpW.y*_cStr;
-      _ch=dot(texture2D(map,vWP.zy*_cSc).rgb,_L);
-      coarseBump+=vec3(0.0,_ch-dot(texture2D(map,(vWP.zy+vec2(0,_cE))*_cSc).rgb,_L),_ch-dot(texture2D(map,(vWP.zy+vec2(_cE,0))*_cSc).rgb,_L))*tpW.x*_cStr;
+      // radial rib bump — ribs running downward from summit (approx peak at xz=0,-80)
+      float _cSc=0.008;float _cStr=wallBlend*6.0;
+      vec2 _cen=vec2(0.0,-80.0);
+      vec2 _toP=normalize(vWP.xz-_cen+vec2(0.0001,0.0));
+      vec2 _perp=vec2(-_toP.y,_toP.x);
+      vec2 _rUV=vec2(dot(vWP.xz-_cen,_perp),vWP.y)*_cSc;
+      float _cE=0.012;
+      float _ch=dot(texture2D(map,_rUV).rgb,_L);
+      float _dhr=_ch-dot(texture2D(map,_rUV+vec2(_cE,0.0)).rgb,_L);
+      float _dhy=_ch-dot(texture2D(map,_rUV+vec2(0.0,_cE)).rgb,_L);
+      vec3 coarseBump=vec3(_toP.x*_dhr,_dhy,_toP.y*_dhr)*_cStr*(tpW.y+tpW.x);
       normal=normalize(normal+mat3(viewMatrix)*(fineBump+coarseBump));}
     `);
     shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>
