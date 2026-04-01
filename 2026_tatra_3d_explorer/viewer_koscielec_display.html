@@ -262,14 +262,21 @@ uniform sampler2D orthoTex;uniform float useOrtho;
     }
     `);
     shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
-    if(wallBlend>0.01){vec3 _L=vec3(0.299,0.587,0.114);float _bE=rockScale*0.90;float _bS=wallBlend*1.2;
+    if(wallBlend>0.01){vec3 _L=vec3(0.299,0.587,0.114);
+      float _bE=rockScale*0.90;float _bS=wallBlend*4.5;
       float _h=dot(texture2D(map,vWP.xy*rockScale).rgb,_L);
       vec3 _bXY=vec3(_h-dot(texture2D(map,(vWP.xy+vec2(_bE,0))*rockScale).rgb,_L),_h-dot(texture2D(map,(vWP.xy+vec2(0,_bE))*rockScale).rgb,_L),0.0);
       _h=dot(texture2D(map,vWP.xz*rockScale).rgb,_L);
       vec3 _bXZ=vec3(_h-dot(texture2D(map,(vWP.xz+vec2(_bE,0))*rockScale).rgb,_L),0.0,_h-dot(texture2D(map,(vWP.xz+vec2(0,_bE))*rockScale).rgb,_L));
       _h=dot(texture2D(map,vWP.zy*rockScale).rgb,_L);
       vec3 _bZY=vec3(0.0,_h-dot(texture2D(map,(vWP.zy+vec2(0,_bE))*rockScale).rgb,_L),_h-dot(texture2D(map,(vWP.zy+vec2(_bE,0))*rockScale).rgb,_L));
-      normal=normalize(normal+mat3(viewMatrix)*(_bXY*tpW.z+_bXZ*tpW.y+_bZY*tpW.x)*_bS);}
+      vec3 fineBump=(_bXY*tpW.z+_bXZ*tpW.y+_bZY*tpW.x)*_bS;
+      float _cSc=0.008;float _cE=_cSc*0.90;float _cStr=wallBlend*6.0;
+      float _ch=dot(texture2D(map,vWP.xz*_cSc).rgb,_L);
+      vec3 coarseBump=vec3(_ch-dot(texture2D(map,(vWP.xz+vec2(_cE,0))*_cSc).rgb,_L),0.0,_ch-dot(texture2D(map,(vWP.xz+vec2(0,_cE))*_cSc).rgb,_L))*tpW.y*_cStr;
+      _ch=dot(texture2D(map,vWP.zy*_cSc).rgb,_L);
+      coarseBump+=vec3(0.0,_ch-dot(texture2D(map,(vWP.zy+vec2(0,_cE))*_cSc).rgb,_L),_ch-dot(texture2D(map,(vWP.zy+vec2(_cE,0))*_cSc).rgb,_L))*tpW.x*_cStr;
+      normal=normalize(normal+mat3(viewMatrix)*(fineBump+coarseBump));}
     `);
     shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>
     roughnessFactor=clamp(roughnessFactor*(0.70+0.20*abs(vWN.y)),0.52,0.82);`);
