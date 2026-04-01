@@ -424,7 +424,10 @@ async function init() {
   };
   _loadTex('dem/zamarla_orto.jpg', tex => {
     orthoTex = tex;
-    if (shaderUniforms) shaderUniforms.orthoTex.value = tex;
+    if (shaderUniforms) {
+      shaderUniforms.orthoTex.value = tex;
+      shaderUniforms.useOrtho.value = 1.0;  // włącz po załadowaniu (shader już skompilowany)
+    }
   });
   _loadTex('dem/zamarla_ortho.jpg', tex => {
     orthoTex2 = tex;
@@ -439,13 +442,6 @@ async function init() {
 
   document.getElementById('loading').style.display = 'none';
   document.getElementById('ui').style.display = 'block';
-
-  // ortofoto domyślnie włączone
-  if (shaderUniforms) {
-    if (orthoTex)  shaderUniforms.orthoTex.value  = orthoTex;
-    if (orthoTex2) shaderUniforms.orthoTex2.value = orthoTex2;
-    shaderUniforms.useOrtho.value = 1.0;
-  }
   document.getElementById('date-in').value = new Date().toISOString().split('T')[0];
   updateSun();
   document.getElementById('date-in').addEventListener('input', updateSun);
