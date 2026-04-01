@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/git/**)",
+      "Read(//c/git//**)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(python -c \":*)",
+      "Bash(python3 -c \":*)",
+      "Bash(py -3 -c \":*)",
+      "Bash(where python:*)",
+      "Bash(where python3:*)",
+      "Read(//c/Users/marci/AppData/Local/Programs/**)",
+      "Read(//c/ProgramData/miniconda3/**)",
+      "Read(//c/ProgramData/anaconda3/**)",
+      "Read(//c/Users/marci/anaconda3/**)",
+      "Read(//c/Users/marci/miniconda3/**)",
+      "Read(//c/Users/marci/AppData/Local/conda//**)",
+      "Read(//c/Users/marci/**)",
+      "Bash(/c/Users/marci/anaconda3/envs/geo-toolbox/python.exe -c \":*)",
+      "Bash(/c/Users/marci/anaconda3/envs/geo-toolbox/python.exe gpkg_to_json.py)",
+      "Bash(ls /c/git/marcinszwagrzyk.github.io/*.jpg /c/git/marcinszwagrzyk.github.io/*.png /c/git/marcinszwagrzyk.github.io/*.jpeg)"
+    ]
+  }
+}
