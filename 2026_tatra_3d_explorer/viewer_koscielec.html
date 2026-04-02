@@ -400,9 +400,20 @@ function makeRockMaterial(rockTex) {
     shader.uniforms.useOrtho  = { value: 0.0 };
     shaderUniforms = shader.uniforms;
     shader.vertexShader =
-      `attribute float aSteep;\nattribute float aSteepM;\nattribute float aRidge;\n` +
+      `float _h21v(vec2 p){p=fract(p*vec2(127.1,311.7));p+=dot(p,p+74.17);return fract(p.x*p.y);}
+float _vn2v(vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.0-2.0*f);return mix(mix(_h21v(i),_h21v(i+vec2(1,0)),u.x),mix(_h21v(i+vec2(0,1)),_h21v(i+vec2(1,1)),u.x),u.y);}
+attribute float aSteep;\nattribute float aSteepM;\nattribute float aRidge;\n` +
       `varying vec3 vWN;\nvarying vec3 vWP;\nvarying float vSteep;\nvarying float vSteepM;\nvarying float vRidge;\n`
       + shader.vertexShader;
+    shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>',
+      `#include <begin_vertex>
+      vec3 _wnW=normalize(mat3(modelMatrix)*objectNormal);
+      float _wFace=max(0.0,-_wnW.x);
+      float _steep0=clamp(1.0-abs(_wnW.y)*1.2,0.0,1.0);
+      float _wStr=_wFace*_steep0*_steep0;
+      float _dN=(_vn2v(position.xz*0.019)*0.5+_vn2v(position.xz*0.043)*0.3+_vn2v(position.xz*0.091)*0.2)-0.38;
+      transformed.x+=_wnW.x*_dN*_wStr*32.0;
+      transformed.y+=abs(_dN)*_wStr*14.0;`);
     shader.vertexShader = shader.vertexShader.replace('#include <worldpos_vertex>',
       `#include <worldpos_vertex>
       vWN=normalize(mat3(modelMatrix)*objectNormal);vWP=(modelMatrix*vec4(transformed,1.0)).xyz;
@@ -423,8 +434,10 @@ uniform sampler2D orthoTex;uniform float useOrtho;
     float edgeFactor=clamp((vSteepM-vSteep-0.06)*6.0,0.0,1.0);
     float wallBlend=clamp(mix(blendSmooth,blendSharp,edgeFactor),0.0,1.0);
     float sA=rockScale*0.22;
-    vec3 rA=texture2D(map,vWP.xy*sA).rgb*tpW.z+texture2D(map,vWP.xz*sA).rgb*tpW.y+texture2D(map,vWP.zy*sA).rgb*tpW.x;
-    vec3 rB=texture2D(map,vWP.xy*rockScale).rgb*tpW.z+texture2D(map,vWP.xz*rockScale).rgb*tpW.y+texture2D(map,vWP.zy*rockScale).rgb*tpW.x;
+    // anti-tiling offset for ZY projection (west wall) — breaks horizontal stripe repetition
+    vec2 _zyOff=vec2(_fbm2(vWP.xz*0.0013)*0.42-0.21, _fbm2(vWP.xz*0.0019+vec2(7.3,2.1))*0.42-0.21);
+    vec3 rA=texture2D(map,vWP.xy*sA).rgb*tpW.z+texture2D(map,vWP.xz*sA).rgb*tpW.y+texture2D(map,(vWP.zy+_zyOff)*sA).rgb*tpW.x;
+    vec3 rB=texture2D(map,vWP.xy*rockScale).rgb*tpW.z+texture2D(map,vWP.xz*rockScale).rgb*tpW.y+texture2D(map,(vWP.zy+_zyOff)*rockScale).rgb*tpW.x;
     // Jaśniejsza skała dla Kościelca
     vec3 rockSample=mix(2.0*rA*rB,1.0-2.0*(1.0-rA)*(1.0-rB),step(0.5,rA))*vec3(1.08,1.09,1.12);
     rockSample=clamp(rockSample,0.0,1.0);
@@ -432,8 +445,8 @@ uniform sampler2D orthoTex;uniform float useOrtho;
       vec2 uv2=vUv;
       float fx=smoothstep(0.0,0.04,uv2.x)*smoothstep(1.0,0.96,uv2.x);
       float fy=smoothstep(0.0,0.04,uv2.y)*smoothstep(1.0,0.96,uv2.y);
-      float slopeFade=smoothstep(0.95,0.72,wallBlend);
-      float blend=fx*fy*0.90*slopeFade;
+      float slopeFade=smoothstep(0.97,0.78,wallBlend);
+      float blend=fx*fy*0.95*slopeFade;
       vec3 orthoSample=texture2D(orthoTex,clamp(uv2,0.001,0.999)).rgb;
       diffuseColor.rgb=mix(rockSample,orthoSample,blend);
     }else{
@@ -448,8 +461,8 @@ uniform sampler2D orthoTex;uniform float useOrtho;
       vec3 _bXY=vec3(_h-dot(texture2D(map,(vWP.xy+vec2(_bE,0))*rockScale).rgb,_L),_h-dot(texture2D(map,(vWP.xy+vec2(0,_bE))*rockScale).rgb,_L),0.0);
       _h=dot(texture2D(map,vWP.xz*rockScale).rgb,_L);
       vec3 _bXZ=vec3(_h-dot(texture2D(map,(vWP.xz+vec2(_bE,0))*rockScale).rgb,_L),0.0,_h-dot(texture2D(map,(vWP.xz+vec2(0,_bE))*rockScale).rgb,_L));
-      _h=dot(texture2D(map,vWP.zy*rockScale).rgb,_L);
-      vec3 _bZY=vec3(0.0,_h-dot(texture2D(map,(vWP.zy+vec2(0,_bE))*rockScale).rgb,_L),_h-dot(texture2D(map,(vWP.zy+vec2(_bE,0))*rockScale).rgb,_L));
+      _h=dot(texture2D(map,(vWP.zy+_zyOff)*rockScale).rgb,_L);
+      vec3 _bZY=vec3(0.0,_h-dot(texture2D(map,(vWP.zy+_zyOff+vec2(0,_bE))*rockScale).rgb,_L),_h-dot(texture2D(map,(vWP.zy+_zyOff+vec2(_bE,0))*rockScale).rgb,_L));
       vec3 fineBump=(_bXY*tpW.z+_bXZ*tpW.y+_bZY*tpW.x)*_bS;
       normal=normalize(normal+mat3(viewMatrix)*fineBump);}
     `);
