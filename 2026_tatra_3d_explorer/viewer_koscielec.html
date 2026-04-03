@@ -437,9 +437,16 @@ attribute float aSteep;\nattribute float aSteepM;\nattribute float aRidge;\n` +
       float _wFace=max(0.0,-_wnW.x);
       float _steep0=clamp(1.0-abs(_wnW.y)*1.2,0.0,1.0);
       float _wStr=_wFace*_steep0*_steep0;
-      float _dN=(_vn2v(position.xz*0.019)*0.5+_vn2v(position.xz*0.043)*0.3+_vn2v(position.xz*0.091)*0.2)-0.38;
-      transformed.x+=_wnW.x*_dN*_wStr*32.0;
-      transformed.y+=abs(_dN)*_wStr*14.0;`);
+      // structural base — sweeping low-freq form
+      float _dBase=(_vn2v(position.xz*0.010)*0.52+_vn2v(position.xz*0.023)*0.30+_vn2v(position.xz*0.051)*0.18)-0.46;
+      // horizontal ledge banding — sharpened sine on elevation → defined gzymsy
+      float _ledge=sin(position.y*0.26+(_vn2v(position.xz*0.013)-0.5)*3.0);
+      _ledge=pow(max(0.0,_ledge),2.4)*0.60-0.10;
+      // fine surface irregularity
+      float _dFine=(_vn2v(position.xz*0.082)*0.55+_vn2v(position.xz*0.165)*0.45)-0.38;
+      float _dN=_dBase*0.52+_ledge*0.38+_dFine*0.10;
+      transformed.x+=_wnW.x*_dN*_wStr*36.0;
+      transformed.y+=max(0.0,_dN)*_wStr*11.0;`);
     shader.vertexShader = shader.vertexShader.replace('#include <worldpos_vertex>',
       `#include <worldpos_vertex>
       vWN=normalize(mat3(modelMatrix)*objectNormal);vWP=(modelMatrix*vec4(transformed,1.0)).xyz;
