@@ -497,10 +497,10 @@ uniform sampler2D rockMaskTex;
     }else{
       diffuseColor.rgb=rockSample;
     }
-    // wet rock: darken + cool tint
+    // wet rock: darken only where rock texture dominates
     if(wetRock>0.0){
-      float _wStr=wetRock*mix(0.85,1.0,wallBlend*0.6); // stronger on walls
-      diffuseColor.rgb=mix(diffuseColor.rgb, diffuseColor.rgb*vec3(0.58,0.60,0.65), _wStr);
+      float _wStr=wetRock*wallBlend;
+      diffuseColor.rgb=mix(diffuseColor.rgb, diffuseColor.rgb*vec3(0.67,0.68,0.70), _wStr);
     }
     `);
     shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
@@ -518,7 +518,7 @@ uniform sampler2D rockMaskTex;
     `);
     shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>
     roughnessFactor=clamp(roughnessFactor*(0.70+0.20*abs(vWN.y)),0.52,0.82);
-    roughnessFactor=mix(roughnessFactor, 0.13, wetRock);`);
+    roughnessFactor=mix(roughnessFactor, 0.28, wetRock*wallBlend);`);
   };
   return mat;
 }
