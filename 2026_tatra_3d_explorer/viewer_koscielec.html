@@ -422,10 +422,10 @@ function makeRockTexture() {
     const lR=0.35+b*0.10, lG=0.40+b*0.10, lB=0.26+b*0.08;
     // szpat skaleniowy: ciepłe jasne wtrącenia w środku jasnych kryształów
     const feld=Math.max(0,b-0.55)*0.45;
-    // mieszanie: skała brązowo-czarna + porost
-    const pr=b*(0.96+feld*0.04)*(1-lichenAmt*0.85)+lR*lichenAmt*0.85 - biot*0.06;
-    const pg=b*(0.72)          *(1-lichenAmt*0.85)+lG*lichenAmt*0.85 - biot*0.05;
-    const pb=b*(0.50-feld*0.04)*(1-lichenAmt*0.85)+lB*lichenAmt*0.85 - biot*0.04;
+    // mieszanie: skała czarno-szara, delikatny brąz
+    const pr=b*(0.93+feld*0.04)*(1-lichenAmt*0.85)+lR*lichenAmt*0.85 - biot*0.06;
+    const pg=b*(0.86)          *(1-lichenAmt*0.85)+lG*lichenAmt*0.85 - biot*0.05;
+    const pb=b*(0.79-feld*0.04)*(1-lichenAmt*0.85)+lB*lichenAmt*0.85 - biot*0.04;
     pix[ii]=Math.min(255,Math.max(0,pr*255));
     pix[ii+1]=Math.min(255,Math.max(0,pg*255));
     pix[ii+2]=Math.min(255,Math.max(0,pb*255));
@@ -502,11 +502,11 @@ uniform sampler2D rockMaskTex;
     vec2 _zyOff=vec2(_fbm2(vWP.xz*0.0013)*0.42-0.21, _fbm2(vWP.xz*0.0019+vec2(7.3,2.1))*0.42-0.21);
     vec3 rA=texture2D(map,vWP.xy*sA).rgb*tpW.z+texture2D(map,vWP.xz*sA).rgb*tpW.y+texture2D(map,(vWP.zy+_zyOff)*sA).rgb*tpW.x;
     vec3 rB=texture2D(map,vWP.xy*rockScale).rgb*tpW.z+texture2D(map,vWP.xz*rockScale).rgb*tpW.y+texture2D(map,(vWP.zy+_zyOff)*rockScale).rgb*tpW.x;
-    // Granit Kościelca — brązowo-czarny, mocna domieszka brązu
-    vec3 rockSample=mix(2.0*rA*rB,1.0-2.0*(1.0-rA)*(1.0-rB),step(0.5,rA))*vec3(1.04,0.82,0.60);
+    // Granit Kościelca — czarno-szary, lekka domieszka brązu
+    vec3 rockSample=mix(2.0*rA*rB,1.0-2.0*(1.0-rA)*(1.0-rB),step(0.5,rA))*vec3(0.98,0.91,0.84);
     float _lum=dot(rockSample,vec3(0.299,0.587,0.114));
-    // ciepły akcent w jaśniejszych partiach → rdzawy brąz
-    rockSample=mix(rockSample, rockSample*vec3(1.08,0.96,0.80), smoothstep(0.30,0.60,_lum)*0.45);
+    // subtelny ciepły akcent w jaśniejszych partiach
+    rockSample=mix(rockSample, rockSample*vec3(1.02,0.99,0.94), smoothstep(0.30,0.60,_lum)*0.45);
     // ciemne biotytowe spekle w ciemniejszych partiach
     rockSample=mix(rockSample, rockSample*vec3(0.88,0.87,0.86), smoothstep(0.30,0.10,_lum)*0.40);
     rockSample=clamp(rockSample,0.0,1.0);
