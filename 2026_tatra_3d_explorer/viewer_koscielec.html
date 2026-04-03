@@ -508,7 +508,7 @@ uniform sampler2D rockMaskTex;
     `);
     shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>
     roughnessFactor=clamp(roughnessFactor*(0.70+0.20*abs(vWN.y)),0.52,0.82);
-    roughnessFactor=mix(roughnessFactor, 0.38, smoothstep(0.55,0.90,wallBlend)*0.55);`);
+    roughnessFactor=mix(roughnessFactor, 0.34, smoothstep(0.55,0.90,wallBlend)*0.55);`);
   };
   return mat;
 }
