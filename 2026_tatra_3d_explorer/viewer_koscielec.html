@@ -470,9 +470,9 @@ uniform sampler2D rockMaskTex;
       vec2 uv2=vUv;
       float fx=smoothstep(0.0,0.04,uv2.x)*smoothstep(1.0,0.96,uv2.x);
       float fy=smoothstep(0.0,0.04,uv2.y)*smoothstep(1.0,0.96,uv2.y);
-      float slopeFade=mix(mix(0.3,1.0,smoothstep(0.97,0.60,wallBlend)),1.0,fullOrtho);
+      float slopeFade=mix(mix(0.40,1.0,smoothstep(0.97,0.60,wallBlend)),1.0,fullOrtho);
       float maskRock=texture2D(rockMaskTex,clamp(uv2,0.001,0.999)).r*(1.0-fullOrtho);
-      float blend=fx*fy*0.95*slopeFade*(1.0-maskRock*0.65);
+      float blend=fx*fy*0.95*slopeFade*(1.0-maskRock*0.45);
       vec3 orthoSample=texture2D(orthoTex,clamp(uv2,0.001,0.999)).rgb;
       diffuseColor.rgb=mix(rockSample,orthoSample,blend);
     }else{
