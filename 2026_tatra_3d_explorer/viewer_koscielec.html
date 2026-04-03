@@ -189,6 +189,15 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
     </label>
   </div>
 
+  <div class="sep">🌧 Warunki</div>
+  <div class="toggle-row">
+    <span>Mokra skała (po opadach)</span>
+    <label class="toggle">
+      <input type="checkbox" id="wet-rock-toggle">
+      <span class="slider-toggle"></span>
+    </label>
+  </div>
+
   <div class="sep">🗺 Ortofoto GUGiK</div>
   <div class="toggle-row">
     <span>Ortofoto</span>
@@ -423,6 +432,7 @@ function makeRockMaterial(rockTex) {
     shader.uniforms.orthoTex     = { value: null };
     shader.uniforms.useOrtho     = { value: 0.0 };
     shader.uniforms.fullOrtho    = { value: 0.0 };
+    shader.uniforms.wetRock      = { value: 0.0 };
     shader.uniforms.rockMaskTex  = { value: null };
     shaderUniforms = shader.uniforms;
     shader.vertexShader =
@@ -457,7 +467,7 @@ uniform float rockScale;uniform float uShowRidge;
 float _h21(vec2 p){p=fract(p*vec2(234.34,435.345));p+=dot(p,p+34.23);return fract(p.x*p.y);}
 float _vn2(vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.0-2.0*f);return mix(mix(_h21(i),_h21(i+vec2(1,0)),u.x),mix(_h21(i+vec2(0,1)),_h21(i+vec2(1,1)),u.x),u.y);}
 float _fbm2(vec2 p){return 0.533*(_vn2(p)+0.5*_vn2(p*2.1)+0.25*_vn2(p*4.3)+0.125*_vn2(p*8.7));}
-uniform sampler2D orthoTex;uniform float useOrtho;uniform float fullOrtho;
+uniform sampler2D orthoTex;uniform float useOrtho;uniform float fullOrtho;uniform float wetRock;
 uniform sampler2D rockMaskTex;
 `+shader.fragmentShader;
     shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',`
@@ -479,13 +489,18 @@ uniform sampler2D rockMaskTex;
       vec2 uv2=vUv;
       float fx=smoothstep(0.0,0.04,uv2.x)*smoothstep(1.0,0.96,uv2.x);
       float fy=smoothstep(0.0,0.04,uv2.y)*smoothstep(1.0,0.96,uv2.y);
-      float slopeFade=mix(mix(0.40,1.0,smoothstep(0.97,0.60,wallBlend)),1.0,fullOrtho);
+      float slopeFade=mix(mix(0.34,1.0,smoothstep(0.97,0.60,wallBlend)),1.0,fullOrtho);
       float maskRock=texture2D(rockMaskTex,clamp(uv2,0.001,0.999)).r*(1.0-fullOrtho);
       float blend=fx*fy*0.95*slopeFade*(1.0-maskRock*0.45);
       vec3 orthoSample=texture2D(orthoTex,clamp(uv2,0.001,0.999)).rgb;
       diffuseColor.rgb=mix(rockSample,orthoSample,blend);
     }else{
       diffuseColor.rgb=rockSample;
+    }
+    // wet rock: darken + cool tint
+    if(wetRock>0.0){
+      float _wStr=wetRock*mix(0.85,1.0,wallBlend*0.6); // stronger on walls
+      diffuseColor.rgb=mix(diffuseColor.rgb, diffuseColor.rgb*vec3(0.58,0.60,0.65), _wStr);
     }
     `);
     shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
@@ -502,7 +517,8 @@ uniform sampler2D rockMaskTex;
       normal=normalize(normal+mat3(viewMatrix)*fineBump);}
     `);
     shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>
-    roughnessFactor=clamp(roughnessFactor*(0.70+0.20*abs(vWN.y)),0.52,0.82);`);
+    roughnessFactor=clamp(roughnessFactor*(0.70+0.20*abs(vWN.y)),0.52,0.82);
+    roughnessFactor=mix(roughnessFactor, 0.13, wetRock);`);
   };
   return mat;
 }
@@ -703,6 +719,10 @@ function initUI() {
   document.getElementById('full-ortho-toggle').addEventListener('change', e => {
     if (!shaderUniforms) return;
     shaderUniforms.fullOrtho.value = e.target.checked ? 1.0 : 0.0;
+  });
+  document.getElementById('wet-rock-toggle').addEventListener('change', e => {
+    if (!shaderUniforms) return;
+    shaderUniforms.wetRock.value = e.target.checked ? 1.0 : 0.0;
   });
   document.getElementById('ui').style.display = 'block';
   initDrawMode();
