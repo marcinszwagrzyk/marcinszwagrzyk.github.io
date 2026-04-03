@@ -212,11 +212,18 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
 <script src="lib/OrbitControls.js"></script>
 <script src="lib/GLTFLoader.js"></script>
 <script src="lib/OBJLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.144.0/examples/js/objects/Sky.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.144.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.144.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.144.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.144.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.144.0/examples/js/math/SimplexNoise.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.144.0/examples/js/postprocessing/SSAOPass.js"></script>
 <script>
 const STEP = 2;
 const LAT = 49.2254, LNG = 20.0155;
-let scene, camera, renderer, controls;
-let sunLight, ambientLight, sunMesh;
+let scene, camera, renderer, controls, composer;
+let sunLight, ambientLight, sunMesh, sky;
 let shaderUniforms = null;
 let orthoTex = null;
 let meta, physW, physD;
@@ -620,7 +627,7 @@ async function init() {
 
   scene = new THREE.Scene();
   scene.fog = new THREE.FogExp2(0x1a2030, 0.00025);
-  scene.background = new THREE.Color(0x1a2535);
+  scene.background = null;
 
   camera = new THREE.PerspectiveCamera(52, window.innerWidth/window.innerHeight, 1, 60000);
   ambientLight = new THREE.AmbientLight(0x6080a0, 0.85); scene.add(ambientLight);
@@ -635,6 +642,16 @@ async function init() {
   );
   scene.add(sunMesh);
 
+  // Fizyczne niebo atmosferyczne (Preetham model)
+  sky = new THREE.Sky();
+  sky.scale.setScalar(450000);
+  scene.add(sky);
+  const _su = sky.material.uniforms;
+  _su['turbidity'].value       = 3.5;
+  _su['rayleigh'].value        = 0.8;
+  _su['mieCoefficient'].value  = 0.005;
+  _su['mieDirectionalG'].value = 0.88;
+
   const img = await loadImg('dem/koscielec_terrain_rgb.png');
   physW = img.width  * meta.res_m;
   physD = img.height * meta.res_m;
@@ -644,6 +661,16 @@ async function init() {
   currentMesh = new THREE.Mesh(geo, mat);
   currentMesh.receiveShadow = true; currentMesh.castShadow = true;
   scene.add(currentMesh);
+
+  // Post-processing: SSAO
+  composer = new THREE.EffectComposer(renderer);
+  composer.addPass(new THREE.RenderPass(scene, camera));
+  const ssaoPass = new THREE.SSAOPass(scene, camera, window.innerWidth, window.innerHeight);
+  ssaoPass.kernelRadius = 18;
+  ssaoPass.minDistance  = 0.001;
+  ssaoPass.maxDistance  = 0.055;
+  ssaoPass.output = THREE.SSAOPass.OUTPUT.Default;
+  composer.addPass(ssaoPass);
 
   const sc = sunLight.shadow.camera;
   const mg = 0.2;
@@ -694,6 +721,7 @@ async function init() {
     camera.aspect = window.innerWidth/window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    if (composer) composer.setSize(window.innerWidth, window.innerHeight);
   });
   animate();
 }
@@ -719,6 +747,11 @@ function updateSun() {
     sunMesh.material.color.setRGB(1.0, 0.50 + _t*0.44, 0.10 + _t*0.68);
   }
   sunLight.shadow.camera.updateProjectionMatrix();
+  // Sky: pozycja słońca w shaderze atmosferycznym
+  if (sky) {
+    sky.material.uniforms['sunPosition'].value.set(_sx, _sy, _sz);
+    sky.visible = (alt > -0.05);
+  }
   if (alt < -0.12) {
     ambientLight.intensity=0.06; ambientLight.color.setHex(0x0d1530); sunLight.intensity=0;
     scene.background=new THREE.Color(0x04060e); scene.fog.color.setHex(0x04060e);
@@ -727,13 +760,16 @@ function updateSun() {
     const t=(alt+.12)/.30; ambientLight.intensity=0.06+t*.28;
     ambientLight.color.setRGB(.15+t*.1,.18+t*.1,.35+t*.05);
     sunLight.intensity=Math.max(0,t*1.6); sunLight.color.setRGB(1,.45+t*.45,.15+t*.70);
-    scene.background=new THREE.Color(.06+t*.08,.05+t*.06,.09+t*.12); scene.fog.color.copy(scene.background);
+    if (!sky || !sky.visible) { scene.background=new THREE.Color(.06+t*.08,.05+t*.06,.09+t*.12); }
+    else { scene.background=null; }
+    scene.fog.color.setRGB(.05+t*.05,.04+t*.04,.09+t*.08);
     document.getElementById('sun-label').textContent=alt>0?'🌅 Złota godzina':'🌆 Zmierzch'; document.getElementById('sun-label').style.color='#ffaa44';
   } else {
     const t=Math.min(1,(alt-.18)/.5); ambientLight.intensity=0.55+t*.25;
     ambientLight.color.setRGB(.5+t*.2,.55+t*.2,.75+t*.1);
     sunLight.intensity=0.9+t*.5; sunLight.color.setHex(0xfff5dd);
-    scene.background=new THREE.Color(.14+t*.2,.18+t*.22,.32+t*.25); scene.fog.color.copy(scene.background);
+    scene.background=null;
+    scene.fog.color.setRGB(.12+t*.10,.15+t*.12,.25+t*.18);
     document.getElementById('sun-label').textContent='☀ Dzień'; document.getElementById('sun-label').style.color='#ffffaa';
   }
   const times=SunCalc.getTimes(dt,LAT,LNG);
@@ -1156,7 +1192,7 @@ function _fmt(v) { return v.toFixed(1); }
 function animate() {
   requestAnimationFrame(animate);
   controls.update();
-  renderer.render(scene, camera);
+  if (composer) composer.render(); else renderer.render(scene, camera);
   const p = camera.position, t = controls.target;
   _camInfoEls.px.textContent = _fmt(p.x); _camInfoEls.py.textContent = _fmt(p.y); _camInfoEls.pz.textContent = _fmt(p.z);
   _camInfoEls.tx.textContent = _fmt(t.x); _camInfoEls.ty.textContent = _fmt(t.y); _camInfoEls.tz.textContent = _fmt(t.z);
