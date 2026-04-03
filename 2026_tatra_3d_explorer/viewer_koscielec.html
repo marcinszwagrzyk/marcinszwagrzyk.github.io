@@ -84,6 +84,17 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
   background: rgba(255,255,255,0.04); border-radius: 6px; }
 #times { display: flex; justify-content: space-between; font-size: 11px; margin-top: 4px; }
 #times span { color: #888; } #times b { color: #ffd; }
+
+#cam-info {
+  position: absolute; bottom: 50px; right: 16px;
+  background: rgba(0,0,0,0.65); border: 1px solid rgba(255,255,100,0.25);
+  border-radius: 8px; padding: 10px 14px;
+  font-size: 11px; font-family: 'Consolas', monospace;
+  color: #ffd; line-height: 2; letter-spacing: 0.5px;
+  backdrop-filter: blur(6px);
+  user-select: all;
+}
+#cam-info span { color: #888; }
 </style>
 </head>
 <body>
@@ -93,6 +104,10 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
 <button id="load-btn"   class="btn" style="display:none">📂 Wczytaj GLB/OBJ</button>
 <input  id="file-input" type="file" accept=".glb,.gltf,.obj">
 <div id="help">Lewy przycisk: obracanie &nbsp;·&nbsp; Prawy/środkowy: przesuwanie &nbsp;·&nbsp; Scroll: zoom</div>
+<div id="cam-info">
+  <span>pos&nbsp;&nbsp;</span> x=<b id="cp-x">–</b> &nbsp;y=<b id="cp-y">–</b> &nbsp;z=<b id="cp-z">–</b><br>
+  <span>target</span> x=<b id="ct-x">–</b> &nbsp;y=<b id="ct-y">–</b> &nbsp;z=<b id="ct-z">–</b>
+</div>
 
 <div id="draw-toolbar">
   <div style="display:flex;gap:4px;margin-bottom:6px">
@@ -177,6 +192,13 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
     <span>Ortofoto</span>
     <label class="toggle">
       <input type="checkbox" id="orto-toggle" checked>
+      <span class="slider-toggle"></span>
+    </label>
+  </div>
+  <div class="toggle-row">
+    <span>Full ortho (strome ściany)</span>
+    <label class="toggle">
+      <input type="checkbox" id="full-ortho-toggle">
       <span class="slider-toggle"></span>
     </label>
   </div>
@@ -398,6 +420,7 @@ function makeRockMaterial(rockTex) {
     shader.uniforms.uShowRidge   = { value: 0.0 };
     shader.uniforms.orthoTex     = { value: null };
     shader.uniforms.useOrtho     = { value: 0.0 };
+    shader.uniforms.fullOrtho    = { value: 0.0 };
     shader.uniforms.rockMaskTex  = { value: null };
     shaderUniforms = shader.uniforms;
     shader.vertexShader =
@@ -425,7 +448,7 @@ uniform float rockScale;uniform float uShowRidge;
 float _h21(vec2 p){p=fract(p*vec2(234.34,435.345));p+=dot(p,p+34.23);return fract(p.x*p.y);}
 float _vn2(vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.0-2.0*f);return mix(mix(_h21(i),_h21(i+vec2(1,0)),u.x),mix(_h21(i+vec2(0,1)),_h21(i+vec2(1,1)),u.x),u.y);}
 float _fbm2(vec2 p){return 0.533*(_vn2(p)+0.5*_vn2(p*2.1)+0.25*_vn2(p*4.3)+0.125*_vn2(p*8.7));}
-uniform sampler2D orthoTex;uniform float useOrtho;
+uniform sampler2D orthoTex;uniform float useOrtho;uniform float fullOrtho;
 uniform sampler2D rockMaskTex;
 `+shader.fragmentShader;
     shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',`
@@ -447,8 +470,8 @@ uniform sampler2D rockMaskTex;
       vec2 uv2=vUv;
       float fx=smoothstep(0.0,0.04,uv2.x)*smoothstep(1.0,0.96,uv2.x);
       float fy=smoothstep(0.0,0.04,uv2.y)*smoothstep(1.0,0.96,uv2.y);
-      float slopeFade=smoothstep(0.97,0.78,wallBlend);
-      float maskRock=texture2D(rockMaskTex,clamp(uv2,0.001,0.999)).r;
+      float slopeFade=mix(smoothstep(0.97,0.78,wallBlend),1.0,fullOrtho);
+      float maskRock=texture2D(rockMaskTex,clamp(uv2,0.001,0.999)).r*(1.0-fullOrtho);
       float blend=fx*fy*0.95*slopeFade*(1.0-maskRock*0.92);
       vec3 orthoSample=texture2D(orthoTex,clamp(uv2,0.001,0.999)).rgb;
       diffuseColor.rgb=mix(rockSample,orthoSample,blend);
@@ -667,6 +690,10 @@ function initUI() {
     } else {
       shaderUniforms.useOrtho.value = 0.0;
     }
+  });
+  document.getElementById('full-ortho-toggle').addEventListener('change', e => {
+    if (!shaderUniforms) return;
+    shaderUniforms.fullOrtho.value = e.target.checked ? 1.0 : 0.0;
   });
   document.getElementById('ui').style.display = 'block';
   initDrawMode();
@@ -1051,7 +1078,19 @@ function initDrawMode() {
   });
 }
 
-function animate() { requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); }
+const _camInfoEls = {
+  px: document.getElementById('cp-x'), py: document.getElementById('cp-y'), pz: document.getElementById('cp-z'),
+  tx: document.getElementById('ct-x'), ty: document.getElementById('ct-y'), tz: document.getElementById('ct-z'),
+};
+function _fmt(v) { return v.toFixed(1); }
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+  const p = camera.position, t = controls.target;
+  _camInfoEls.px.textContent = _fmt(p.x); _camInfoEls.py.textContent = _fmt(p.y); _camInfoEls.pz.textContent = _fmt(p.z);
+  _camInfoEls.tx.textContent = _fmt(t.x); _camInfoEls.ty.textContent = _fmt(t.y); _camInfoEls.tz.textContent = _fmt(t.z);
+}
 
 init().catch(err => {
   document.getElementById('loading').innerHTML =
