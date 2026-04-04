@@ -609,9 +609,9 @@ async function init() {
   sc.updateProjectionMatrix();
 
   const baseY = meta.elev_min;
-  camera.position.set(230, 2260, 1050);
+  camera.position.set(606, 2227, -130);
   controls = new THREE.OrbitControls(camera, renderer.domElement);
-  controls.target.set(213, 2100, 480);
+  controls.target.set(149, 2035, 402);
   controls.enableDamping = true; controls.dampingFactor = 0.07;
   controls.maxPolarAngle = Math.PI * 0.88;
   controls.update();
