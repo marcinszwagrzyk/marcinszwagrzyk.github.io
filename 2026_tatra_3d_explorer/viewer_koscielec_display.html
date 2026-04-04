@@ -94,12 +94,13 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
   <div class="sep">🗺 GPS Ślad</div>
   <button id="load-gpx-btn" style="width:100%;margin-bottom:4px">📂 Wczytaj GPX</button>
   <input id="gpx-input" type="file" accept=".gpx" style="display:none">
+  <div class="toggle-row">
+    <span>Snapuj do terenu</span>
+    <label class="toggle"><input type="checkbox" id="gpx-snap"><span class="slider-toggle"></span></label>
+  </div>
   <div class="toggle-row" id="gpx-toggle-row" style="display:none">
     <span>Pokaż ślad</span>
-    <label class="toggle">
-      <input type="checkbox" id="gpx-toggle" checked>
-      <span class="slider-toggle"></span>
-    </label>
+    <label class="toggle"><input type="checkbox" id="gpx-toggle" checked><span class="slider-toggle"></span></label>
   </div>
   <div id="gpx-info" style="font-size:10px;color:rgba(255,180,80,0.80);margin-top:3px;line-height:1.5;white-space:pre-line"></div>
 </div>
@@ -144,7 +145,7 @@ function fbm2(x,y,oct){
 }
 
 // ── GPX ───────────────────────────────────────────────────────────────────────
-let gpxObjects = [];
+let gpxObjects = [], gpxRawTracks = [];
 
 function wgs84ToScene(lat, lon) {
   const b = meta.bounds_wgs84;
@@ -159,35 +160,50 @@ function sampleTerrain(sx, sz) {
   return rawHeights ? rawHeights[r*cols+c] : meta.elev_min;
 }
 
-function parseAndRenderGPX(text, filename) {
-  gpxObjects.forEach(({ line, s0, s1 }) => { scene.remove(line); if(s0) scene.remove(s0); if(s1) scene.remove(s1); });
+function buildGPXObjects(snap) {
+  gpxObjects.forEach(({ line, s0, s1 }) => { scene.remove(line); if(s0){scene.remove(s0);scene.remove(s1);} });
   gpxObjects = [];
-  const doc = new DOMParser().parseFromString(text, 'application/xml');
-  let segs = [...doc.querySelectorAll('trkseg')];
-  if (!segs.length) segs = [{ querySelectorAll: sel => doc.querySelectorAll('rtept, wpt') }];
   const colors = [0xff6600, 0x00ccff, 0xffcc00, 0x88ff44, 0xff44aa];
-  let total = 0;
-  segs.forEach((seg, i) => {
-    const pts = [];
-    seg.querySelectorAll('trkpt, rtept, wpt').forEach(pt => {
-      const lat = parseFloat(pt.getAttribute('lat')), lon = parseFloat(pt.getAttribute('lon'));
-      if (isNaN(lat)||isNaN(lon)) return;
+  const sg = new THREE.SphereGeometry(4, 10, 8);
+  gpxRawTracks.forEach(({ pts }, i) => {
+    const v3 = pts.map(({ lat, lon, ele }) => {
       const [sx, sz] = wgs84ToScene(lat, lon);
-      pts.push(new THREE.Vector3(sx, sampleTerrain(sx, sz)+2.5, sz));
+      const y = snap ? sampleTerrain(sx, sz)+2.5 : (ele ?? sampleTerrain(sx, sz))+1.0;
+      return new THREE.Vector3(sx, y, sz);
     });
-    if (pts.length < 2) return;
-    total += pts.length;
-    const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),
+    const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(v3),
       new THREE.LineBasicMaterial({ color: colors[i%colors.length], depthTest: false }));
     scene.add(line);
-    const sg = new THREE.SphereGeometry(4, 10, 8);
-    const s0 = i===0 ? new THREE.Mesh(sg, new THREE.MeshBasicMaterial({color:0x44ff44,depthTest:false})) : null;
-    const s1 = i===0 ? new THREE.Mesh(sg, new THREE.MeshBasicMaterial({color:0xff3333,depthTest:false})) : null;
-    if (s0) { s0.position.copy(pts[0]); s1.position.copy(pts[pts.length-1]); scene.add(s0); scene.add(s1); }
+    let s0=null, s1=null;
+    if (i===0) {
+      s0=new THREE.Mesh(sg, new THREE.MeshBasicMaterial({color:0x44ff44,depthTest:false}));
+      s1=new THREE.Mesh(sg, new THREE.MeshBasicMaterial({color:0xff3333,depthTest:false}));
+      s0.position.copy(v3[0]); s1.position.copy(v3[v3.length-1]);
+      scene.add(s0); scene.add(s1);
+    }
     gpxObjects.push({ line, s0, s1 });
   });
+}
+
+function parseAndRenderGPX(text, filename) {
+  const doc = new DOMParser().parseFromString(text, 'application/xml');
   const name = doc.querySelector('trk > name, name')?.textContent?.trim() || filename;
-  document.getElementById('gpx-info').textContent = total ? `${name}\n${segs.length} seg · ${total} pkt` : 'Brak punktów trasy.';
+  let nodes = doc.querySelectorAll('trkseg');
+  if (!nodes.length) nodes = [{ querySelectorAll: s => doc.querySelectorAll('rtept, wpt') }];
+  gpxRawTracks = [];
+  let total = 0;
+  nodes.forEach(seg => {
+    const pts = [];
+    seg.querySelectorAll('trkpt, rtept, wpt').forEach(pt => {
+      const lat=parseFloat(pt.getAttribute('lat')), lon=parseFloat(pt.getAttribute('lon'));
+      if (!isNaN(lat)&&!isNaN(lon)) { const e=pt.querySelector('ele'); pts.push({lat,lon,ele:e?parseFloat(e.textContent):null}); }
+    });
+    if (pts.length>1) { gpxRawTracks.push({pts}); total+=pts.length; }
+  });
+  const snap = document.getElementById('gpx-snap').checked;
+  buildGPXObjects(snap);
+  const hasEle = gpxRawTracks[0]?.pts[0]?.ele !== null;
+  document.getElementById('gpx-info').textContent = total ? `${name}\n${gpxRawTracks.length} seg · ${total} pkt`+(hasEle?'':'\n(brak ele w GPX)') : 'Brak punktów trasy.';
   document.getElementById('gpx-toggle-row').style.display = total ? 'flex' : 'none';
 }
 
@@ -636,6 +652,9 @@ async function init() {
     const reader = new FileReader();
     reader.onload = ev => parseAndRenderGPX(ev.target.result, f.name);
     reader.readAsText(f); e.target.value = '';
+  });
+  document.getElementById('gpx-snap').addEventListener('change', () => {
+    if (gpxRawTracks.length) buildGPXObjects(document.getElementById('gpx-snap').checked);
   });
   document.getElementById('gpx-toggle').addEventListener('change', e => {
     gpxObjects.forEach(({ line, s0, s1 }) => { line.visible=e.target.checked; if(s0){s0.visible=e.target.checked;s1.visible=e.target.checked;} });
