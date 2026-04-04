@@ -229,7 +229,7 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
 <script src="https://cdn.jsdelivr.net/npm/three@0.144.0/examples/js/postprocessing/RenderPass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.144.0/examples/js/postprocessing/ShaderPass.js"></script>
 <script>
-const STEP = 2;
+const STEP = 1;
 const LAT = 49.2254, LNG = 20.0155;
 let scene, camera, renderer, controls, composer;
 let sunLight, ambientLight, sunMesh, sky;
@@ -620,6 +620,15 @@ uniform sampler2D rockMaskTex;
     {
       diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(1.08, 1.07, 1.06), vRidgeS * 0.45);
     }
+    // Perspektywa atmosferyczna (aerial haze)
+    {
+      float _dist = length(cameraPosition - vWP);
+      float _haze = smoothstep(200.0, 1400.0, _dist);
+      vec3 _hazeCol = vec3(0.58, 0.68, 0.84);
+      diffuseColor.rgb = mix(diffuseColor.rgb, _hazeCol, _haze * 0.48);
+      float _lh = dot(diffuseColor.rgb, vec3(0.299,0.587,0.114));
+      diffuseColor.rgb = mix(diffuseColor.rgb, vec3(_lh * 1.05), _haze * 0.28);
+    }
     `);
     shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
     if(wallBlend>0.01){vec3 _L=vec3(0.299,0.587,0.114);
@@ -705,7 +714,7 @@ function loadImg(src) {
 }
 
 async function init() {
-  meta = await fetch('dem/koscielec_meta.json').then(r => r.json());
+  meta = await fetch('dem/koscielec_v2_meta.json').then(r => r.json());
 
   renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -742,7 +751,7 @@ async function init() {
   _su['mieCoefficient'].value  = 0.005;
   _su['mieDirectionalG'].value = 0.88;
 
-  const img = await loadImg('dem/koscielec_terrain_rgb.png');
+  const img = await loadImg('dem/koscielec_v2_terrain_rgb.png');
   physW = img.width  * meta.res_m;
   physD = img.height * meta.res_m;
 
@@ -752,14 +761,71 @@ async function init() {
   currentMesh.receiveShadow = true; currentMesh.castShadow = true;
   scene.add(currentMesh);
 
-  // Post-processing: vignette + kontrast + subtelny glow highlights
+  // Post-processing: SSAO + vignette + kontrast + glow
   try {
-    composer = new THREE.EffectComposer(renderer);
+    const _ppW = window.innerWidth, _ppH = window.innerHeight;
+    const _depthTex = new THREE.DepthTexture(_ppW, _ppH);
+    _depthTex.type = THREE.UnsignedShortType;
+    const _rt = new THREE.WebGLRenderTarget(_ppW, _ppH, {
+      minFilter: THREE.LinearFilter,
+      magFilter: THREE.LinearFilter,
+      format: THREE.RGBAFormat,
+      depthTexture: _depthTex
+    });
+    composer = new THREE.EffectComposer(renderer, _rt);
     composer.addPass(new THREE.RenderPass(scene, camera));
+
+    // ── SSAO (screen-space ambient occlusion) ────────────────────────────────
+    const ssaoPass = new THREE.ShaderPass({
+      uniforms: {
+        tDiffuse: { value: null },
+        tDepth:   { value: _depthTex },
+        uRes:     { value: new THREE.Vector2(_ppW, _ppH) },
+        uNear:    { value: camera.near },
+        uFar:     { value: camera.far },
+      },
+      vertexShader: `varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
+      fragmentShader: `
+        uniform sampler2D tDiffuse;
+        uniform sampler2D tDepth;
+        uniform vec2 uRes;
+        uniform float uNear;
+        uniform float uFar;
+        varying vec2 vUv;
+        float linZ(vec2 uv){
+          float d=texture2D(tDepth,uv).r;
+          return uNear*uFar/(uFar-d*(uFar-uNear));
+        }
+        void main(){
+          vec4 c=texture2D(tDiffuse,vUv);
+          float d0=texture2D(tDepth,vUv).r;
+          if(d0>0.9998){gl_FragColor=c;return;}
+          float z0=linZ(vUv);
+          float r=clamp(55.0/z0,0.003,0.018);
+          float ao=0.0;
+          const int N=16;
+          for(int i=0;i<N;i++){
+            float fi=float(i);
+            float ang=fi*2.39996; // golden angle spiral
+            float rad=sqrt((fi+0.5)/float(N))*r;
+            vec2 uv2=clamp(vUv+vec2(cos(ang),sin(ang))*rad,0.001,0.999);
+            float z1=linZ(uv2);
+            float diff=z0-z1;
+            ao+=step(0.8,diff)*(1.0-smoothstep(0.0,90.0,diff));
+          }
+          ao=1.0-ao/float(N)*0.65;
+          ao=max(0.22,ao);
+          gl_FragColor=vec4(c.rgb*ao,c.a);
+        }
+      `
+    });
+    composer.addPass(ssaoPass);
+
+    // ── Colour grade + vignette ──────────────────────────────────────────────
     const gradePass = new THREE.ShaderPass({
       uniforms: {
         tDiffuse:   { value: null },
-        uRes:       { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+        uRes:       { value: new THREE.Vector2(_ppW, _ppH) },
       },
       vertexShader: `varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
       fragmentShader: `
@@ -810,7 +876,7 @@ async function init() {
     });
   };
   let rockMaskTex = null;
-  _loadTex('dem/koscielec_orto.jpg', tex => { orthoTex = tex; });
+  _loadTex('dem/koscielec_v2_orto.jpg', tex => { orthoTex = tex; });
   _loadTex('dem/koscielec_rock_mask.png', tex => { rockMaskTex = tex; });
   (function waitOrtho() {
     if (shaderUniforms && orthoTex) {
