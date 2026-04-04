@@ -131,6 +131,7 @@ let orthoTex = null;
 let meta, physW, physD;
 let rawHeights = null;
 let currentMesh = null;
+let godRaysUniforms = null, dofUniforms = null;
 const MARKER_GEO = new THREE.SphereGeometry(1.5, 8, 6);
 
 // ── Noise ─────────────────────────────────────────────────────────────────────
@@ -583,6 +584,19 @@ async function init() {
   currentMesh.receiveShadow = true; currentMesh.castShadow = true;
   scene.add(currentMesh);
 
+  // Czarny Staw Gąsienicowy
+  {
+    const lakeMat = new THREE.MeshStandardMaterial({
+      color: 0x0b1624, roughness: 0.04, metalness: 0.88,
+      transparent: true, opacity: 0.94, side: THREE.DoubleSide
+    });
+    const lakeMesh = new THREE.Mesh(new THREE.CircleGeometry(1, 64), lakeMat);
+    lakeMesh.rotation.x = -Math.PI / 2;
+    lakeMesh.scale.set(240, 1, 88);
+    lakeMesh.position.set(285, 1626, 621);
+    scene.add(lakeMesh);
+  }
+
   // Physical sky (Preetham)
   try {
     sky = new THREE.Sky(); sky.scale.setScalar(450000); scene.add(sky);
@@ -592,14 +606,26 @@ async function init() {
     scene.background = null;
   } catch(e) {}
 
-  // Post-processing: vignette + kontrast + glow
+  // Post-processing: DoF + kontrast/vignette + God Rays
   try {
     composer=new THREE.EffectComposer(renderer);
     composer.addPass(new THREE.RenderPass(scene,camera));
+    dofUniforms={tDiffuse:{value:null},uFocusUV:{value:new THREE.Vector2(0.5,0.5)},uStrength:{value:0.55}};
+    composer.addPass(new THREE.ShaderPass({
+      uniforms:dofUniforms,
+      vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
+      fragmentShader:`uniform sampler2D tDiffuse;uniform vec2 uFocusUV;uniform float uStrength;varying vec2 vUv;void main(){vec4 color=texture2D(tDiffuse,vUv);float dist=length(vUv-uFocusUV)*1.55;float coc=smoothstep(0.0,0.85,dist)*uStrength;coc=coc*coc;float r=coc*0.020;vec4 b=vec4(0.0);b+=texture2D(tDiffuse,clamp(vUv+vec2(-0.326,-0.406)*r,0.0,1.0));b+=texture2D(tDiffuse,clamp(vUv+vec2(-0.840,0.419)*r,0.0,1.0));b+=texture2D(tDiffuse,clamp(vUv+vec2(-0.695,0.187)*r,0.0,1.0));b+=texture2D(tDiffuse,clamp(vUv+vec2(0.773,-0.543)*r,0.0,1.0));b+=texture2D(tDiffuse,clamp(vUv+vec2(0.792,0.716)*r,0.0,1.0));b+=texture2D(tDiffuse,clamp(vUv+vec2(-0.213,-0.750)*r,0.0,1.0));b+=texture2D(tDiffuse,clamp(vUv+vec2(0.319,0.540)*r,0.0,1.0));b+=texture2D(tDiffuse,clamp(vUv+vec2(0.040,-0.839)*r,0.0,1.0));b/=8.0;gl_FragColor=mix(color,b,smoothstep(0.02,0.35,coc));}`
+    }));
     composer.addPass(new THREE.ShaderPass({
       uniforms:{tDiffuse:{value:null}},
       vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
       fragmentShader:`uniform sampler2D tDiffuse;varying vec2 vUv;void main(){vec4 c=texture2D(tDiffuse,vUv);c.rgb=pow(max(c.rgb,0.0),vec3(0.92));c.rgb=mix(vec3(dot(c.rgb,vec3(0.299,0.587,0.114))),c.rgb,1.12);float lum=dot(c.rgb,vec3(0.299,0.587,0.114));c.rgb+=c.rgb*smoothstep(0.72,1.0,lum)*0.18;float d=length(vUv-0.5)*1.42;c.rgb*=1.0-smoothstep(0.40,0.90,d)*0.55;gl_FragColor=c;}`
+    }));
+    godRaysUniforms={tDiffuse:{value:null},uSunPos:{value:new THREE.Vector2(0.5,0.8)},uSunVis:{value:0.0}};
+    composer.addPass(new THREE.ShaderPass({
+      uniforms:godRaysUniforms,
+      vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
+      fragmentShader:`uniform sampler2D tDiffuse;uniform vec2 uSunPos;uniform float uSunVis;varying vec2 vUv;void main(){vec4 color=texture2D(tDiffuse,vUv);if(uSunVis<0.01){gl_FragColor=color;return;}vec2 delta=vUv-uSunPos;float dist=length(delta);vec2 stepDir=delta/max(dist,0.001);float stepSize=min(dist,0.72)/12.0;vec3 rays=vec3(0.0);for(int i=1;i<=12;i++){vec2 sUv=clamp(vUv-stepDir*float(i)*stepSize,0.0,1.0);vec3 s=texture2D(tDiffuse,sUv).rgb;float lum=dot(s,vec3(0.299,0.587,0.114));rays+=s*max(0.0,lum-0.60)*(1.0-float(i)/13.0);}rays/=12.0;float falloff=smoothstep(0.85,0.04,dist);color.rgb+=rays*falloff*uSunVis*0.85;gl_FragColor=color;}`
     }));
   } catch(e) { composer=null; }
 
@@ -700,6 +726,8 @@ async function init() {
   (function animate() {
     requestAnimationFrame(animate);
     controls.update();
+    if(dofUniforms&&controls){const _tp=controls.target.clone().project(camera);dofUniforms.uFocusUV.value.set(_tp.x*0.5+0.5,_tp.y*0.5+0.5);}
+    if(godRaysUniforms&&sunMesh){if(sunMesh.visible){const _sp=sunMesh.position.clone().project(camera);godRaysUniforms.uSunPos.value.set(_sp.x*0.5+0.5,_sp.y*0.5+0.5);godRaysUniforms.uSunVis.value=1.0;}else{godRaysUniforms.uSunVis.value=0.0;}}
     if(composer) composer.render(); else renderer.render(scene, camera);
     const t = controls.target;
     const [tX, tY] = sceneTo1992(t.x, t.z);
