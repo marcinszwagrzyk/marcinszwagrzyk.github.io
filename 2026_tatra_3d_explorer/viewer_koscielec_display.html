@@ -83,6 +83,15 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
       <span class="slider-toggle"></span>
     </label>
   </div>
+  <div class="sep">🏔 Widok</div>
+  <div class="toggle-row">
+    <span>Śnieg</span>
+    <label class="toggle"><input type="checkbox" id="snow-toggle"><span class="slider-toggle"></span></label>
+  </div>
+  <div class="toggle-row">
+    <span>Etykiety szczytów</span>
+    <label class="toggle"><input type="checkbox" id="summit-labels-toggle" checked><span class="slider-toggle"></span></label>
+  </div>
   <div class="sep">✏ Rysunki</div>
   <div class="toggle-row">
     <span>Pokaż linie</span>
@@ -121,6 +130,8 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
 <script src="https://cdn.jsdelivr.net/npm/three@0.144.0/examples/js/postprocessing/EffectComposer.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.144.0/examples/js/postprocessing/RenderPass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.144.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.144.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.144.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 <script>
 const STEP = 2;
 const LAT = 49.2252, LNG = 20.0130;
@@ -132,6 +143,7 @@ let meta, physW, physD;
 let rawHeights = null;
 let currentMesh = null;
 let godRaysUniforms = null, dofUniforms = null;
+let summitLabels = [];
 const MARKER_GEO = new THREE.SphereGeometry(1.5, 8, 6);
 
 // ── Noise ─────────────────────────────────────────────────────────────────────
@@ -154,6 +166,45 @@ function fbm2(x,y,oct){
 
 // ── GPX ───────────────────────────────────────────────────────────────────────
 let gpxObjects = [], gpxRawTracks = [];
+
+function buildSummitLabels() {
+  const SUMMITS = [
+    { name: 'Kościelec',      alt: 2155, lat: 49.2314, lon: 20.0148 },
+    { name: 'Skrajny Granat', alt: 2225, lat: 49.2213, lon: 20.0180 },
+    { name: 'Żółta Turnia',   alt: 2087, lat: 49.2271, lon: 20.0190 },
+    { name: 'Czarny Staw',    alt: 1624, lat: 49.2220, lon: 20.0158 },
+    { name: 'Zielony Staw',   alt: 1672, lat: 49.2284, lon: 20.0152 },
+  ];
+  const b = meta.bounds_wgs84;
+  SUMMITS.forEach(({ name, alt, lat, lon }) => {
+    const sx = (lon - b.west)  / (b.east  - b.west)  * physW - physW / 2;
+    const sz = (b.north - lat) / (b.north - b.south) * physD - physD / 2;
+    const cv = document.createElement('canvas');
+    const ctx = cv.getContext('2d');
+    const fN = 13, fA = 10, pad = 9, gap = 3;
+    ctx.font = `500 ${fN}px 'Segoe UI',system-ui`;
+    const tw = ctx.measureText(name).width;
+    cv.width = Math.ceil(tw + pad * 2) + 2;
+    cv.height = fN + fA + gap + pad + 2;
+    ctx.beginPath();
+    ctx.roundRect(0.5, 0.5, cv.width - 1, cv.height - 1, 5);
+    ctx.fillStyle = 'rgba(5,9,20,0.74)'; ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.16)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.font = `500 ${fN}px 'Segoe UI',system-ui`;
+    ctx.fillStyle = 'rgba(255,255,255,0.93)';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    ctx.fillText(name, cv.width / 2, pad / 2 + 1);
+    ctx.font = `${fA}px 'Segoe UI',system-ui`;
+    ctx.fillStyle = 'rgba(160,205,255,0.72)';
+    ctx.fillText(alt + ' m', cv.width / 2, pad / 2 + fN + gap);
+    const tex = new THREE.CanvasTexture(cv);
+    const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true }));
+    spr.scale.set((cv.width / cv.height) * 26, 26, 1);
+    spr.position.set(sx, alt + 40, sz);
+    scene.add(spr);
+    summitLabels.push(spr);
+  });
+}
 
 function wgs84ToScene(lat, lon) {
   const b = meta.bounds_wgs84;
@@ -355,6 +406,7 @@ function makeRockMaterial(rockTex){
     shader.uniforms.rockScale={value:0.042};shader.uniforms.uShowRidge={value:0.0};
     shader.uniforms.orthoTex={value:null};shader.uniforms.useOrtho={value:0.0};
     shader.uniforms.fullOrtho={value:0.0};shader.uniforms.rockMaskTex={value:null};
+    shader.uniforms.uSnow={value:0.0};shader.uniforms.uTime={value:0.0};
     shaderUniforms=shader.uniforms;
     shader.vertexShader=`float _h21v(vec2 p){p=fract(p*vec2(127.1,311.7));p+=dot(p,p+74.17);return fract(p.x*p.y);}
 float _vn2v(vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.0-2.0*f);return mix(mix(_h21v(i),_h21v(i+vec2(1,0)),u.x),mix(_h21v(i+vec2(0,1)),_h21v(i+vec2(1,1)),u.x),u.y);}
@@ -381,7 +433,7 @@ float _h21(vec2 p){p=fract(p*vec2(234.34,435.345));p+=dot(p,p+34.23);return frac
 float _vn2(vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.0-2.0*f);return mix(mix(_h21(i),_h21(i+vec2(1,0)),u.x),mix(_h21(i+vec2(0,1)),_h21(i+vec2(1,1)),u.x),u.y);}
 float _fbm2(vec2 p){return 0.533*(_vn2(p)+0.5*_vn2(p*2.1)+0.25*_vn2(p*4.3)+0.125*_vn2(p*8.7));}
 uniform sampler2D orthoTex;uniform float useOrtho;uniform float fullOrtho;
-uniform sampler2D rockMaskTex;
+uniform sampler2D rockMaskTex;uniform float uSnow;uniform float uTime;
 `+shader.fragmentShader;
     shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',`
     vec3 tpW=abs(vWN);tpW=max(tpW-0.15,0.0);tpW=pow(tpW,vec3(3.0));tpW/=(tpW.x+tpW.y+tpW.z+1e-5);
@@ -421,6 +473,8 @@ uniform sampler2D rockMaskTex;
     {float _ao=1.0-vCavity*0.62;diffuseColor.rgb*=_ao;}
     {diffuseColor.rgb=mix(diffuseColor.rgb, diffuseColor.rgb*vec3(1.08,1.07,1.06), vRidgeS*0.45);}
     {float _dist=length(cameraPosition-vWP);float _haze=smoothstep(200.0,1400.0,_dist);vec3 _hazeCol=vec3(0.58,0.68,0.84);diffuseColor.rgb=mix(diffuseColor.rgb,_hazeCol,_haze*0.48);float _lh=dot(diffuseColor.rgb,vec3(0.299,0.587,0.114));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(_lh*1.05),_haze*0.28);}
+    {vec2 _cUV=vWP.xz*0.00025+vec2(uTime*0.00080,uTime*0.00050);float _cN=_fbm2(_cUV*2.2)*0.55+_fbm2(_cUV*5.1+vec2(1.7,3.3))*0.45;float _cLit=smoothstep(0.44,0.62,_cN);diffuseColor.rgb*=0.70+_cLit*0.30;}
+    if(uSnow>0.5){float _se=clamp((vWP.y-1950.0)/280.0,0.0,1.0);float _sf=smoothstep(0.25,0.70,abs(vWN.y));float _sN=_fbm2(vWP.xz*0.0035+vec2(3.7,8.1))*0.55+_fbm2(vWP.xz*0.013+vec2(1.2,4.5))*0.45;float _sa=smoothstep(0.38,0.68,_sN)*_sf*_se*smoothstep(0.55,0.05,vCavity);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.88,0.91,0.96),_sa*0.95);}
     `);
     shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
     if(wallBlend>0.01){vec3 _L=vec3(0.299,0.587,0.114);
@@ -580,6 +634,7 @@ async function init() {
 
   const geo = buildGeometry(img);
   const mat = makeRockMaterial(makeRockTexture());
+  buildSummitLabels();
   currentMesh = new THREE.Mesh(geo, mat);
   currentMesh.receiveShadow = true; currentMesh.castShadow = true;
   scene.add(currentMesh);
@@ -610,17 +665,18 @@ async function init() {
   try {
     composer=new THREE.EffectComposer(renderer);
     composer.addPass(new THREE.RenderPass(scene,camera));
-    dofUniforms={tDiffuse:{value:null},uFocusUV:{value:new THREE.Vector2(0.5,0.5)},uStrength:{value:0.55}};
+    dofUniforms={tDiffuse:{value:null},uFocusUV:{value:new THREE.Vector2(0.5,0.5)},uStrength:{value:0.38}};
     composer.addPass(new THREE.ShaderPass({
       uniforms:dofUniforms,
       vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
-      fragmentShader:`uniform sampler2D tDiffuse;uniform vec2 uFocusUV;uniform float uStrength;varying vec2 vUv;void main(){vec4 color=texture2D(tDiffuse,vUv);float dist=length(vUv-uFocusUV)*1.55;float coc=smoothstep(0.0,0.85,dist)*uStrength;coc=coc*coc;float r=coc*0.020;vec4 b=vec4(0.0);b+=texture2D(tDiffuse,clamp(vUv+vec2(-0.326,-0.406)*r,0.0,1.0));b+=texture2D(tDiffuse,clamp(vUv+vec2(-0.840,0.419)*r,0.0,1.0));b+=texture2D(tDiffuse,clamp(vUv+vec2(-0.695,0.187)*r,0.0,1.0));b+=texture2D(tDiffuse,clamp(vUv+vec2(0.773,-0.543)*r,0.0,1.0));b+=texture2D(tDiffuse,clamp(vUv+vec2(0.792,0.716)*r,0.0,1.0));b+=texture2D(tDiffuse,clamp(vUv+vec2(-0.213,-0.750)*r,0.0,1.0));b+=texture2D(tDiffuse,clamp(vUv+vec2(0.319,0.540)*r,0.0,1.0));b+=texture2D(tDiffuse,clamp(vUv+vec2(0.040,-0.839)*r,0.0,1.0));b/=8.0;gl_FragColor=mix(color,b,smoothstep(0.02,0.35,coc));}`
+      fragmentShader:`uniform sampler2D tDiffuse;uniform vec2 uFocusUV;uniform float uStrength;varying vec2 vUv;void main(){vec4 color=texture2D(tDiffuse,vUv);float dist=length(vUv-uFocusUV)*1.55;float coc=smoothstep(0.0,0.85,dist)*uStrength;coc=coc*coc;float r=coc*0.014;vec4 b=vec4(0.0);b+=texture2D(tDiffuse,clamp(vUv+vec2(-0.326,-0.406)*r,0.0,1.0));b+=texture2D(tDiffuse,clamp(vUv+vec2(-0.840,0.419)*r,0.0,1.0));b+=texture2D(tDiffuse,clamp(vUv+vec2(-0.695,0.187)*r,0.0,1.0));b+=texture2D(tDiffuse,clamp(vUv+vec2(0.773,-0.543)*r,0.0,1.0));b+=texture2D(tDiffuse,clamp(vUv+vec2(0.792,0.716)*r,0.0,1.0));b+=texture2D(tDiffuse,clamp(vUv+vec2(-0.213,-0.750)*r,0.0,1.0));b+=texture2D(tDiffuse,clamp(vUv+vec2(0.319,0.540)*r,0.0,1.0));b+=texture2D(tDiffuse,clamp(vUv+vec2(0.040,-0.839)*r,0.0,1.0));b/=8.0;gl_FragColor=mix(color,b,smoothstep(0.02,0.35,coc));}`
     }));
     composer.addPass(new THREE.ShaderPass({
       uniforms:{tDiffuse:{value:null}},
       vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
       fragmentShader:`uniform sampler2D tDiffuse;varying vec2 vUv;void main(){vec4 c=texture2D(tDiffuse,vUv);c.rgb=pow(max(c.rgb,0.0),vec3(0.92));c.rgb=mix(vec3(dot(c.rgb,vec3(0.299,0.587,0.114))),c.rgb,1.12);float lum=dot(c.rgb,vec3(0.299,0.587,0.114));c.rgb+=c.rgb*smoothstep(0.72,1.0,lum)*0.18;float d=length(vUv-0.5)*1.42;c.rgb*=1.0-smoothstep(0.40,0.90,d)*0.55;gl_FragColor=c;}`
     }));
+    try{composer.addPass(new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth,window.innerHeight),0.32,0.5,0.78));}catch(_){}
     godRaysUniforms={tDiffuse:{value:null},uSunPos:{value:new THREE.Vector2(0.5,0.8)},uSunVis:{value:0.0}};
     composer.addPass(new THREE.ShaderPass({
       uniforms:godRaysUniforms,
@@ -707,6 +763,13 @@ async function init() {
     }
   });
 
+  document.getElementById('snow-toggle').addEventListener('change', e => {
+    if (shaderUniforms) shaderUniforms.uSnow.value = e.target.checked ? 1.0 : 0.0;
+  });
+  document.getElementById('summit-labels-toggle').addEventListener('change', e => {
+    summitLabels.forEach(s => s.visible = e.target.checked);
+  });
+
   window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth/window.innerHeight;
     camera.updateProjectionMatrix();
@@ -726,6 +789,7 @@ async function init() {
   (function animate() {
     requestAnimationFrame(animate);
     controls.update();
+    if(shaderUniforms)shaderUniforms.uTime.value=performance.now()*0.001;
     if(dofUniforms&&controls){const _tp=controls.target.clone().project(camera);dofUniforms.uFocusUV.value.set(_tp.x*0.5+0.5,_tp.y*0.5+0.5);}
     if(godRaysUniforms&&sunMesh){if(sunMesh.visible){const _sp=sunMesh.position.clone().project(camera);godRaysUniforms.uSunPos.value.set(_sp.x*0.5+0.5,_sp.y*0.5+0.5);godRaysUniforms.uSunVis.value=1.0;}else{godRaysUniforms.uSunVis.value=0.0;}}
     if(composer) composer.render(); else renderer.render(scene, camera);
