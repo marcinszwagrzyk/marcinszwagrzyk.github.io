@@ -163,6 +163,12 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
     <input id="import-draw-input" type="file" accept=".json" style="display:none">
   </label>
   <div id="draw-hint" style="margin-top:4px">Kliknij punkty na ścianie.<br>2× klik = zakończ linię.</div>
+  <div style="font-size:9px;color:#666;margin-top:10px;margin-bottom:3px;letter-spacing:1px">GPS ŚLAD GPX</div>
+  <button id="load-gpx-btn">📂 Wczytaj GPX</button>
+  <input id="gpx-input" type="file" accept=".gpx" style="display:none">
+  <button id="toggle-gpx-btn" style="display:none">👁 Ukryj ślad</button>
+  <button id="clear-gpx-btn" style="display:none">✕ Usuń ślad</button>
+  <div id="gpx-info" style="font-size:10px;color:rgba(255,180,80,0.75);margin-top:3px;line-height:1.5"></div>
 </div>
 <div id="info">KOŚCIELEC · DEM TERRAIN<br>prawdziwa rzeźba terenu<br>eksportuj OBJ → edytuj → wczytaj GLB</div>
 
@@ -1137,6 +1143,100 @@ function importDrawings(file) {
   reader.readAsText(file);
 }
 
+// ── GPX track ────────────────────────────────────────────────────────────────
+let gpxObjects = [];  // { line, startSphere, endSphere }
+let gpxVisible = true;
+
+function wgs84ToScene(lat, lon) {
+  const b = meta.bounds_wgs84;
+  const x = (lon - b.west)  / (b.east  - b.west)  * physW - physW / 2;
+  const z = (b.north - lat) / (b.north - b.south)  * physD - physD / 2;
+  return [x, z];
+}
+
+function sampleTerrain(sx, sz) {
+  const cols = Math.floor(meta.width_px  / STEP);
+  const rows = Math.floor(meta.height_px / STEP);
+  const c = Math.max(0, Math.min(cols - 1, Math.round((sx / physW + 0.5) * (cols - 1))));
+  const r = Math.max(0, Math.min(rows - 1, Math.round((sz / physD + 0.5) * (rows - 1))));
+  return rawHeights ? rawHeights[r * cols + c] : meta.elev_min;
+}
+
+function parseGPX(text) {
+  const doc = new DOMParser().parseFromString(text, 'application/xml');
+  const segments = doc.querySelectorAll('trkseg');
+  const tracks = [];
+  segments.forEach(seg => {
+    const pts = [];
+    seg.querySelectorAll('trkpt').forEach(pt => {
+      const lat = parseFloat(pt.getAttribute('lat'));
+      const lon = parseFloat(pt.getAttribute('lon'));
+      if (isNaN(lat) || isNaN(lon)) return;
+      const [sx, sz] = wgs84ToScene(lat, lon);
+      const h = sampleTerrain(sx, sz) + 2.5; // +2.5m ponad teren
+      pts.push(new THREE.Vector3(sx, h, sz));
+    });
+    if (pts.length > 1) tracks.push(pts);
+  });
+  // fallback: rtept lub wpt jeśli brak trkseg
+  if (tracks.length === 0) {
+    const pts = [];
+    doc.querySelectorAll('rtept, wpt').forEach(pt => {
+      const lat = parseFloat(pt.getAttribute('lat'));
+      const lon = parseFloat(pt.getAttribute('lon'));
+      if (isNaN(lat) || isNaN(lon)) return;
+      const [sx, sz] = wgs84ToScene(lat, lon);
+      pts.push(new THREE.Vector3(sx, sampleTerrain(sx, sz) + 2.5, sz));
+    });
+    if (pts.length > 1) tracks.push(pts);
+  }
+  const name = doc.querySelector('trk > name, name')?.textContent?.trim() || '';
+  return { tracks, name };
+}
+
+function renderGPX(text, filename) {
+  clearGPX();
+  const { tracks, name } = parseGPX(text);
+  if (tracks.length === 0) {
+    document.getElementById('gpx-info').textContent = 'Brak punktów trasy.';
+    return;
+  }
+  let totalPts = 0;
+  const colors = [0xff6600, 0x00ccff, 0xffcc00, 0x88ff44, 0xff44aa];
+  tracks.forEach((pts, i) => {
+    totalPts += pts.length;
+    const col = colors[i % colors.length];
+    const mat = new THREE.LineBasicMaterial({ color: col, depthTest: false });
+    const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), mat);
+    scene.add(line);
+    // kula startowa (zielona) i końcowa (czerwona) tylko na pierwszym segmencie
+    const sphereGeo = new THREE.SphereGeometry(4, 10, 8);
+    const startS = new THREE.Mesh(sphereGeo, new THREE.MeshBasicMaterial({ color: 0x44ff44, depthTest: false }));
+    const endS   = new THREE.Mesh(sphereGeo, new THREE.MeshBasicMaterial({ color: 0xff3333, depthTest: false }));
+    startS.position.copy(pts[0]);
+    endS.position.copy(pts[pts.length - 1]);
+    if (i === 0) { scene.add(startS); scene.add(endS); gpxObjects.push({ line, startSphere: startS, endSphere: endS }); }
+    else gpxObjects.push({ line, startSphere: null, endSphere: null });
+  });
+  const label = name || filename;
+  document.getElementById('gpx-info').textContent = `${label}\n${tracks.length} seg · ${totalPts} pkt`;
+  document.getElementById('toggle-gpx-btn').style.display = 'block';
+  document.getElementById('clear-gpx-btn').style.display = 'block';
+}
+
+function clearGPX() {
+  gpxObjects.forEach(({ line, startSphere, endSphere }) => {
+    scene.remove(line);
+    if (startSphere) scene.remove(startSphere);
+    if (endSphere)   scene.remove(endSphere);
+  });
+  gpxObjects = [];
+  document.getElementById('toggle-gpx-btn').style.display = 'none';
+  document.getElementById('clear-gpx-btn').style.display = 'none';
+  document.getElementById('gpx-info').textContent = '';
+  gpxVisible = true;
+}
+
 function autoLoadDrawings() {
   fetch('koscielec_drawings.json?_=' + Date.now())
     .then(r => { if (!r.ok) throw new Error('brak'); return r.json(); })
@@ -1150,6 +1250,26 @@ function autoLoadDrawings() {
 // ── inicjalizacja UI rysowania ────────────────────────────────────────────────
 function initDrawMode() {
   document.getElementById('draw-toolbar').style.display = 'flex';
+
+  // GPX
+  document.getElementById('load-gpx-btn').addEventListener('click', () => document.getElementById('gpx-input').click());
+  document.getElementById('gpx-input').addEventListener('change', e => {
+    const f = e.target.files[0]; if (!f) return;
+    const reader = new FileReader();
+    reader.onload = ev => renderGPX(ev.target.result, f.name);
+    reader.readAsText(f);
+    e.target.value = '';
+  });
+  document.getElementById('toggle-gpx-btn').addEventListener('click', () => {
+    gpxVisible = !gpxVisible;
+    gpxObjects.forEach(({ line, startSphere, endSphere }) => {
+      line.visible = gpxVisible;
+      if (startSphere) startSphere.visible = gpxVisible;
+      if (endSphere)   endSphere.visible   = gpxVisible;
+    });
+    document.getElementById('toggle-gpx-btn').textContent = gpxVisible ? '👁 Ukryj ślad' : '👁 Pokaż ślad';
+  });
+  document.getElementById('clear-gpx-btn').addEventListener('click', clearGPX);
 
   // toggle widoczności linii i punktów
   let linesVisible = true;
