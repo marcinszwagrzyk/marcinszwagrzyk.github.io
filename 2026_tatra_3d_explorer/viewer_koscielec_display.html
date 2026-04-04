@@ -83,7 +83,14 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
       <span class="slider-toggle"></span>
     </label>
   </div>
-  <div class="sep">🏷 Etykiety</div>
+  <div class="sep">✏ Rysunki</div>
+  <div class="toggle-row">
+    <span>Pokaż linie</span>
+    <label class="toggle">
+      <input type="checkbox" id="lines-toggle" checked>
+      <span class="slider-toggle"></span>
+    </label>
+  </div>
   <div class="toggle-row">
     <span>Pokaż etykiety</span>
     <label class="toggle">
@@ -462,6 +469,7 @@ function makeLabel(text, position, lColor, lSize) {
 }
 
 let allSprites = [];
+let allDrawLines = [];
 
 function loadDrawingsFromData(data) {
   (data.lines || []).forEach(ld => {
@@ -469,7 +477,9 @@ function loadDrawingsFromData(data) {
     for (let i = 0; i < ld.pts.length; i += 3)
       pts.push(new THREE.Vector3(ld.pts[i], ld.pts[i+1], ld.pts[i+2]));
     const geo = new THREE.BufferGeometry().setFromPoints(pts);
-    scene.add(new THREE.Line(geo, new THREE.LineBasicMaterial({ color: ld.color, depthTest: false })));
+    const lineObj = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: ld.color, depthTest: false }));
+    scene.add(lineObj);
+    allDrawLines.push(lineObj);
     if (ld.label) {
       const lp = pts[Math.floor(pts.length/2)].clone(); lp.y += 5;
       const s = makeLabel(ld.label, lp, ld.labelColor||ld.color, ld.labelSize||32);
@@ -645,6 +655,7 @@ async function init() {
   document.getElementById('date-in').addEventListener('input', updateSun);
   document.getElementById('hour-in').addEventListener('input', updateSun);
   document.getElementById('sun-toggle').addEventListener('change', e => { sunLight.visible = e.target.checked; });
+  document.getElementById('lines-toggle').addEventListener('change', e => { allDrawLines.forEach(l => l.visible = e.target.checked); });
   document.getElementById('labels-toggle').addEventListener('change', e => { allSprites.forEach(s => s.visible = e.target.checked); });
   document.getElementById('load-gpx-btn').addEventListener('click', () => document.getElementById('gpx-input').click());
   document.getElementById('gpx-input').addEventListener('change', e => {
