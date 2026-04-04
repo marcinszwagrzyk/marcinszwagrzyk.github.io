@@ -105,8 +105,8 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
 <input  id="file-input" type="file" accept=".glb,.gltf,.obj">
 <div id="help">Lewy przycisk: obracanie &nbsp;·&nbsp; Prawy/środkowy: przesuwanie &nbsp;·&nbsp; Scroll: zoom</div>
 <div id="cam-info">
-  <span>pos&nbsp;&nbsp;</span> x=<b id="cp-x">–</b> &nbsp;y=<b id="cp-y">–</b> &nbsp;z=<b id="cp-z">–</b><br>
-  <span>target</span> x=<b id="ct-x">–</b> &nbsp;y=<b id="ct-y">–</b> &nbsp;z=<b id="ct-z">–</b>
+  <span>pos&nbsp;&nbsp;</span> X=<b id="cp-x">–</b> &nbsp;Y=<b id="cp-y">–</b> &nbsp;H=<b id="cp-z">–</b><br>
+  <span>target</span> X=<b id="ct-x">–</b> &nbsp;Y=<b id="ct-y">–</b> &nbsp;H=<b id="ct-z">–</b>
 </div>
 
 <div id="draw-toolbar">
@@ -209,6 +209,7 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/suncalc@1.9.0/suncalc.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.js"></script>
 <script src="lib/three.min.js"></script>
 <script src="lib/OrbitControls.js"></script>
 <script src="lib/GLTFLoader.js"></script>
@@ -1312,18 +1313,29 @@ function initDrawMode() {
   });
 }
 
+// ── PUWG 1992 (EPSG:2180) ────────────────────────────────────────────────────
+proj4.defs('EPSG:2180', '+proj=tmerc +lat_0=0 +lon_0=19 +k=0.9993 +x_0=500000 +y_0=-5300000 +ellps=GRS80 +units=m +no_defs');
+function sceneTo1992(sceneX, sceneZ) {
+  const b = meta.bounds_wgs84;
+  const lon = b.west  + (sceneX / physW + 0.5) * (b.east  - b.west);
+  const lat = b.north - (sceneZ / physD + 0.5) * (b.north - b.south);
+  const r = proj4('EPSG:4326', 'EPSG:2180', [lon, lat]);
+  return [r[1], r[0]]; // PUWG: X=northing, Y=easting
+}
+
 const _camInfoEls = {
   px: document.getElementById('cp-x'), py: document.getElementById('cp-y'), pz: document.getElementById('cp-z'),
   tx: document.getElementById('ct-x'), ty: document.getElementById('ct-y'), tz: document.getElementById('ct-z'),
 };
-function _fmt(v) { return v.toFixed(1); }
 function animate() {
   requestAnimationFrame(animate);
   controls.update();
   if (composer) composer.render(); else renderer.render(scene, camera);
   const p = camera.position, t = controls.target;
-  _camInfoEls.px.textContent = _fmt(p.x); _camInfoEls.py.textContent = _fmt(p.y); _camInfoEls.pz.textContent = _fmt(p.z);
-  _camInfoEls.tx.textContent = _fmt(t.x); _camInfoEls.ty.textContent = _fmt(t.y); _camInfoEls.tz.textContent = _fmt(t.z);
+  const [pX, pY] = sceneTo1992(p.x, p.z);
+  const [tX, tY] = sceneTo1992(t.x, t.z);
+  _camInfoEls.px.textContent = Math.round(pX); _camInfoEls.py.textContent = Math.round(pY); _camInfoEls.pz.textContent = p.y.toFixed(1);
+  _camInfoEls.tx.textContent = Math.round(tX); _camInfoEls.ty.textContent = Math.round(tY); _camInfoEls.tz.textContent = t.y.toFixed(1);
 }
 
 init().catch(err => {

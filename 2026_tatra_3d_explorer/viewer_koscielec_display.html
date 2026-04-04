@@ -50,6 +50,7 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
 <canvas id="c"></canvas>
 <div id="loading">ŁADOWANIE KOŚCIELEC 3D…</div>
 <div id="help">Lewy przycisk: obracanie &nbsp;·&nbsp; Prawy/środkowy: przesuwanie &nbsp;·&nbsp; Scroll: zoom</div>
+<div id="coords" style="position:absolute;bottom:16px;right:16px;font-size:11px;font-family:'Consolas',monospace;color:rgba(255,220,100,0.70);background:rgba(0,0,0,0.45);padding:6px 12px;border-radius:6px;backdrop-filter:blur(6px);pointer-events:none">PUWG 1992 &nbsp; X=<b id="co-x">–</b> &nbsp; Y=<b id="co-y">–</b> &nbsp; H=<b id="co-h">–</b> m</div>
 
 <div id="ui">
   <h1>Kościelec</h1>
@@ -93,6 +94,7 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/suncalc@1.9.0/suncalc.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.js"></script>
 <script src="lib/three.min.js"></script>
 <script src="lib/OrbitControls.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.144.0/examples/js/objects/Sky.js"></script>
@@ -586,7 +588,23 @@ async function init() {
     if (composer) composer.setSize(window.innerWidth, window.innerHeight);
   });
 
-  (function animate() { requestAnimationFrame(animate); controls.update(); if(composer) composer.render(); else renderer.render(scene, camera); })();
+  proj4.defs('EPSG:2180', '+proj=tmerc +lat_0=0 +lon_0=19 +k=0.9993 +x_0=500000 +y_0=-5300000 +ellps=GRS80 +units=m +no_defs');
+  function sceneTo1992(sceneX, sceneZ) {
+    const b = meta.bounds_wgs84;
+    const lon = b.west  + (sceneX / physW + 0.5) * (b.east  - b.west);
+    const lat = b.north - (sceneZ / physD + 0.5) * (b.north - b.south);
+    const r = proj4('EPSG:4326', 'EPSG:2180', [lon, lat]);
+    return [r[1], r[0]]; // PUWG: X=northing, Y=easting
+  }
+  const _coX = document.getElementById('co-x'), _coY = document.getElementById('co-y'), _coH = document.getElementById('co-h');
+  (function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    if(composer) composer.render(); else renderer.render(scene, camera);
+    const t = controls.target;
+    const [tX, tY] = sceneTo1992(t.x, t.z);
+    _coX.textContent = Math.round(tX); _coY.textContent = Math.round(tY); _coH.textContent = t.y.toFixed(0);
+  })();
 }
 
 init().catch(console.error);
