@@ -227,13 +227,6 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
       <span class="slider-toggle"></span>
     </label>
   </div>
-  <div class="toggle-row">
-    <span>Etykiety szczytów</span>
-    <label class="toggle">
-      <input type="checkbox" id="summit-labels-toggle" checked>
-      <span class="slider-toggle"></span>
-    </label>
-  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/suncalc@1.9.0/suncalc.min.js"></script>
@@ -247,8 +240,6 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
 <script src="https://cdn.jsdelivr.net/npm/three@0.144.0/examples/js/postprocessing/EffectComposer.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.144.0/examples/js/postprocessing/RenderPass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.144.0/examples/js/postprocessing/ShaderPass.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.144.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.144.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 <script>
 const STEP = 2;
 const LAT = 49.2252, LNG = 20.0130;
@@ -261,7 +252,6 @@ let rawHeights = null;
 let exportData = null;
 let currentMesh = null;
 let godRaysUniforms = null, dofUniforms = null;
-let summitLabels = [];
 
 // ── Noise ─────────────────────────────────────────────────────────────────────
 function h2(x, y) {
@@ -550,7 +540,6 @@ function makeRockMaterial(rockTex) {
     shader.uniforms.fullOrtho    = { value: 0.0 };
     shader.uniforms.rockMaskTex  = { value: null };
     shader.uniforms.uSnow        = { value: 0.0 };
-    shader.uniforms.uTime        = { value: 0.0 };
     shaderUniforms = shader.uniforms;
     shader.vertexShader =
       `float _h21v(vec2 p){p=fract(p*vec2(127.1,311.7));p+=dot(p,p+74.17);return fract(p.x*p.y);}
@@ -586,7 +575,7 @@ float _vn2(vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.0-2.0*f);return mix(mix(_
 float _fbm2(vec2 p){return 0.533*(_vn2(p)+0.5*_vn2(p*2.1)+0.25*_vn2(p*4.3)+0.125*_vn2(p*8.7));}
 uniform sampler2D orthoTex;uniform float useOrtho;uniform float fullOrtho;
 uniform sampler2D rockMaskTex;
-uniform float uSnow;uniform float uTime;
+uniform float uSnow;
 `+shader.fragmentShader;
     shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',`
     vec3 tpW=abs(vWN);tpW=max(tpW-0.15,0.0);tpW=pow(tpW,vec3(3.0));tpW/=(tpW.x+tpW.y+tpW.z+1e-5);
@@ -654,13 +643,6 @@ uniform float uSnow;uniform float uTime;
       diffuseColor.rgb = mix(diffuseColor.rgb, _hazeCol, _haze * 0.48);
       float _lh = dot(diffuseColor.rgb, vec3(0.299,0.587,0.114));
       diffuseColor.rgb = mix(diffuseColor.rgb, vec3(_lh * 1.05), _haze * 0.28);
-    }
-    // Cienie chmur (animowane FBM)
-    {
-      vec2 _cUV = vWP.xz * 0.00025 + vec2(uTime * 0.00080, uTime * 0.00050);
-      float _cN = _fbm2(_cUV * 2.2) * 0.55 + _fbm2(_cUV * 5.1 + vec2(1.7, 3.3)) * 0.45;
-      float _cLit = smoothstep(0.44, 0.62, _cN);
-      diffuseColor.rgb *= 0.70 + _cLit * 0.30;
     }
     // Śnieg
     if(uSnow > 0.5) {
@@ -800,7 +782,6 @@ async function init() {
 
   const geo = buildGeometry(img);
   const mat = makeRockMaterial(makeRockTexture());
-  buildSummitLabels();
   currentMesh = new THREE.Mesh(geo, mat);
   currentMesh.receiveShadow = true; currentMesh.castShadow = true;
   scene.add(currentMesh);
@@ -878,14 +859,6 @@ async function init() {
         }
       `
     }));
-
-    // Bloom – glow wokół słońca i jasnych granii
-    try {
-      composer.addPass(new THREE.UnrealBloomPass(
-        new THREE.Vector2(window.innerWidth, window.innerHeight),
-        0.32, 0.5, 0.78
-      ));
-    } catch(_) {}
 
     // God Rays – radial blur from sun screen position, additive bright scatter
     godRaysUniforms = {
@@ -1063,9 +1036,6 @@ function initUI() {
   });
   document.getElementById('snow-toggle').addEventListener('change', e => {
     if (shaderUniforms) shaderUniforms.uSnow.value = e.target.checked ? 1.0 : 0.0;
-  });
-  document.getElementById('summit-labels-toggle').addEventListener('change', e => {
-    summitLabels.forEach(s => s.visible = e.target.checked);
   });
   document.getElementById('ui').style.display = 'block';
   initDrawMode();
@@ -1576,51 +1546,6 @@ function initDrawMode() {
   });
 }
 
-// ── Etykiety szczytów ────────────────────────────────────────────────────────
-function buildSummitLabels() {
-  const SUMMITS = [
-    { name: 'Kościelec',      alt: 2155, lat: 49.2314, lon: 20.0148 },
-    { name: 'Skrajny Granat', alt: 2225, lat: 49.2213, lon: 20.0180 },
-    { name: 'Żółta Turnia',   alt: 2087, lat: 49.2271, lon: 20.0190 },
-    { name: 'Czarny Staw',    alt: 1624, lat: 49.2220, lon: 20.0158 },
-    { name: 'Zielony Staw',   alt: 1672, lat: 49.2284, lon: 20.0152 },
-  ];
-  const b = meta.bounds_wgs84;
-  SUMMITS.forEach(({ name, alt, lat, lon }) => {
-    const sx = (lon - b.west)  / (b.east  - b.west)  * physW - physW / 2;
-    const sz = (b.north - lat) / (b.north - b.south) * physD - physD / 2;
-    const cv = document.createElement('canvas');
-    const ctx = cv.getContext('2d');
-    const fN = 13, fA = 10, pad = 9, gap = 3;
-    ctx.font = `500 ${fN}px 'Segoe UI',system-ui`;
-    const tw = ctx.measureText(name).width;
-    cv.width  = Math.ceil(tw + pad * 2) + 2;
-    cv.height = fN + fA + gap + pad + 2;
-    const rr = 5;
-    ctx.beginPath();
-    ctx.roundRect(0.5, 0.5, cv.width - 1, cv.height - 1, rr);
-    ctx.fillStyle = 'rgba(5,9,20,0.74)';
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.16)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-    ctx.font = `500 ${fN}px 'Segoe UI',system-ui`;
-    ctx.fillStyle = 'rgba(255,255,255,0.93)';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-    ctx.fillText(name, cv.width / 2, pad / 2 + 1);
-    ctx.font = `${fA}px 'Segoe UI',system-ui`;
-    ctx.fillStyle = 'rgba(160,205,255,0.72)';
-    ctx.fillText(alt + ' m', cv.width / 2, pad / 2 + fN + gap);
-    const tex = new THREE.CanvasTexture(cv);
-    const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true }));
-    const aspect = cv.width / cv.height;
-    spr.scale.set(aspect * 26, 26, 1);
-    spr.position.set(sx, alt + 40, sz);
-    scene.add(spr);
-    summitLabels.push(spr);
-  });
-}
-
 // ── PUWG 1992 (EPSG:2180) ────────────────────────────────────────────────────
 proj4.defs('EPSG:2180', '+proj=tmerc +lat_0=0 +lon_0=19 +k=0.9993 +x_0=500000 +y_0=-5300000 +ellps=GRS80 +units=m +no_defs');
 function sceneTo1992(sceneX, sceneZ) {
@@ -1644,8 +1569,6 @@ document.getElementById('copy-cam-btn').addEventListener('click', () => {
 function animate() {
   requestAnimationFrame(animate);
   controls.update();
-  // cloud shadows timer
-  if (shaderUniforms) shaderUniforms.uTime.value = performance.now() * 0.001;
   // DoF: project controls.target to screen UV for focus point
   if (dofUniforms && controls) {
     const _tp = controls.target.clone().project(camera);
