@@ -714,7 +714,7 @@ function loadImg(src) {
 }
 
 async function init() {
-  meta = await fetch('dem/koscielec_v2_dem_meta.json').then(r => r.json());
+  meta = await fetch('dem/koscielec_v3_meta.json').then(r => r.json());
 
   renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -751,7 +751,7 @@ async function init() {
   _su['mieCoefficient'].value  = 0.005;
   _su['mieDirectionalG'].value = 0.88;
 
-  const img = await loadImg('dem/koscielec_v2_dem_terrain_rgb.png');
+  const img = await loadImg('dem/koscielec_v3_terrain_rgb.png');
   physW = img.width  * meta.res_m;
   physD = img.height * meta.res_m;
 
@@ -812,7 +812,7 @@ async function init() {
     });
   };
   let rockMaskTex = null;
-  _loadTex('dem/koscielec_v2_dem_orto.jpg', tex => { orthoTex = tex; });
+  _loadTex('dem/koscielec_v3_orto.jpg', tex => { orthoTex = tex; });
   _loadTex('dem/koscielec_rock_mask.png', tex => { rockMaskTex = tex; });
   (function waitOrtho() {
     if (shaderUniforms && orthoTex) {
