@@ -155,7 +155,8 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
     <button class="size-btn" data-size="46">L</button>
     <button class="size-btn" data-size="64">XL</button>
   </div>
-  <button id="clear-btn" style="margin-top:4px">🗑 Wyczyść wszystko</button>
+  <button id="toggle-lines-btn" style="margin-top:4px">👁 Ukryj linie</button>
+  <button id="clear-btn" style="margin-top:2px">🗑 Wyczyść wszystko</button>
   <button id="export-draw-btn">⬇ Eksport JSON</button>
   <label style="display:block;margin-top:2px">
     <button id="import-draw-btn" onclick="document.getElementById('import-draw-input').click()">📂 Wczytaj JSON</button>
@@ -213,10 +214,14 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
 <script src="lib/GLTFLoader.js"></script>
 <script src="lib/OBJLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.144.0/examples/js/objects/Sky.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.144.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.144.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.144.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.144.0/examples/js/postprocessing/ShaderPass.js"></script>
 <script>
 const STEP = 2;
 const LAT = 49.2254, LNG = 20.0155;
-let scene, camera, renderer, controls;
+let scene, camera, renderer, controls, composer;
 let sunLight, ambientLight, sunMesh, sky;
 let shaderUniforms = null;
 let orthoTex = null;
@@ -328,22 +333,44 @@ function buildGeometry(img) {
     }
   }
 
-  // Ridge (Laplasjan)
-  const ridgeRaw = new Float32Array(cols * rows);
+  // Ridge + Cavity (Laplasjan)
+  const ridgeRaw  = new Float32Array(cols * rows);
+  const cavityRaw = new Float32Array(cols * rows);
+  const ridgeSRaw = new Float32Array(cols * rows); // ostry Laplasjan (6m promień) → krawędzie skalne
   const KR_R = 20;
+  const KR_S = 3;  // ostry: 3 piksele × 2m = 6m
   for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) {
     const h00=rawHeights[r*cols+c];
+    // duży promień (granie, kopuły)
     const c1=Math.max(0,c-KR_R),c2=Math.min(cols-1,c+KR_R);
     const r1=Math.max(0,r-KR_R),r2=Math.min(rows-1,r+KR_R);
     const scX=(c2-c1)*cellM/2,scZ=(r2-r1)*cellM/2;
     const d2x=(rawHeights[r*cols+c1]-2*h00+rawHeights[r*cols+c2])/(scX*scX);
     const d2z=(rawHeights[r1*cols+c]-2*h00+rawHeights[r2*cols+c])/(scZ*scZ);
-    ridgeRaw[r*cols+c]=Math.max(0,-(d2x+d2z));
+    ridgeRaw [r*cols+c]=Math.max(0,-(d2x+d2z));
+    cavityRaw[r*cols+c]=Math.max(0,  d2x+d2z);
+    // ostry promień (lokalne krawędzie skalne, turnie)
+    const s1=Math.max(0,c-KR_S),s2=Math.min(cols-1,c+KR_S);
+    const t1=Math.max(0,r-KR_S),t2=Math.min(rows-1,r+KR_S);
+    const ssX=(s2-s1)*cellM/2,ssZ=(t2-t1)*cellM/2;
+    const sd2x=(rawHeights[r*cols+s1]-2*h00+rawHeights[r*cols+s2])/(ssX*ssX);
+    const sd2z=(rawHeights[t1*cols+c]-2*h00+rawHeights[t2*cols+c])/(ssZ*ssZ);
+    ridgeSRaw[r*cols+c]=Math.max(0,-(sd2x+sd2z));
   }
   const rS=ridgeRaw.slice().sort((a,b)=>a-b);
   const rP97=rS[Math.floor(rS.length*0.97)]||1;
   const ridge=new Float32Array(cols*rows);
   for(let i=0;i<rows*cols;i++) ridge[i]=Math.min(1,ridgeRaw[i]/rP97);
+
+  const cS=cavityRaw.slice().sort((a,b)=>a-b);
+  const cP97=cS[Math.floor(cS.length*0.97)]||1;
+  const cavity=new Float32Array(cols*rows);
+  for(let i=0;i<rows*cols;i++) cavity[i]=Math.min(1,cavityRaw[i]/cP97);
+
+  const rSS=ridgeSRaw.slice().sort((a,b)=>a-b);
+  const rPS97=rSS[Math.floor(rSS.length*0.97)]||1;
+  const ridgeS=new Float32Array(cols*rows);
+  for(let i=0;i<rows*cols;i++) ridgeS[i]=Math.min(1,ridgeSRaw[i]/rPS97);
 
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(pos,    3));
@@ -352,6 +379,8 @@ function buildGeometry(img) {
   g.setAttribute('aSteep',   new THREE.BufferAttribute(steep,  1));
   g.setAttribute('aSteepM',  new THREE.BufferAttribute(steepM, 1));
   g.setAttribute('aRidge',   new THREE.BufferAttribute(ridge,  1));
+  g.setAttribute('aCavity',  new THREE.BufferAttribute(cavity, 1));
+  g.setAttribute('aRidgeS',  new THREE.BufferAttribute(ridgeS, 1));
   g.setIndex(idx);
   g.computeVertexNormals();
 
@@ -433,15 +462,47 @@ function makeRockTexture() {
     pix[ii+3]=255;
   }
   ctx.putImageData(id,0,0);
-  ctx.lineCap='round';ctx.lineJoin='round';let seed=0xdeadbeef;
+  ctx.lineCap='butt';ctx.lineJoin='miter';ctx.miterLimit=10;let seed=0xdeadbeef;
   function rng(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;}
-  function bP(x0,y0,a,l,j,d,p){let x=x0,y=y0;p.push([x,y]);const sL=4,st=Math.ceil(l/sL),br=[];for(let i=0;i<st;i++){a+=(rng()-0.5)*j;x+=Math.cos(a)*sL;y+=Math.sin(a)*sL;p.push([x,y]);if(d>0&&rng()<0.08){const bp=[];bP(x,y,a+(rng()-0.5)*1.3,l*(0.25+rng()*0.2),j*1.1,d-1,bp);br.push(bp);}}return br;}
-  function dC(x0,y0,a,l,w,al,j,d){const p=[];const bb=bP(x0,y0,a,l,j,d,p);if(w>0.9){ctx.beginPath();ctx.moveTo(p[0][0],p[0][1]);for(let i=1;i<p.length;i++)ctx.lineTo(p[i][0],p[i][1]);ctx.strokeStyle=`rgba(2,3,6,${(al*0.28).toFixed(2)})`;ctx.lineWidth=w*4;ctx.stroke();}ctx.beginPath();ctx.moveTo(p[0][0],p[0][1]);for(let i=1;i<p.length;i++)ctx.lineTo(p[i][0],p[i][1]);ctx.strokeStyle=`rgba(3,3,5,${al.toFixed(2)})`;ctx.lineWidth=w;ctx.stroke();const off=w*0.6;ctx.beginPath();ctx.moveTo(p[0][0]-off,p[0][1]-off);for(let i=1;i<p.length;i++)ctx.lineTo(p[i][0]-off,p[i][1]-off);ctx.strokeStyle=`rgba(248,252,255,${(al*0.72).toFixed(2)})`;ctx.lineWidth=w*0.5;ctx.stroke();for(const bp of bb)dC(bp[0][0],bp[0][1],Math.atan2(bp[1][1]-bp[0][1],bp[1][0]-bp[0][0]),l*0.3,w*0.5,al*0.6,j,0);}
-  for(let i=0;i<9;i++)dC(rng()*S,rng()*S,Math.PI/2+(rng()-0.5)*0.25,160+rng()*250,2.0+rng()*1.2,0.55+rng()*0.20,0.28,3);
-  for(let i=0;i<7;i++)dC(rng()*S,rng()*S,Math.PI/2+1.05+(rng()-0.5)*0.25,100+rng()*180,1.4+rng()*0.8,0.45+rng()*0.18,0.30,2);
-  for(let i=0;i<5;i++)dC(rng()*S,rng()*S,(rng()-0.5)*0.18,120+rng()*200,1.2+rng()*0.7,0.38+rng()*0.15,0.18,1);
-  for(let i=0;i<28;i++)dC(rng()*S,rng()*S,rng()*Math.PI*2,40+rng()*70,0.7+rng()*0.5,0.25+rng()*0.15,0.38,1);
-  for(let i=0;i<70;i++)dC(rng()*S,rng()*S,rng()*Math.PI*2,10+rng()*20,0.3+rng()*0.2,0.14+rng()*0.10,0.45,0);
+  // spękania granitu: długie proste segmenty, skokowe zmiany co ~30°
+  function bP(x0,y0,a,l,d,p){
+    let x=x0,y=y0;p.push([x,y]);
+    const sL=48; // długi segment = prosta linia
+    const st=Math.ceil(l/sL);
+    const br=[];
+    for(let i=0;i<st;i++){
+      // skokowa zmiana kąta — snap do wielokrotności ~26° (≈π/12 * 2)
+      if(rng()<0.35){ const snap=Math.PI/6; a+=Math.round((rng()-0.5)*2)*snap*(0.5+rng()*0.5); }
+      x+=Math.cos(a)*sL; y+=Math.sin(a)*sL;
+      p.push([x,y]);
+      // gałąź ortogonalna (joint system granitu)
+      if(d>0&&rng()<0.12){
+        const bp=[];
+        bP(x,y,a+Math.PI/2*(rng()>0.5?1:-1),l*(0.2+rng()*0.25),d-1,bp);
+        br.push(bp);
+      }
+    }
+    return br;
+  }
+  function dC(x0,y0,a,l,w,al,d){
+    const p=[];const bb=bP(x0,y0,a,l,d,p);
+    if(w>0.9){ctx.beginPath();ctx.moveTo(p[0][0],p[0][1]);for(let i=1;i<p.length;i++)ctx.lineTo(p[i][0],p[i][1]);ctx.strokeStyle=`rgba(2,3,6,${(al*0.30).toFixed(2)})`;ctx.lineWidth=w*3.5;ctx.stroke();}
+    ctx.beginPath();ctx.moveTo(p[0][0],p[0][1]);for(let i=1;i<p.length;i++)ctx.lineTo(p[i][0],p[i][1]);
+    ctx.strokeStyle=`rgba(4,4,6,${al.toFixed(2)})`;ctx.lineWidth=w;ctx.stroke();
+    // highlight po jednej stronie spękania
+    const off=w*0.7;ctx.beginPath();ctx.moveTo(p[0][0]-off,p[0][1]-off);for(let i=1;i<p.length;i++)ctx.lineTo(p[i][0]-off,p[i][1]-off);
+    ctx.strokeStyle=`rgba(245,248,255,${(al*0.55).toFixed(2)})`;ctx.lineWidth=w*0.4;ctx.stroke();
+    for(const bp of bb)dC(bp[0][0],bp[0][1],Math.atan2(bp[1][1]-bp[0][1],bp[1][0]-bp[0][0]),l*0.3,w*0.55,al*0.65,0);
+  }
+  // główne spękania pionowe (ciosy)
+  for(let i=0;i<10;i++)dC(rng()*S,rng()*S,Math.PI/2+(rng()-0.5)*0.12,180+rng()*260,2.2+rng()*1.0,0.58+rng()*0.18,3);
+  // spękania poziome (oddzielność płytowa)
+  for(let i=0;i<8;i++)dC(rng()*S,rng()*S,(rng()-0.5)*0.10,130+rng()*200,1.6+rng()*0.8,0.48+rng()*0.16,2);
+  // ukośne (ciosy diagonalne)
+  for(let i=0;i<6;i++)dC(rng()*S,rng()*S,Math.PI/4+(rng()-0.5)*0.12,110+rng()*180,1.3+rng()*0.6,0.38+rng()*0.14,1);
+  // drobne spękania
+  for(let i=0;i<32;i++)dC(rng()*S,rng()*S,Math.round(rng()*3)*Math.PI/4+(rng()-0.5)*0.08,30+rng()*65,0.7+rng()*0.4,0.26+rng()*0.14,1);
+  for(let i=0;i<60;i++)dC(rng()*S,rng()*S,Math.round(rng()*3)*Math.PI/4+(rng()-0.5)*0.06,10+rng()*22,0.3+rng()*0.2,0.14+rng()*0.10,0);
   const tex=new THREE.CanvasTexture(cv);tex.wrapS=tex.wrapT=THREE.RepeatWrapping;tex.colorSpace=THREE.SRGBColorSpace;tex.generateMipmaps=true;tex.minFilter=THREE.LinearMipmapLinearFilter;tex.magFilter=THREE.LinearFilter;return tex;
 }
 
@@ -459,8 +520,8 @@ function makeRockMaterial(rockTex) {
     shader.vertexShader =
       `float _h21v(vec2 p){p=fract(p*vec2(127.1,311.7));p+=dot(p,p+74.17);return fract(p.x*p.y);}
 float _vn2v(vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.0-2.0*f);return mix(mix(_h21v(i),_h21v(i+vec2(1,0)),u.x),mix(_h21v(i+vec2(0,1)),_h21v(i+vec2(1,1)),u.x),u.y);}
-attribute float aSteep;\nattribute float aSteepM;\nattribute float aRidge;\n` +
-      `varying vec3 vWN;\nvarying vec3 vWP;\nvarying float vSteep;\nvarying float vSteepM;\nvarying float vRidge;\n`
+attribute float aSteep;\nattribute float aSteepM;\nattribute float aRidge;\nattribute float aCavity;\nattribute float aRidgeS;\n` +
+      `varying vec3 vWN;\nvarying vec3 vWP;\nvarying float vSteep;\nvarying float vSteepM;\nvarying float vRidge;\nvarying float vCavity;\nvarying float vRidgeS;\n`
       + shader.vertexShader;
     shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>',
       `#include <begin_vertex>
@@ -481,9 +542,9 @@ attribute float aSteep;\nattribute float aSteepM;\nattribute float aRidge;\n` +
     shader.vertexShader = shader.vertexShader.replace('#include <worldpos_vertex>',
       `#include <worldpos_vertex>
       vWN=normalize(mat3(modelMatrix)*objectNormal);vWP=(modelMatrix*vec4(transformed,1.0)).xyz;
-      vSteep=aSteep;vSteepM=aSteepM;vRidge=aRidge;`);
+      vSteep=aSteep;vSteepM=aSteepM;vRidge=aRidge;vCavity=aCavity;vRidgeS=aRidgeS;`);
     shader.fragmentShader=`
-varying vec3 vWN;varying vec3 vWP;varying float vSteep;varying float vSteepM;varying float vRidge;
+varying vec3 vWN;varying vec3 vWP;varying float vSteep;varying float vSteepM;varying float vRidge;varying float vCavity;varying float vRidgeS;
 uniform float rockScale;uniform float uShowRidge;
 float _h21(vec2 p){p=fract(p*vec2(234.34,435.345));p+=dot(p,p+34.23);return fract(p.x*p.y);}
 float _vn2(vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.0-2.0*f);return mix(mix(_h21(i),_h21(i+vec2(1,0)),u.x),mix(_h21(i+vec2(0,1)),_h21(i+vec2(1,1)),u.x),u.y);}
@@ -499,17 +560,29 @@ uniform sampler2D rockMaskTex;
     float edgeFactor=clamp((vSteepM-vSteep-0.06)*6.0,0.0,1.0);
     float wallBlend=clamp(mix(blendSmooth,blendSharp,edgeFactor),0.0,1.0);
     float sA=rockScale*0.22;
+    float sMid=rockScale*0.55; // średnia skala — modulacja kryształów
     // anti-tiling offset for ZY projection (west wall) — breaks horizontal stripe repetition
     vec2 _zyOff=vec2(_fbm2(vWP.xz*0.0013)*0.42-0.21, _fbm2(vWP.xz*0.0019+vec2(7.3,2.1))*0.42-0.21);
     vec3 rA=texture2D(map,vWP.xy*sA).rgb*tpW.z+texture2D(map,vWP.xz*sA).rgb*tpW.y+texture2D(map,(vWP.zy+_zyOff)*sA).rgb*tpW.x;
     vec3 rB=texture2D(map,vWP.xy*rockScale).rgb*tpW.z+texture2D(map,vWP.xz*rockScale).rgb*tpW.y+texture2D(map,(vWP.zy+_zyOff)*rockScale).rgb*tpW.x;
-    // Granit Kościelca — jasny neutralny szary, chłodny odcień kwarcu
-    vec3 rockSample=mix(2.0*rA*rB,1.0-2.0*(1.0-rA)*(1.0-rB),step(0.5,rA))*vec3(0.93,0.94,0.96);
+    vec3 rMid=texture2D(map,vWP.xy*sMid).rgb*tpW.z+texture2D(map,vWP.xz*sMid).rgb*tpW.y+texture2D(map,(vWP.zy+_zyOff)*sMid).rgb*tpW.x;
+    // Hard Light blend drobnej + średniej skali
+    vec3 rockSample=mix(2.0*rA*rB,1.0-2.0*(1.0-rA)*(1.0-rB),step(0.5,rA));
+    // modulacja kryształów: zróżnicowanie jasnych i ciemnych ziaren
+    float _mMid=dot(rMid,vec3(0.299,0.587,0.114));
+    rockSample*=(0.72+_mMid*0.56);
+    rockSample=clamp(rockSample,0.0,1.0);
     float _lum=dot(rockSample,vec3(0.299,0.587,0.114));
-    // ciepły akcent skaleni w jasnych kryształach
-    rockSample=mix(rockSample, rockSample*vec3(1.03,1.01,0.96), smoothstep(0.42,0.68,_lum)*0.40);
-    // biotyt — czarne spekle w ciemnych partiach
-    rockSample=mix(rockSample, rockSample*vec3(0.86,0.85,0.84), smoothstep(0.30,0.10,_lum)*0.45);
+    // skaleń K: silny ciepły różowo-szary (dominujący kolor granitu Tatr)
+    rockSample=mix(rockSample, rockSample*vec3(1.12,0.97,0.91), smoothstep(0.38,0.72,_lum)*0.52);
+    // kwarc: zimny błękit w najjaśniejszych fragmentach
+    rockSample=mix(rockSample, rockSample*vec3(0.94,0.96,1.04), smoothstep(0.66,0.88,_lum)*0.30);
+    // biotyt: ostre czarne spekle (ostry próg szumowy)
+    float _bioN=_vn2(vWP.xz*rockScale*14.0)*0.6+_vn2(vWP.xz*rockScale*7.3)*0.4;
+    float _bio=smoothstep(0.82,0.96,_bioN)*smoothstep(0.52,0.30,_lum);
+    rockSample=mix(rockSample, vec3(0.08,0.07,0.06), _bio*0.85);
+    // ogólny tint: chłodny szaroróżowy granit
+    rockSample*=vec3(0.91,0.91,0.93);
     rockSample=clamp(rockSample,0.0,1.0);
     if(useOrtho>0.5){
       vec2 uv2=vUv;
@@ -528,10 +601,14 @@ uniform sampler2D rockMaskTex;
       float _wStr=smoothstep(0.55,0.90,wallBlend)*0.55;
       diffuseColor.rgb=mix(diffuseColor.rgb, diffuseColor.rgb*vec3(0.70,0.71,0.73), _wStr);
     }
-    // cavity AO: wklęsłości terenu (doliny, szczeliny) ciemniejsze — zastępuje SSAO
+    // cavity AO: doliny i szczeliny ciemniejsze (vCavity = pozytywny Laplasjan)
     {
-      float _ao = 1.0 - vRidge * 0.42;
+      float _ao = 1.0 - vCavity * 0.62;
       diffuseColor.rgb *= _ao;
+    }
+    // ridge highlight: granie minimalnie jaśniejsze od nieba
+    {
+      diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(1.08, 1.07, 1.06), vRidgeS * 0.45);
     }
     `);
     shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
@@ -551,6 +628,8 @@ uniform sampler2D rockMaskTex;
     roughnessFactor=clamp(roughnessFactor*(0.70+0.20*abs(vWN.y)),0.73,1.00);
     // przepaście: mokra skała — wyraźnie matowa
     roughnessFactor=mix(roughnessFactor, 0.28, smoothstep(0.60,0.94,wallBlend)*0.68);
+    // ostre granie: ledwo zauważalny połysk — tylko tyle żeby nie wyglądały jak pianka
+    roughnessFactor=mix(roughnessFactor, 0.60, vRidgeS * 0.30);
 `);
   };
   return mat;
@@ -563,6 +642,8 @@ function prepareLoadedGeometry(geo) {
   if (!geo.attributes.aSteep)  geo.setAttribute('aSteep',  new THREE.BufferAttribute(ones.slice(), 1));
   if (!geo.attributes.aSteepM) geo.setAttribute('aSteepM', new THREE.BufferAttribute(ones.slice(), 1));
   if (!geo.attributes.aRidge)  geo.setAttribute('aRidge',  new THREE.BufferAttribute(new Float32Array(n), 1));
+  if (!geo.attributes.aCavity) geo.setAttribute('aCavity', new THREE.BufferAttribute(new Float32Array(n), 1));
+  if (!geo.attributes.aRidgeS) geo.setAttribute('aRidgeS', new THREE.BufferAttribute(new Float32Array(n), 1));
   if (!geo.attributes.color) {
     const col = new Float32Array(n * 3);
     for (let i=0;i<n;i++){col[i*3]=0.45;col[i*3+1]=0.42;col[i*3+2]=0.39;}
@@ -661,6 +742,38 @@ async function init() {
   currentMesh.receiveShadow = true; currentMesh.castShadow = true;
   scene.add(currentMesh);
 
+  // Post-processing: vignette + kontrast + subtelny glow highlights
+  try {
+    composer = new THREE.EffectComposer(renderer);
+    composer.addPass(new THREE.RenderPass(scene, camera));
+    const gradePass = new THREE.ShaderPass({
+      uniforms: {
+        tDiffuse:   { value: null },
+        uRes:       { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+      },
+      vertexShader: `varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
+      fragmentShader: `
+        uniform sampler2D tDiffuse;
+        uniform vec2 uRes;
+        varying vec2 vUv;
+        void main(){
+          vec4 c=texture2D(tDiffuse,vUv);
+          // kontrast + lekkie nasycenie
+          c.rgb=pow(max(c.rgb,0.0),vec3(0.92));
+          c.rgb=mix(vec3(dot(c.rgb,vec3(0.299,0.587,0.114))),c.rgb,1.12);
+          // subtelny glow: jaśniejsze partie trochę świecą
+          float lum=dot(c.rgb,vec3(0.299,0.587,0.114));
+          c.rgb+=c.rgb*smoothstep(0.72,1.0,lum)*0.18;
+          // vignette
+          float d=length(vUv-0.5)*1.42;
+          c.rgb*=1.0-smoothstep(0.40,0.90,d)*0.55;
+          gl_FragColor=c;
+        }
+      `
+    });
+    composer.addPass(gradePass);
+  } catch(e) { console.warn('Composer unavailable:', e); composer = null; }
+
 
   const sc = sunLight.shadow.camera;
   const mg = 0.2;
@@ -711,6 +824,7 @@ async function init() {
     camera.aspect = window.innerWidth/window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    if (composer) composer.setSize(window.innerWidth, window.innerHeight);
   });
   animate();
 }
@@ -768,7 +882,17 @@ function updateSun() {
 }
 
 function initUI() {
-  document.getElementById('date-in').value = new Date().toISOString().split('T')[0];
+  const today = new Date();
+  document.getElementById('date-in').value = today.toISOString().split('T')[0];
+  // złota godzina poranna: środek między wschodem słońca a końcem golden hour
+  try {
+    const times = SunCalc.getTimes(today, LAT, LNG);
+    const ghMid = new Date((times.sunrise.getTime() + times.goldenHourEnd.getTime()) / 2);
+    const ghH = ghMid.getHours() + ghMid.getMinutes() / 60;
+    document.getElementById('hour-in').value = ghH.toFixed(2);
+  } catch(e) {
+    document.getElementById('hour-in').value = 7.0;
+  }
   updateSun();
   document.getElementById('date-in').addEventListener('input', updateSun);
   document.getElementById('hour-in').addEventListener('input', updateSun);
@@ -1026,6 +1150,21 @@ function autoLoadDrawings() {
 function initDrawMode() {
   document.getElementById('draw-toolbar').style.display = 'flex';
 
+  // toggle widoczności linii i punktów
+  let linesVisible = true;
+  document.getElementById('toggle-lines-btn').addEventListener('click', () => {
+    linesVisible = !linesVisible;
+    allLines.forEach(l => {
+      l.lineObj.visible = linesVisible;
+      if (l.labelSprite) l.labelSprite.visible = linesVisible;
+    });
+    allMarkers.forEach(m => {
+      m.markerObj.visible = linesVisible;
+      if (m.labelSprite) m.labelSprite.visible = linesVisible;
+    });
+    document.getElementById('toggle-lines-btn').textContent = linesVisible ? '👁 Ukryj linie' : '👁 Pokaż linie';
+  });
+
   // przełącznik narzędzi
   document.querySelectorAll('.tool-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1181,7 +1320,7 @@ function _fmt(v) { return v.toFixed(1); }
 function animate() {
   requestAnimationFrame(animate);
   controls.update();
-  renderer.render(scene, camera);
+  if (composer) composer.render(); else renderer.render(scene, camera);
   const p = camera.position, t = controls.target;
   _camInfoEls.px.textContent = _fmt(p.x); _camInfoEls.py.textContent = _fmt(p.y); _camInfoEls.pz.textContent = _fmt(p.z);
   _camInfoEls.tx.textContent = _fmt(t.x); _camInfoEls.ty.textContent = _fmt(t.y); _camInfoEls.tz.textContent = _fmt(t.z);
