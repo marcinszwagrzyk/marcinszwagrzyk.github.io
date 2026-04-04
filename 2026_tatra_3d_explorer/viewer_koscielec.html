@@ -106,7 +106,10 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
 <div id="help">Lewy przycisk: obracanie &nbsp;·&nbsp; Prawy/środkowy: przesuwanie &nbsp;·&nbsp; Scroll: zoom</div>
 <div id="cam-info">
   <span>pos&nbsp;&nbsp;</span> X=<b id="cp-x">–</b> &nbsp;Y=<b id="cp-y">–</b> &nbsp;H=<b id="cp-z">–</b><br>
-  <span>target</span> X=<b id="ct-x">–</b> &nbsp;Y=<b id="ct-y">–</b> &nbsp;H=<b id="ct-z">–</b>
+  <span>target</span> X=<b id="ct-x">–</b> &nbsp;Y=<b id="ct-y">–</b> &nbsp;H=<b id="ct-z">–</b><br>
+  <span style="font-size:9px;color:#555">scene pos</span> <span id="cs-pos" style="font-size:9px;color:#aaa">–</span><br>
+  <span style="font-size:9px;color:#555">scene tgt</span> <span id="cs-tgt" style="font-size:9px;color:#aaa">–</span>
+  <button id="copy-cam-btn" style="display:block;margin-top:4px;background:rgba(40,60,120,0.7);border:1px solid rgba(100,160,255,0.3);color:#88ccff;padding:3px 8px;border-radius:5px;font-size:9px;cursor:pointer;letter-spacing:1px">⎘ KOPIUJ</button>
 </div>
 
 <div id="draw-toolbar">
@@ -1444,7 +1447,13 @@ function sceneTo1992(sceneX, sceneZ) {
 const _camInfoEls = {
   px: document.getElementById('cp-x'), py: document.getElementById('cp-y'), pz: document.getElementById('cp-z'),
   tx: document.getElementById('ct-x'), ty: document.getElementById('ct-y'), tz: document.getElementById('ct-z'),
+  sp: document.getElementById('cs-pos'), st: document.getElementById('cs-tgt'),
 };
+document.getElementById('copy-cam-btn').addEventListener('click', () => {
+  const p = camera.position, t = controls.target;
+  const txt = `camera.position.set(${p.x.toFixed(1)}, ${p.y.toFixed(1)}, ${p.z.toFixed(1)});\ncontrols.target.set(${t.x.toFixed(1)}, ${t.y.toFixed(1)}, ${t.z.toFixed(1)});`;
+  navigator.clipboard.writeText(txt).catch(() => prompt('Kopiuj:', txt));
+});
 function animate() {
   requestAnimationFrame(animate);
   controls.update();
@@ -1454,6 +1463,8 @@ function animate() {
   const [tX, tY] = sceneTo1992(t.x, t.z);
   _camInfoEls.px.textContent = Math.round(pX); _camInfoEls.py.textContent = Math.round(pY); _camInfoEls.pz.textContent = p.y.toFixed(1);
   _camInfoEls.tx.textContent = Math.round(tX); _camInfoEls.ty.textContent = Math.round(tY); _camInfoEls.tz.textContent = t.y.toFixed(1);
+  _camInfoEls.sp.textContent = `${p.x.toFixed(0)}, ${p.y.toFixed(0)}, ${p.z.toFixed(0)}`;
+  _camInfoEls.st.textContent = `${t.x.toFixed(0)}, ${t.y.toFixed(0)}, ${t.z.toFixed(0)}`;
 }
 
 init().catch(err => {
