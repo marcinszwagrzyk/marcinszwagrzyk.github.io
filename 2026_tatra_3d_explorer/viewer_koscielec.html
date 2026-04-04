@@ -229,8 +229,8 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
 <script src="https://cdn.jsdelivr.net/npm/three@0.144.0/examples/js/postprocessing/RenderPass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.144.0/examples/js/postprocessing/ShaderPass.js"></script>
 <script>
-const STEP = 1;
-const LAT = 49.2254, LNG = 20.0155;
+const STEP = 2;
+const LAT = 49.2252, LNG = 20.0130;
 let scene, camera, renderer, controls, composer;
 let sunLight, ambientLight, sunMesh, sky;
 let shaderUniforms = null;
@@ -714,7 +714,7 @@ function loadImg(src) {
 }
 
 async function init() {
-  meta = await fetch('dem/koscielec_v2_meta.json').then(r => r.json());
+  meta = await fetch('dem/koscielec_v2_dem_meta.json').then(r => r.json());
 
   renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -751,7 +751,7 @@ async function init() {
   _su['mieCoefficient'].value  = 0.005;
   _su['mieDirectionalG'].value = 0.88;
 
-  const img = await loadImg('dem/koscielec_v2_terrain_rgb.png');
+  const img = await loadImg('dem/koscielec_v2_dem_terrain_rgb.png');
   physW = img.width  * meta.res_m;
   physD = img.height * meta.res_m;
 
@@ -876,7 +876,7 @@ async function init() {
     });
   };
   let rockMaskTex = null;
-  _loadTex('dem/koscielec_v2_orto.jpg', tex => { orthoTex = tex; });
+  _loadTex('dem/koscielec_v2_dem_orto.jpg', tex => { orthoTex = tex; });
   _loadTex('dem/koscielec_rock_mask.png', tex => { rockMaskTex = tex; });
   (function waitOrtho() {
     if (shaderUniforms && orthoTex) {
