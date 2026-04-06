@@ -241,7 +241,7 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
 <script>
 const STEP = 2;
 const LAT = 49.2268, LNG = 20.0213;
-let scene, camera, renderer, controls, composer;
+let scene, labelScene, camera, renderer, controls, composer;
 let sunLight, ambientLight, sunMesh, sky;
 let shaderUniforms = null;
 let orthoTex = null;
@@ -750,6 +750,7 @@ async function init() {
   scene = new THREE.Scene();
   scene.fog = new THREE.FogExp2(0xb8c8d8, 0.00007);
   scene.background = null;
+  labelScene = new THREE.Scene();
 
   camera = new THREE.PerspectiveCamera(52, window.innerWidth/window.innerHeight, 1, 60000);
   ambientLight = new THREE.AmbientLight(0x6080a0, 0.85); scene.add(ambientLight);
@@ -1214,11 +1215,11 @@ function deleteSelected() {
   if (!selected) return;
   if (selected.type === 'line') {
     const { lineObj, labelSprite } = allLines[selected.idx];
-    scene.remove(lineObj); if (labelSprite) scene.remove(labelSprite);
+    scene.remove(lineObj); if (labelSprite) labelScene.remove(labelSprite);
     allLines.splice(selected.idx, 1);
   } else {
     const { markerObj, labelSprite } = allMarkers[selected.idx];
-    if (markerObj) scene.remove(markerObj); if (labelSprite) scene.remove(labelSprite);
+    if (markerObj) scene.remove(markerObj); if (labelSprite) labelScene.remove(labelSprite);
     allMarkers.splice(selected.idx, 1);
   }
   clearSelection();
@@ -1231,7 +1232,7 @@ function renameSelected() {
   const name = prompt('Nowa nazwa:', item.label);
   if (name === null) return;
   item.label = name;
-  if (item.labelSprite) { scene.remove(item.labelSprite); item.labelSprite = null; }
+  if (item.labelSprite) { labelScene.remove(item.labelSprite); item.labelSprite = null; }
   if (name.trim()) {
     let pos;
     if (selected.type === 'line') {
@@ -1241,7 +1242,7 @@ function renameSelected() {
       pos = new THREE.Vector3(...item.pos); pos.y += 6;
     }
     item.labelSprite = makeLabel(name.trim(), pos, item.labelColor||'#ffffff', item.labelSize||32);
-    scene.add(item.labelSprite);
+    labelScene.add(item.labelSprite);
   }
   selectItem(selected.type, selected.idx);
   autoSave();
@@ -1270,8 +1271,8 @@ function autoSave() {
 }
 
 function loadDrawingsFromData(data) {
-  allLines.forEach(l => { scene.remove(l.lineObj); if (l.labelSprite) scene.remove(l.labelSprite); });
-  allMarkers.forEach(m => { scene.remove(m.markerObj); if (m.labelSprite) scene.remove(m.labelSprite); });
+  allLines.forEach(l => { scene.remove(l.lineObj); if (l.labelSprite) labelScene.remove(l.labelSprite); });
+  allMarkers.forEach(m => { scene.remove(m.markerObj); if (m.labelSprite) labelScene.remove(m.labelSprite); });
   allLines = []; allMarkers = [];
   (data.lines || []).forEach(ld => {
     const pts = [];
@@ -1284,7 +1285,7 @@ function loadDrawingsFromData(data) {
     if (ld.label) {
       const lp = pts[Math.floor(pts.length/2)].clone(); lp.y += 5;
       labelSprite = makeLabel(ld.label, lp, ld.labelColor||ld.color, ld.labelSize||32);
-      scene.add(labelSprite);
+      labelScene.add(labelSprite);
     }
     allLines.push({ pts: new Float32Array(ld.pts), lineObj, labelSprite, color: ld.color, label: ld.label||'', labelColor: ld.labelColor||'#ffffff', labelSize: ld.labelSize||32 });
   });
@@ -1298,7 +1299,7 @@ function loadDrawingsFromData(data) {
     if (md.label) {
       const lp = pos.clone(); lp.y += 6;
       labelSprite = makeLabel(md.label, lp, md.labelColor||md.color, md.labelSize||32);
-      scene.add(labelSprite);
+      labelScene.add(labelSprite);
     }
     allMarkers.push({ pos: md.pos, markerObj, labelSprite, color: md.color, label: md.label||'', labelColor: md.labelColor||'#ffffff', labelSize: md.labelSize||32, labelOnly: isLabelOnly });
   });
@@ -1531,7 +1532,7 @@ function initDrawMode() {
     const name = prompt('Tekst etykiety:');
     if (!name || !name.trim()) return;
     const item = selected.type === 'line' ? allLines[selected.idx] : allMarkers[selected.idx];
-    if (item.labelSprite) { scene.remove(item.labelSprite); item.labelSprite = null; }
+    if (item.labelSprite) { labelScene.remove(item.labelSprite); item.labelSprite = null; }
     item.label = name.trim(); item.labelColor = labelColor; item.labelSize = labelSize;
     let pos;
     if (selected.type === 'line') {
@@ -1541,7 +1542,7 @@ function initDrawMode() {
       pos = new THREE.Vector3(...item.pos); pos.y += 6;
     }
     item.labelSprite = makeLabel(name.trim(), pos, labelColor, labelSize);
-    scene.add(item.labelSprite);
+    labelScene.add(item.labelSprite);
     selectItem(selected.type, selected.idx);
     autoSave();
   });
@@ -1551,8 +1552,8 @@ function initDrawMode() {
 
   document.getElementById('clear-btn').addEventListener('click', () => {
     if (!confirm('Wyczyścić wszystkie linie i punkty?')) return;
-    allLines.forEach(l => { scene.remove(l.lineObj); if (l.labelSprite) scene.remove(l.labelSprite); });
-    allMarkers.forEach(m => { scene.remove(m.markerObj); if (m.labelSprite) scene.remove(m.labelSprite); });
+    allLines.forEach(l => { scene.remove(l.lineObj); if (l.labelSprite) labelScene.remove(l.labelSprite); });
+    allMarkers.forEach(m => { scene.remove(m.markerObj); if (m.labelSprite) labelScene.remove(m.labelSprite); });
     allLines = []; allMarkers = []; currentPts = []; rebuildPreviewLine(); clearSelection(); autoSave();
   });
 
@@ -1597,7 +1598,7 @@ function initDrawMode() {
       const txt = prompt('Tekst etykiety:');
       if (!txt || !txt.trim()) return;
       const sprite = makeLabel(txt.trim(), pt, labelColor, labelSize);
-      scene.add(sprite);
+      labelScene.add(sprite);
       allMarkers.push({ pos: pt.toArray(), markerObj: null, labelSprite: sprite, color: labelColor, label: txt.trim(), labelColor, labelSize, labelOnly: true });
       autoSave();
 
@@ -1665,6 +1666,9 @@ function animate() {
     }
   }
   if (composer) composer.render(); else renderer.render(scene, camera);
+  renderer.autoClear = false;
+  renderer.render(labelScene, camera);
+  renderer.autoClear = true;
   const p = camera.position, t = controls.target;
   const [pX, pY] = sceneTo1992(p.x, p.z);
   const [tX, tY] = sceneTo1992(t.x, t.z);
