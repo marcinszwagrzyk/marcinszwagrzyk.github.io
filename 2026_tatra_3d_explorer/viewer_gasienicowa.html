@@ -20,6 +20,7 @@ canvas#c { display: block; width: 100vw; height: 100vh; }
 .btn:hover { background: rgba(40,80,180,0.85); }
 #export-btn { bottom: 16px; right: 16px; }
 #load-btn   { bottom: 16px; right: 170px; }
+#reset-cam-btn { bottom: 16px; right: 330px; }
 #file-input { display: none; }
 
 #loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
@@ -102,6 +103,7 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
 <div id="loading">ŁADOWANIE GĄSIENICOWA…</div>
 <button id="export-btn" class="btn" style="display:none">⬇ Eksport OBJ</button>
 <button id="load-btn"   class="btn" style="display:none">📂 Wczytaj GLB/OBJ</button>
+<button id="reset-cam-btn" class="btn" style="display:none">⌖ Reset kamery</button>
 <input  id="file-input" type="file" accept=".glb,.gltf,.obj">
 <div id="help">Lewy przycisk: obracanie &nbsp;·&nbsp; Prawy/środkowy: przesuwanie &nbsp;·&nbsp; Scroll: zoom</div>
 <div id="cam-info">
@@ -151,12 +153,8 @@ input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
   </div>
   <div style="font-size:9px;color:#666;margin-top:6px;margin-bottom:3px;letter-spacing:1px">ETYKIETA — ROZMIAR</div>
   <div style="display:flex;gap:4px">
-    <button class="size-btn" data-size="12">XS</button>
-    <button class="size-btn active" data-size="22">S</button>
-    <button class="size-btn" data-size="27">SM</button>
-    <button class="size-btn" data-size="32">M</button>
-    <button class="size-btn" data-size="46">L</button>
-    <button class="size-btn" data-size="64">XL</button>
+    <button class="size-btn active" data-size="26">Mała</button>
+    <button class="size-btn" data-size="52">Duża</button>
   </div>
   <button id="toggle-lines-btn" style="margin-top:4px">👁 Ukryj linie</button>
   <button id="clear-btn" style="margin-top:2px">🗑 Wyczyść wszystko</button>
@@ -954,8 +952,14 @@ async function init() {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('export-btn').style.display = 'block';
   document.getElementById('load-btn').style.display   = 'block';
+  document.getElementById('reset-cam-btn').style.display = 'block';
   document.getElementById('export-btn').addEventListener('click', exportOBJ);
   document.getElementById('load-btn').addEventListener('click', () => document.getElementById('file-input').click());
+  document.getElementById('reset-cam-btn').addEventListener('click', () => {
+    camera.position.set(-100, 2400, -900);
+    controls.target.set(-200, 1900, 300);
+    controls.update();
+  });
   document.getElementById('file-input').addEventListener('change', onFileSelected);
   initUI();
   autoLoadDrawings();
@@ -1066,7 +1070,7 @@ let drawTool    = 'line';   // 'line' | 'point' | 'edit'
 let drawActive  = false;    // czy trwa rysowanie linii
 let drawColor   = '#ff4400';
 let labelColor  = '#ffffff';
-let labelSize   = 32;       // px na canvas (małe=22, średnie=32, duże=46)
+let labelSize   = 26;       // px (mała=26, duża=52)
 let currentPts  = [];
 let currentLineObj = null;
 let lastClickTime  = 0;
@@ -1098,31 +1102,61 @@ function hitTerrain(e) {
 function makeLabel(text, position, lColor, lSize) {
   lColor = lColor || labelColor;
   lSize  = lSize  || labelSize;
-  const STRETCH = 1.38;
-  const cv = document.createElement('canvas');
-  const padding = Math.ceil(lSize * 0.15);
+
+  const RES    = 3;   // 3× oversampling → crisp na każdym ekranie
+  const fSize  = lSize * RES;
+  const padX   = Math.round(fSize * 0.50);
+  const padY   = Math.round(fSize * 0.26);
+  const accent = Math.round(fSize * 0.13);   // lewy pasek koloru
+  const rad    = Math.round(fSize * 0.22);   // zaokrąglenie
+
+  const cv  = document.createElement('canvas');
   const ctx = cv.getContext('2d');
-  ctx.font = `bold ${lSize}px sans-serif`;
+  const fontStr = `600 ${fSize}px -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif`;
+  ctx.font = fontStr;
   const tw = ctx.measureText(text).width;
-  cv.width  = Math.ceil(tw * STRETCH) + padding * 2;
-  cv.height = Math.ceil(lSize * 1.3);
-  ctx.font = `bold ${lSize}px sans-serif`;
-  // cień dla czytelności bez tła
-  ctx.shadowColor = 'rgba(0,0,0,0.85)';
-  ctx.shadowBlur  = Math.ceil(lSize * 0.18);
-  ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+
+  cv.width  = Math.ceil(accent + padX + tw + padX);
+  cv.height = Math.ceil(fSize + padY * 2);
+  ctx.font  = fontStr;  // reset po resize canvas
+
+  // tło — dark pill
+  ctx.beginPath();
+  ctx.roundRect(0, 0, cv.width, cv.height, rad);
+  ctx.fillStyle = 'rgba(6,8,18,0.82)';
+  ctx.fill();
+
+  // cienkie obramowanie
+  const bw = Math.max(1, Math.round(RES * 0.7));
+  ctx.strokeStyle = 'rgba(255,255,255,0.20)';
+  ctx.lineWidth   = bw;
+  ctx.beginPath();
+  ctx.roundRect(bw / 2, bw / 2, cv.width - bw, cv.height - bw, rad);
+  ctx.stroke();
+
+  // lewy pasek akcentu w kolorze etykiety
   ctx.fillStyle = lColor;
-  ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-  ctx.save();
-  ctx.scale(STRETCH, 1.0);
-  ctx.fillText(text, padding / STRETCH, Math.ceil(lSize * 0.1));
-  ctx.restore();
+  ctx.beginPath();
+  ctx.roundRect(0, 0, accent, cv.height, [rad, 0, 0, rad]);
+  ctx.fill();
+
+  // tekst — zawsze biały, accent niesie kolor
+  ctx.fillStyle    = '#ffffff';
+  ctx.textAlign    = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, accent + padX, cv.height / 2);
+
   const tex = new THREE.CanvasTexture(cv);
+  tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+
   const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true }));
   spr.position.copy(position);
   spr.center.set(0.5, 0);
-  const scale = lSize / 32;
-  spr.scale.set((cv.width / 90) * 9 * scale, 9 * scale, 1);
+
+  const worldH = (lSize / 32) * 9;
+  const worldW = worldH * (cv.width / cv.height);
+  spr.scale.set(worldW, worldH, 1);
   return spr;
 }
 
@@ -1215,6 +1249,7 @@ function renameSelected() {
 
 // ── eksport / import ──────────────────────────────────────────────────────────
 const DRAWINGS_LS_KEY = 'gasienicowa_topo_drawings';
+let _drawingsFileHandle = null;
 
 function getDrawingsData() {
   return {
@@ -1225,7 +1260,13 @@ function getDrawingsData() {
 }
 
 function autoSave() {
-  try { localStorage.setItem(DRAWINGS_LS_KEY, JSON.stringify(getDrawingsData())); } catch(_) {}
+  const json = JSON.stringify(getDrawingsData(), null, 2);
+  try { localStorage.setItem(DRAWINGS_LS_KEY, json); } catch(_) {}
+  if (_drawingsFileHandle) {
+    _drawingsFileHandle.createWritable()
+      .then(w => w.write(json).then(() => w.close()))
+      .catch(() => {});
+  }
 }
 
 function loadDrawingsFromData(data) {
@@ -1263,11 +1304,34 @@ function loadDrawingsFromData(data) {
   });
 }
 
-function exportDrawings() {
-  const blob = new Blob([JSON.stringify(getDrawingsData(), null, 2)], { type: 'application/json' });
+async function exportDrawings() {
+  const json = JSON.stringify(getDrawingsData(), null, 2);
+  if (window.showSaveFilePicker) {
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: 'gasienicowa_drawings.json',
+        types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
+      });
+      _drawingsFileHandle = handle;
+      const w = await handle.createWritable();
+      await w.write(json);
+      await w.close();
+      _updateExportBtnLabel();
+      return;
+    } catch(e) {
+      if (e.name === 'AbortError') return;
+    }
+  }
+  // fallback
+  const blob = new Blob([json], { type: 'application/json' });
   const url  = URL.createObjectURL(blob);
   Object.assign(document.createElement('a'), { href: url, download: 'gasienicowa_drawings.json' }).click();
   URL.revokeObjectURL(url);
+}
+
+function _updateExportBtnLabel() {
+  const btn = document.getElementById('export-draw-btn');
+  if (btn) btn.textContent = _drawingsFileHandle ? '💾 Zapisz JSON (plik połączony)' : '⬇ Eksport JSON';
 }
 
 function importDrawings(file) {

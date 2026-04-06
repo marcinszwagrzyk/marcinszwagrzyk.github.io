@@ -1,0 +1,303 @@
+{
+  "version": 1,
+  "lines": [],
+  "markers": [
+    {
+      "pos": [
+        -480.88126770695055,
+        2155.0981663310195,
+        186.72614086411673
+      ],
+      "color": "#ffffff",
+      "label": "Kościelec",
+      "labelColor": "#ffffff",
+      "labelSize": 52
+    },
+    {
+      "pos": [
+        -408.07704735874785,
+        2160.02849245427,
+        350.0152692425856
+      ],
+      "color": "#ffffff",
+      "label": "Zadni Kościelec",
+      "labelColor": "#ffffff",
+      "labelSize": 52
+    },
+    {
+      "pos": [
+        -99.27677389742728,
+        2225.365735681503,
+        862.9797510052601
+      ],
+      "color": "#ffffff",
+      "label": "Maly Kozi Wierch",
+      "labelColor": "#ffffff",
+      "labelSize": 52
+    },
+    {
+      "pos": [
+        880.9807401631911,
+        2226.370676338496,
+        -32.315682969393364
+      ],
+      "color": "#ffffff",
+      "label": "Skrajny Granat",
+      "labelColor": "#ffffff",
+      "labelSize": 52
+    },
+    {
+      "pos": [
+        239.7766012230513,
+        2175.872519698637,
+        821.5483880374039
+      ],
+      "color": "#ffffff",
+      "label": "Zamarla Turnia",
+      "labelColor": "#ffffff",
+      "labelSize": 52
+    },
+    {
+      "pos": [
+        6.818697328520737,
+        1954.5469886175097,
+        631.7562936574075
+      ],
+      "color": "#ff4400",
+      "label": "",
+      "labelColor": "#ffffff",
+      "labelSize": 52
+    },
+    {
+      "pos": [
+        -394.4882567380754,
+        1999.5492384606155,
+        187.69140304765062
+      ],
+      "color": "#ff4400",
+      "label": "",
+      "labelColor": "#ffffff",
+      "labelSize": 52
+    },
+    {
+      "pos": [
+        -3.8193272401919085,
+        1926.8146531996856,
+        593.6165901696583
+      ],
+      "color": "#ff4400",
+      "label": "",
+      "labelColor": "#ffffff",
+      "labelSize": 52
+    },
+    {
+      "pos": [
+        797.2876951931684,
+        2175.9771200928058,
+        340.25147707129634
+      ],
+      "color": "#ff4400",
+      "label": "",
+      "labelColor": "#ffffff",
+      "labelSize": 52
+    },
+    {
+      "pos": [
+        252.6166269054593,
+        1958.1470198798932,
+        614.5645749828017
+      ],
+      "color": "#ff4400",
+      "label": "",
+      "labelColor": "#ffffff",
+      "labelSize": 52
+    },
+    {
+      "pos": [
+        9.009618254023819,
+        1831.1686344293257,
+        153.56028326204887
+      ],
+      "color": "#ff4400",
+      "label": "",
+      "labelColor": "#ffffff",
+      "labelSize": 52
+    },
+    {
+      "pos": [
+        -349.58853461831137,
+        1892.5420572285313,
+        51.976677843217786
+      ],
+      "color": "#ff4400",
+      "label": "",
+      "labelColor": "#ffffff",
+      "labelSize": 52
+    },
+    {
+      "pos": [
+        369.1761233173782,
+        1853.7908851753793,
+        185.10812178448512
+      ],
+      "color": "#ff4400",
+      "label": "",
+      "labelColor": "#ffffff",
+      "labelSize": 52
+    },
+    {
+      "pos": [
+        839.2571935624753,
+        2232.6571684039895,
+        107.59186406138598
+      ],
+      "color": "#ffffff",
+      "label": "Pośredni Granat",
+      "labelColor": "#ffffff",
+      "labelSize": 52
+    },
+    {
+      "pos": [
+        826.8123386434885,
+        2239.718374147737,
+        215.5801027848535
+      ],
+      "color": "#ffffff",
+      "label": "Zadni Granat",
+      "labelColor": "#ffffff",
+      "labelSize": 52
+    },
+    {
+      "pos": [
+        818.598445555771,
+        2132.3818455816763,
+        -284.3208099621348
+      ],
+      "color": "#ffffff",
+      "label": "Wierch pod Fajki",
+      "labelColor": "#ffffff",
+      "labelSize": 52
+    },
+    {
+      "pos": [
+        -418.6440132486299,
+        2245.262518275516,
+        772.2789607736548
+      ],
+      "color": "#ffffff",
+      "label": "Zawratowa Turnia",
+      "labelColor": "#ffffff",
+      "labelSize": 52
+    },
+    {
+      "pos": [
+        -535.6215282614398,
+        2258.716718664998,
+        805.0373121157622
+      ],
+      "color": "#ffffff",
+      "label": "Niebieska Turnia",
+      "labelColor": "#ffffff",
+      "labelSize": 52
+    },
+    {
+      "pos": [
+        -905.3904685859555,
+        2290.6150860724565,
+        760.2017338337433
+      ],
+      "color": "#ffffff",
+      "label": "Świnica NW",
+      "labelColor": "#ffffff",
+      "labelSize": 52
+    },
+    {
+      "pos": [
+        -857.4205676740863,
+        2301.991523114158,
+        832.5806121164521
+      ],
+      "color": "#ffffff",
+      "label": "Świnica SE",
+      "labelColor": "#ffffff",
+      "labelSize": 52
+    },
+    {
+      "pos": [
+        -644.9218439142802,
+        2278.5960444759135,
+        842.8769934206985
+      ],
+      "color": "#ffffff",
+      "label": "Gąsienicowa Turnia",
+      "labelColor": "#ffffff",
+      "labelSize": 52
+    },
+    {
+      "pos": [
+        -333.3762460627778,
+        2156.1312142463166,
+        858.3931669268082
+      ],
+      "color": "#ffffff",
+      "label": "Zawrat",
+      "labelColor": "#ffffff",
+      "labelSize": 52
+    },
+    {
+      "pos": [
+        554.3101661729645,
+        2290.74192420167,
+        935.1529282992204
+      ],
+      "color": "#ffffff",
+      "label": "Kozi Wierch",
+      "labelColor": "#ffffff",
+      "labelSize": 52
+    },
+    {
+      "pos": [
+        680.8596747948999,
+        2028.8085011985672,
+        -397.0082532673017
+      ],
+      "color": "#ffffff",
+      "label": "Żólta Przelecz",
+      "labelColor": "#ffffff",
+      "labelSize": 52
+    },
+    {
+      "pos": [
+        556.4385663676392,
+        2086.7771447684513,
+        -855.667104594252
+      ],
+      "color": "#ffffff",
+      "label": "Żólta Turnia",
+      "labelColor": "#ffffff",
+      "labelSize": 52
+    },
+    {
+      "pos": [
+        550.658876730095,
+        1947.9912472221602,
+        597.8006525495343
+      ],
+      "color": "#ffffff",
+      "label": "Kozia Dolinka",
+      "labelColor": "#ffffff",
+      "labelSize": 52
+    },
+    {
+      "pos": [
+        -220.91775660466146,
+        1624.2000244140625,
+        -417.0358647641232
+      ],
+      "color": "#ffffff",
+      "label": "Czarny Staw Gąsienicowy",
+      "labelColor": "#ffffff",
+      "labelSize": 52
+    }
+  ]
+}
