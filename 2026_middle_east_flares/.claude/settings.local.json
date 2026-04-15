@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(C:/Users/marci/anaconda3/envs/geo-toolbox/python.exe *)"
+    ]
+  }
+}
