@@ -1,0 +1,14 @@
+# Refinery flares — NASA FIRMS (VIIRS / MODIS active fire)
+geopandas>=0.14
+pandas>=2.0
+numpy
+matplotlib
+requests
+pyarrow
+shapely
+# --- later phases (not used yet) ---
+# Planetary Computer / Black Marble night lights:
+# pystac-client
+# planetary-computer
+# odc-stac
+# rioxarray
