@@ -8,7 +8,7 @@ import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from shapely.geometry import Point
 
-FIRMS_MAP_KEY = "2b1c34df0e49ece7703e69e48ab89256"
+FIRMS_MAP_KEY = ""
 BLACKMARBLE_TOKEN = open("build_notebook.py", encoding="utf-8").read().split('BLACKMARBLE_TOKEN = "', 1)[1].split('"', 1)[0]
 BM_PRODUCT, BM_COLLECTION = "VNP46A4", "5200"
 NAME_COL = "name"

@@ -35,7 +35,7 @@ import matplotlib.pyplot as plt
 from shapely.geometry import Point
 
 # ----------------------------- CONFIG -----------------------------
-FIRMS_MAP_KEY = "2b1c34df0e49ece7703e69e48ab89256"          # NASA FIRMS key
+FIRMS_MAP_KEY = ""          # NASA FIRMS key
 
 # Refineries come from this GPKG. If it does not exist it is created from REFINERIES below.
 REFINERIES_GPKG  = "data/refineries_2026.gpkg"
@@ -43,7 +43,7 @@ REFINERIES_LAYER = None
 NAME_COL         = "name"                                    # name column in the GPKG
 
 # Black Marble is OPTIONAL. Empty token / failure -> FIRMS only.
-BLACKMARBLE_TOKEN = "eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9naW4iLCJzaWciOiJlZGxqd3RwdWJrZXlfb3BzIiwiYWxnIjoiUlMyNTYifQ.eyJ0eXBlIjoiVXNlciIsInVpZCI6Im1hcmNpbl9zendhZ3J6eWtfMTk4NyIsImV4cCI6MTc4NjI2NjQ5MiwiaWF0IjoxNzgxMDgyNDkyLCJpc3MiOiJodHRwczovL3Vycy5lYXJ0aGRhdGEubmFzYS5nb3YiLCJpZGVudGl0eV9wcm92aWRlciI6ImVkbF9vcHMiLCJhY3IiOiJlZGwiLCJhc3N1cmFuY2VfbGV2ZWwiOjN9.brJWcgJeDjhn35wOXe1DlPqjFsOXPjHFv3M071hzoqmWRl9WtsFErejdzExpQJDrW42GGmBywi1QqytHc1JVNn64BOVQ50zbF7n6tLfxSa1ZYIPAS8sZGcY0BQX-DecIprFfVjNiooxA6JozbNliE15GHWPNr0jU696L5jga0Umh_F-rSdksJe2NSDuM_3BrNVrjXKpVlsZGeshDR9KBRdKNU5zbt4AskTeYBO8ThQOl2wK8ENIzINS-d-OWjhSLxSYvebu-mS2XYlph1YjEHzxbspnFRV6_Lm3r3VMPtt9_kZCYikkUzZM0tlfx4jN8AmsYBpZ-LYNw1Q5Tg4V1VA"
+BLACKMARBLE_TOKEN = ""
 BM_COLLECTION = "5200"           # Black Marble collection
 BM_MONTHLY_START = date(2022, 1, 1)   # hybrid: yearly VNP46A4 before this, monthly VNP46A3 from here
 

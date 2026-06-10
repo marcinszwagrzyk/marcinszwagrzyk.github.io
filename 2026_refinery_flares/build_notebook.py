@@ -43,7 +43,7 @@ REFINERIES_LAYER = None
 NAME_COL         = "name"                                    # name column in the GPKG
 
 # Black Marble is OPTIONAL. Empty token / failure -> FIRMS only.
-BLACKMARBLE_TOKEN = "eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9naW4iLCJzaWciOiJlZGxqd3RwdWJrZXlfb3BzIiwiYWxnIjoiUlMyNTYifQ.eyJ0eXBlIjoiVXNlciIsInVpZCI6Im1hcmNpbl9zendhZ3J6eWtfMTk4NyIsImV4cCI6MTc4NjI2NjQ5MiwiaWF0IjoxNzgxMDgyNDkyLCJpc3MiOiJodHRwczovL3Vycy5lYXJ0aGRhdGEubmFzYS5nb3YiLCJpZGVudGl0eV9wcm92aWRlciI6ImVkbF9vcHMiLCJhY3IiOiJlZGwiLCJhc3N1cmFuY2VfbGV2ZWwiOjN9.brJWcgJeDjhn35wOXe1DlPqjFsOXPjHFv3M071hzoqmWRl9WtsFErejdzExpQJDrW42GGmBywi1QqytHc1JVNn64BOVQ50zbF7n6tLfxSa1ZYIPAS8sZGcY0BQX-DecIprFfVjNiooxA6JozbNliE15GHWPNr0jU696L5jga0Umh_F-rSdksJe2NSDuM_3BrNVrjXKpVlsZGeshDR9KBRdKNU5zbt4AskTeYBO8ThQOl2wK8ENIzINS-d-OWjhSLxSYvebu-mS2XYlph1YjEHzxbspnFRV6_Lm3r3VMPtt9_kZCYikkUzZM0tlfx4jN8AmsYBpZ-LYNw1Q5Tg4V1VA"
+BLACKMARBLE_TOKEN = ""
 BM_COLLECTION = "5200"           # Black Marble collection
 BM_MONTHLY_START = date(2022, 1, 1)   # hybrid: yearly VNP46A4 before this, monthly VNP46A3 from here
 
@@ -237,7 +237,7 @@ def _bm_value(path, lon, lat, half):
 def fetch_black_marble(ref_gdf):
     cols = ["refinery", "date", "radiance"]
     if not BLACKMARBLE_TOKEN:
-        print("No BLACKMARBLE_TOKEN -> FIRMS only."); return pd.DataFrame(columns=cols)
+        print("No BLACKMARBLE_ -> FIRMS only."); return pd.DataFrame(columns=cols)
     try:
         import h5py  # noqa
     except Exception as e:
