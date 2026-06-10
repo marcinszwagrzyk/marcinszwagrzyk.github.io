@@ -1,0 +1,747 @@
+refinery,date,series,value
+HPCL Barmer / HRRL (IN),2023-03-01,firms_detections_monthly,2.0
+HPCL Barmer / HRRL (IN),2024-10-01,firms_detections_monthly,2.0
+HPCL Barmer / HRRL (IN),2026-02-01,firms_detections_monthly,6.0
+HPCL Barmer / HRRL (IN),2026-04-01,firms_detections_monthly,10.0
+HPCL Barmer / HRRL (IN),2026-05-01,firms_detections_monthly,1.0
+HPCL Barmer / HRRL (IN),2026-06-01,firms_detections_monthly,11.0
+IOCL Panipat (IN),2012-01-01,firms_detections_monthly,12.0
+IOCL Panipat (IN),2012-02-01,firms_detections_monthly,31.0
+IOCL Panipat (IN),2012-03-01,firms_detections_monthly,45.0
+IOCL Panipat (IN),2012-04-01,firms_detections_monthly,55.0
+IOCL Panipat (IN),2012-05-01,firms_detections_monthly,29.0
+IOCL Panipat (IN),2012-06-01,firms_detections_monthly,5.0
+IOCL Panipat (IN),2012-07-01,firms_detections_monthly,3.0
+IOCL Panipat (IN),2012-08-01,firms_detections_monthly,2.0
+IOCL Panipat (IN),2012-09-01,firms_detections_monthly,11.0
+IOCL Panipat (IN),2012-10-01,firms_detections_monthly,50.0
+IOCL Panipat (IN),2012-11-01,firms_detections_monthly,18.0
+IOCL Panipat (IN),2012-12-01,firms_detections_monthly,25.0
+IOCL Panipat (IN),2013-01-01,firms_detections_monthly,30.0
+IOCL Panipat (IN),2013-02-01,firms_detections_monthly,21.0
+IOCL Panipat (IN),2013-03-01,firms_detections_monthly,54.0
+IOCL Panipat (IN),2013-04-01,firms_detections_monthly,26.0
+IOCL Panipat (IN),2013-05-01,firms_detections_monthly,95.0
+IOCL Panipat (IN),2013-06-01,firms_detections_monthly,25.0
+IOCL Panipat (IN),2013-07-01,firms_detections_monthly,20.0
+IOCL Panipat (IN),2013-08-01,firms_detections_monthly,40.0
+IOCL Panipat (IN),2013-09-01,firms_detections_monthly,56.0
+IOCL Panipat (IN),2013-10-01,firms_detections_monthly,23.0
+IOCL Panipat (IN),2013-11-01,firms_detections_monthly,21.0
+IOCL Panipat (IN),2013-12-01,firms_detections_monthly,39.0
+IOCL Panipat (IN),2014-01-01,firms_detections_monthly,30.0
+IOCL Panipat (IN),2014-02-01,firms_detections_monthly,20.0
+IOCL Panipat (IN),2014-03-01,firms_detections_monthly,30.0
+IOCL Panipat (IN),2014-04-01,firms_detections_monthly,34.0
+IOCL Panipat (IN),2014-05-01,firms_detections_monthly,70.0
+IOCL Panipat (IN),2014-06-01,firms_detections_monthly,29.0
+IOCL Panipat (IN),2014-07-01,firms_detections_monthly,27.0
+IOCL Panipat (IN),2014-08-01,firms_detections_monthly,13.0
+IOCL Panipat (IN),2014-09-01,firms_detections_monthly,14.0
+IOCL Panipat (IN),2014-10-01,firms_detections_monthly,19.0
+IOCL Panipat (IN),2014-11-01,firms_detections_monthly,19.0
+IOCL Panipat (IN),2014-12-01,firms_detections_monthly,23.0
+IOCL Panipat (IN),2015-01-01,firms_detections_monthly,21.0
+IOCL Panipat (IN),2015-02-01,firms_detections_monthly,15.0
+IOCL Panipat (IN),2015-03-01,firms_detections_monthly,15.0
+IOCL Panipat (IN),2015-04-01,firms_detections_monthly,16.0
+IOCL Panipat (IN),2015-05-01,firms_detections_monthly,12.0
+IOCL Panipat (IN),2015-06-01,firms_detections_monthly,33.0
+IOCL Panipat (IN),2015-07-01,firms_detections_monthly,7.0
+IOCL Panipat (IN),2015-08-01,firms_detections_monthly,3.0
+IOCL Panipat (IN),2015-09-01,firms_detections_monthly,10.0
+IOCL Panipat (IN),2015-10-01,firms_detections_monthly,15.0
+IOCL Panipat (IN),2015-11-01,firms_detections_monthly,29.0
+IOCL Panipat (IN),2015-12-01,firms_detections_monthly,27.0
+IOCL Panipat (IN),2016-01-01,firms_detections_monthly,18.0
+IOCL Panipat (IN),2016-02-01,firms_detections_monthly,28.0
+IOCL Panipat (IN),2016-03-01,firms_detections_monthly,22.0
+IOCL Panipat (IN),2016-04-01,firms_detections_monthly,8.0
+IOCL Panipat (IN),2016-05-01,firms_detections_monthly,26.0
+IOCL Panipat (IN),2016-06-01,firms_detections_monthly,16.0
+IOCL Panipat (IN),2016-07-01,firms_detections_monthly,2.0
+IOCL Panipat (IN),2016-08-01,firms_detections_monthly,26.0
+IOCL Panipat (IN),2016-09-01,firms_detections_monthly,70.0
+IOCL Panipat (IN),2016-10-01,firms_detections_monthly,6.0
+IOCL Panipat (IN),2016-11-01,firms_detections_monthly,32.0
+IOCL Panipat (IN),2016-12-01,firms_detections_monthly,26.0
+IOCL Panipat (IN),2017-01-01,firms_detections_monthly,16.0
+IOCL Panipat (IN),2017-02-01,firms_detections_monthly,20.0
+IOCL Panipat (IN),2017-03-01,firms_detections_monthly,32.0
+IOCL Panipat (IN),2017-04-01,firms_detections_monthly,30.0
+IOCL Panipat (IN),2017-05-01,firms_detections_monthly,18.0
+IOCL Panipat (IN),2017-06-01,firms_detections_monthly,12.0
+IOCL Panipat (IN),2017-07-01,firms_detections_monthly,30.0
+IOCL Panipat (IN),2017-08-01,firms_detections_monthly,34.0
+IOCL Panipat (IN),2017-09-01,firms_detections_monthly,20.0
+IOCL Panipat (IN),2017-10-01,firms_detections_monthly,16.0
+IOCL Panipat (IN),2017-11-01,firms_detections_monthly,18.0
+IOCL Panipat (IN),2017-12-01,firms_detections_monthly,2.0
+IOCL Panipat (IN),2018-01-01,firms_detections_monthly,50.0
+IOCL Panipat (IN),2018-02-01,firms_detections_monthly,44.0
+IOCL Panipat (IN),2018-03-01,firms_detections_monthly,34.0
+IOCL Panipat (IN),2018-04-01,firms_detections_monthly,76.0
+IOCL Panipat (IN),2018-05-01,firms_detections_monthly,30.0
+IOCL Panipat (IN),2018-06-01,firms_detections_monthly,14.0
+IOCL Panipat (IN),2018-07-01,firms_detections_monthly,18.0
+IOCL Panipat (IN),2018-08-01,firms_detections_monthly,47.0
+IOCL Panipat (IN),2018-09-01,firms_detections_monthly,87.0
+IOCL Panipat (IN),2018-10-01,firms_detections_monthly,131.0
+IOCL Panipat (IN),2018-11-01,firms_detections_monthly,123.0
+IOCL Panipat (IN),2018-12-01,firms_detections_monthly,75.0
+IOCL Panipat (IN),2019-01-01,firms_detections_monthly,47.0
+IOCL Panipat (IN),2019-02-01,firms_detections_monthly,96.0
+IOCL Panipat (IN),2019-03-01,firms_detections_monthly,121.0
+IOCL Panipat (IN),2019-04-01,firms_detections_monthly,51.0
+IOCL Panipat (IN),2019-05-01,firms_detections_monthly,38.0
+IOCL Panipat (IN),2019-06-01,firms_detections_monthly,24.0
+IOCL Panipat (IN),2019-07-01,firms_detections_monthly,5.0
+IOCL Panipat (IN),2019-08-01,firms_detections_monthly,29.0
+IOCL Panipat (IN),2019-09-01,firms_detections_monthly,92.0
+IOCL Panipat (IN),2019-10-01,firms_detections_monthly,90.0
+IOCL Panipat (IN),2019-11-01,firms_detections_monthly,49.0
+IOCL Panipat (IN),2019-12-01,firms_detections_monthly,14.0
+IOCL Panipat (IN),2020-01-01,firms_detections_monthly,56.0
+IOCL Panipat (IN),2020-02-01,firms_detections_monthly,43.0
+IOCL Panipat (IN),2020-03-01,firms_detections_monthly,30.0
+IOCL Panipat (IN),2020-04-01,firms_detections_monthly,34.0
+IOCL Panipat (IN),2020-05-01,firms_detections_monthly,238.0
+IOCL Panipat (IN),2020-06-01,firms_detections_monthly,26.0
+IOCL Panipat (IN),2020-07-01,firms_detections_monthly,14.0
+IOCL Panipat (IN),2020-08-01,firms_detections_monthly,13.0
+IOCL Panipat (IN),2020-09-01,firms_detections_monthly,9.0
+IOCL Panipat (IN),2020-10-01,firms_detections_monthly,21.0
+IOCL Panipat (IN),2020-11-01,firms_detections_monthly,17.0
+IOCL Panipat (IN),2020-12-01,firms_detections_monthly,16.0
+IOCL Panipat (IN),2021-01-01,firms_detections_monthly,2.0
+IOCL Panipat (IN),2021-02-01,firms_detections_monthly,48.0
+IOCL Panipat (IN),2021-03-01,firms_detections_monthly,23.0
+IOCL Panipat (IN),2021-04-01,firms_detections_monthly,14.0
+IOCL Panipat (IN),2021-05-01,firms_detections_monthly,7.0
+IOCL Panipat (IN),2021-06-01,firms_detections_monthly,5.0
+IOCL Panipat (IN),2021-07-01,firms_detections_monthly,5.0
+IOCL Panipat (IN),2021-08-01,firms_detections_monthly,12.0
+IOCL Panipat (IN),2021-09-01,firms_detections_monthly,4.0
+IOCL Panipat (IN),2021-10-01,firms_detections_monthly,31.0
+IOCL Panipat (IN),2021-11-01,firms_detections_monthly,11.0
+IOCL Panipat (IN),2021-12-01,firms_detections_monthly,19.0
+IOCL Panipat (IN),2022-01-01,firms_detections_monthly,18.0
+IOCL Panipat (IN),2022-02-01,firms_detections_monthly,23.0
+IOCL Panipat (IN),2022-03-01,firms_detections_monthly,122.0
+IOCL Panipat (IN),2022-04-01,firms_detections_monthly,38.0
+IOCL Panipat (IN),2022-05-01,firms_detections_monthly,15.0
+IOCL Panipat (IN),2022-06-01,firms_detections_monthly,4.0
+IOCL Panipat (IN),2022-07-01,firms_detections_monthly,69.0
+IOCL Panipat (IN),2022-08-01,firms_detections_monthly,8.0
+IOCL Panipat (IN),2022-09-01,firms_detections_monthly,21.0
+IOCL Panipat (IN),2022-10-01,firms_detections_monthly,43.0
+IOCL Panipat (IN),2022-11-01,firms_detections_monthly,203.0
+IOCL Panipat (IN),2022-12-01,firms_detections_monthly,313.0
+IOCL Panipat (IN),2023-01-01,firms_detections_monthly,42.0
+IOCL Panipat (IN),2023-02-01,firms_detections_monthly,70.0
+IOCL Panipat (IN),2023-03-01,firms_detections_monthly,48.0
+IOCL Panipat (IN),2023-04-01,firms_detections_monthly,67.0
+IOCL Panipat (IN),2023-05-01,firms_detections_monthly,5.0
+IOCL Panipat (IN),2023-06-01,firms_detections_monthly,25.0
+IOCL Panipat (IN),2023-07-01,firms_detections_monthly,16.0
+IOCL Panipat (IN),2023-08-01,firms_detections_monthly,19.0
+IOCL Panipat (IN),2023-09-01,firms_detections_monthly,14.0
+IOCL Panipat (IN),2023-10-01,firms_detections_monthly,38.0
+IOCL Panipat (IN),2023-11-01,firms_detections_monthly,119.0
+IOCL Panipat (IN),2023-12-01,firms_detections_monthly,45.0
+IOCL Panipat (IN),2024-01-01,firms_detections_monthly,20.0
+IOCL Panipat (IN),2024-02-01,firms_detections_monthly,40.0
+IOCL Panipat (IN),2024-03-01,firms_detections_monthly,152.0
+IOCL Panipat (IN),2024-04-01,firms_detections_monthly,41.0
+IOCL Panipat (IN),2024-05-01,firms_detections_monthly,30.0
+IOCL Panipat (IN),2024-06-01,firms_detections_monthly,8.0
+IOCL Panipat (IN),2024-07-01,firms_detections_monthly,10.0
+IOCL Panipat (IN),2024-08-01,firms_detections_monthly,1.0
+IOCL Panipat (IN),2024-09-01,firms_detections_monthly,10.0
+IOCL Panipat (IN),2024-10-01,firms_detections_monthly,4.0
+IOCL Panipat (IN),2024-11-01,firms_detections_monthly,13.0
+IOCL Panipat (IN),2024-12-01,firms_detections_monthly,27.0
+IOCL Panipat (IN),2025-01-01,firms_detections_monthly,25.0
+IOCL Panipat (IN),2025-02-01,firms_detections_monthly,30.0
+IOCL Panipat (IN),2025-03-01,firms_detections_monthly,39.0
+IOCL Panipat (IN),2025-04-01,firms_detections_monthly,30.0
+IOCL Panipat (IN),2025-05-01,firms_detections_monthly,51.0
+IOCL Panipat (IN),2025-06-01,firms_detections_monthly,12.0
+IOCL Panipat (IN),2025-07-01,firms_detections_monthly,1.0
+IOCL Panipat (IN),2025-08-01,firms_detections_monthly,17.0
+IOCL Panipat (IN),2025-09-01,firms_detections_monthly,7.0
+IOCL Panipat (IN),2025-10-01,firms_detections_monthly,32.0
+IOCL Panipat (IN),2025-11-01,firms_detections_monthly,19.0
+IOCL Panipat (IN),2025-12-01,firms_detections_monthly,22.0
+IOCL Panipat (IN),2026-01-01,firms_detections_monthly,4.0
+IOCL Panipat (IN),2026-02-01,firms_detections_monthly,60.0
+IOCL Panipat (IN),2026-03-01,firms_detections_monthly,33.0
+IOCL Panipat (IN),2026-04-01,firms_detections_monthly,2.0
+IOCL Panipat (IN),2026-05-01,firms_detections_monthly,18.0
+Thai Oil Sri Racha (TH),2012-01-01,firms_detections_monthly,4.0
+Thai Oil Sri Racha (TH),2012-02-01,firms_detections_monthly,15.0
+Thai Oil Sri Racha (TH),2012-03-01,firms_detections_monthly,18.0
+Thai Oil Sri Racha (TH),2012-04-01,firms_detections_monthly,3.0
+Thai Oil Sri Racha (TH),2012-05-01,firms_detections_monthly,3.0
+Thai Oil Sri Racha (TH),2012-06-01,firms_detections_monthly,1.0
+Thai Oil Sri Racha (TH),2012-07-01,firms_detections_monthly,1.0
+Thai Oil Sri Racha (TH),2012-09-01,firms_detections_monthly,2.0
+Thai Oil Sri Racha (TH),2012-10-01,firms_detections_monthly,4.0
+Thai Oil Sri Racha (TH),2012-11-01,firms_detections_monthly,2.0
+Thai Oil Sri Racha (TH),2012-12-01,firms_detections_monthly,1.0
+Thai Oil Sri Racha (TH),2013-01-01,firms_detections_monthly,17.0
+Thai Oil Sri Racha (TH),2013-02-01,firms_detections_monthly,4.0
+Thai Oil Sri Racha (TH),2013-03-01,firms_detections_monthly,20.0
+Thai Oil Sri Racha (TH),2013-04-01,firms_detections_monthly,7.0
+Thai Oil Sri Racha (TH),2013-05-01,firms_detections_monthly,4.0
+Thai Oil Sri Racha (TH),2013-06-01,firms_detections_monthly,2.0
+Thai Oil Sri Racha (TH),2013-10-01,firms_detections_monthly,9.0
+Thai Oil Sri Racha (TH),2013-11-01,firms_detections_monthly,15.0
+Thai Oil Sri Racha (TH),2013-12-01,firms_detections_monthly,22.0
+Thai Oil Sri Racha (TH),2014-01-01,firms_detections_monthly,24.0
+Thai Oil Sri Racha (TH),2014-02-01,firms_detections_monthly,8.0
+Thai Oil Sri Racha (TH),2014-03-01,firms_detections_monthly,14.0
+Thai Oil Sri Racha (TH),2014-04-01,firms_detections_monthly,13.0
+Thai Oil Sri Racha (TH),2014-05-01,firms_detections_monthly,3.0
+Thai Oil Sri Racha (TH),2014-06-01,firms_detections_monthly,4.0
+Thai Oil Sri Racha (TH),2014-07-01,firms_detections_monthly,2.0
+Thai Oil Sri Racha (TH),2014-08-01,firms_detections_monthly,1.0
+Thai Oil Sri Racha (TH),2014-09-01,firms_detections_monthly,3.0
+Thai Oil Sri Racha (TH),2014-10-01,firms_detections_monthly,4.0
+Thai Oil Sri Racha (TH),2014-11-01,firms_detections_monthly,9.0
+Thai Oil Sri Racha (TH),2014-12-01,firms_detections_monthly,12.0
+Thai Oil Sri Racha (TH),2015-01-01,firms_detections_monthly,19.0
+Thai Oil Sri Racha (TH),2015-02-01,firms_detections_monthly,6.0
+Thai Oil Sri Racha (TH),2015-03-01,firms_detections_monthly,14.0
+Thai Oil Sri Racha (TH),2015-04-01,firms_detections_monthly,13.0
+Thai Oil Sri Racha (TH),2015-05-01,firms_detections_monthly,6.0
+Thai Oil Sri Racha (TH),2015-06-01,firms_detections_monthly,1.0
+Thai Oil Sri Racha (TH),2015-07-01,firms_detections_monthly,1.0
+Thai Oil Sri Racha (TH),2015-09-01,firms_detections_monthly,2.0
+Thai Oil Sri Racha (TH),2015-10-01,firms_detections_monthly,1.0
+Thai Oil Sri Racha (TH),2015-11-01,firms_detections_monthly,1.0
+Thai Oil Sri Racha (TH),2016-01-01,firms_detections_monthly,36.0
+Thai Oil Sri Racha (TH),2016-02-01,firms_detections_monthly,4.0
+Thai Oil Sri Racha (TH),2016-03-01,firms_detections_monthly,20.0
+Thai Oil Sri Racha (TH),2016-04-01,firms_detections_monthly,20.0
+Thai Oil Sri Racha (TH),2016-05-01,firms_detections_monthly,8.0
+Thai Oil Sri Racha (TH),2016-06-01,firms_detections_monthly,8.0
+Thai Oil Sri Racha (TH),2016-08-01,firms_detections_monthly,2.0
+Thai Oil Sri Racha (TH),2016-09-01,firms_detections_monthly,8.0
+Thai Oil Sri Racha (TH),2016-10-01,firms_detections_monthly,6.0
+Thai Oil Sri Racha (TH),2016-11-01,firms_detections_monthly,14.0
+Thai Oil Sri Racha (TH),2016-12-01,firms_detections_monthly,18.0
+Thai Oil Sri Racha (TH),2017-01-01,firms_detections_monthly,22.0
+Thai Oil Sri Racha (TH),2017-02-01,firms_detections_monthly,48.0
+Thai Oil Sri Racha (TH),2017-03-01,firms_detections_monthly,26.0
+Thai Oil Sri Racha (TH),2017-04-01,firms_detections_monthly,24.0
+Thai Oil Sri Racha (TH),2017-05-01,firms_detections_monthly,4.0
+Thai Oil Sri Racha (TH),2017-06-01,firms_detections_monthly,14.0
+Thai Oil Sri Racha (TH),2017-07-01,firms_detections_monthly,2.0
+Thai Oil Sri Racha (TH),2017-08-01,firms_detections_monthly,4.0
+Thai Oil Sri Racha (TH),2017-09-01,firms_detections_monthly,12.0
+Thai Oil Sri Racha (TH),2017-10-01,firms_detections_monthly,20.0
+Thai Oil Sri Racha (TH),2017-11-01,firms_detections_monthly,12.0
+Thai Oil Sri Racha (TH),2017-12-01,firms_detections_monthly,42.0
+Thai Oil Sri Racha (TH),2018-01-01,firms_detections_monthly,34.0
+Thai Oil Sri Racha (TH),2018-02-01,firms_detections_monthly,44.0
+Thai Oil Sri Racha (TH),2018-03-01,firms_detections_monthly,38.0
+Thai Oil Sri Racha (TH),2018-04-01,firms_detections_monthly,41.0
+Thai Oil Sri Racha (TH),2018-05-01,firms_detections_monthly,14.0
+Thai Oil Sri Racha (TH),2018-06-01,firms_detections_monthly,13.0
+Thai Oil Sri Racha (TH),2018-07-01,firms_detections_monthly,4.0
+Thai Oil Sri Racha (TH),2018-08-01,firms_detections_monthly,3.0
+Thai Oil Sri Racha (TH),2018-09-01,firms_detections_monthly,21.0
+Thai Oil Sri Racha (TH),2018-10-01,firms_detections_monthly,36.0
+Thai Oil Sri Racha (TH),2018-11-01,firms_detections_monthly,38.0
+Thai Oil Sri Racha (TH),2018-12-01,firms_detections_monthly,67.0
+Thai Oil Sri Racha (TH),2019-01-01,firms_detections_monthly,76.0
+Thai Oil Sri Racha (TH),2019-02-01,firms_detections_monthly,43.0
+Thai Oil Sri Racha (TH),2019-03-01,firms_detections_monthly,44.0
+Thai Oil Sri Racha (TH),2019-04-01,firms_detections_monthly,30.0
+Thai Oil Sri Racha (TH),2019-05-01,firms_detections_monthly,11.0
+Thai Oil Sri Racha (TH),2019-06-01,firms_detections_monthly,2.0
+Thai Oil Sri Racha (TH),2019-07-01,firms_detections_monthly,21.0
+Thai Oil Sri Racha (TH),2019-08-01,firms_detections_monthly,1.0
+Thai Oil Sri Racha (TH),2019-09-01,firms_detections_monthly,17.0
+Thai Oil Sri Racha (TH),2019-10-01,firms_detections_monthly,35.0
+Thai Oil Sri Racha (TH),2019-11-01,firms_detections_monthly,27.0
+Thai Oil Sri Racha (TH),2019-12-01,firms_detections_monthly,42.0
+Thai Oil Sri Racha (TH),2020-01-01,firms_detections_monthly,33.0
+Thai Oil Sri Racha (TH),2020-02-01,firms_detections_monthly,48.0
+Thai Oil Sri Racha (TH),2020-03-01,firms_detections_monthly,75.0
+Thai Oil Sri Racha (TH),2020-04-01,firms_detections_monthly,17.0
+Thai Oil Sri Racha (TH),2020-05-01,firms_detections_monthly,2.0
+Thai Oil Sri Racha (TH),2020-06-01,firms_detections_monthly,2.0
+Thai Oil Sri Racha (TH),2020-07-01,firms_detections_monthly,6.0
+Thai Oil Sri Racha (TH),2020-08-01,firms_detections_monthly,21.0
+Thai Oil Sri Racha (TH),2020-09-01,firms_detections_monthly,9.0
+Thai Oil Sri Racha (TH),2020-10-01,firms_detections_monthly,9.0
+Thai Oil Sri Racha (TH),2020-11-01,firms_detections_monthly,65.0
+Thai Oil Sri Racha (TH),2020-12-01,firms_detections_monthly,67.0
+Thai Oil Sri Racha (TH),2021-01-01,firms_detections_monthly,87.0
+Thai Oil Sri Racha (TH),2021-02-01,firms_detections_monthly,84.0
+Thai Oil Sri Racha (TH),2021-03-01,firms_detections_monthly,55.0
+Thai Oil Sri Racha (TH),2021-04-01,firms_detections_monthly,32.0
+Thai Oil Sri Racha (TH),2021-05-01,firms_detections_monthly,9.0
+Thai Oil Sri Racha (TH),2021-06-01,firms_detections_monthly,8.0
+Thai Oil Sri Racha (TH),2021-07-01,firms_detections_monthly,6.0
+Thai Oil Sri Racha (TH),2021-08-01,firms_detections_monthly,5.0
+Thai Oil Sri Racha (TH),2021-09-01,firms_detections_monthly,1.0
+Thai Oil Sri Racha (TH),2021-10-01,firms_detections_monthly,20.0
+Thai Oil Sri Racha (TH),2021-11-01,firms_detections_monthly,18.0
+Thai Oil Sri Racha (TH),2021-12-01,firms_detections_monthly,66.0
+Thai Oil Sri Racha (TH),2022-01-01,firms_detections_monthly,73.0
+Thai Oil Sri Racha (TH),2022-02-01,firms_detections_monthly,51.0
+Thai Oil Sri Racha (TH),2022-03-01,firms_detections_monthly,30.0
+Thai Oil Sri Racha (TH),2022-04-01,firms_detections_monthly,34.0
+Thai Oil Sri Racha (TH),2022-05-01,firms_detections_monthly,6.0
+Thai Oil Sri Racha (TH),2022-06-01,firms_detections_monthly,9.0
+Thai Oil Sri Racha (TH),2022-07-01,firms_detections_monthly,3.0
+Thai Oil Sri Racha (TH),2022-08-01,firms_detections_monthly,4.0
+Thai Oil Sri Racha (TH),2022-10-01,firms_detections_monthly,22.0
+Thai Oil Sri Racha (TH),2022-11-01,firms_detections_monthly,21.0
+Thai Oil Sri Racha (TH),2022-12-01,firms_detections_monthly,46.0
+Thai Oil Sri Racha (TH),2023-01-01,firms_detections_monthly,45.0
+Thai Oil Sri Racha (TH),2023-02-01,firms_detections_monthly,34.0
+Thai Oil Sri Racha (TH),2023-03-01,firms_detections_monthly,69.0
+Thai Oil Sri Racha (TH),2023-04-01,firms_detections_monthly,52.0
+Thai Oil Sri Racha (TH),2023-05-01,firms_detections_monthly,18.0
+Thai Oil Sri Racha (TH),2023-06-01,firms_detections_monthly,7.0
+Thai Oil Sri Racha (TH),2023-07-01,firms_detections_monthly,7.0
+Thai Oil Sri Racha (TH),2023-08-01,firms_detections_monthly,1.0
+Thai Oil Sri Racha (TH),2023-09-01,firms_detections_monthly,1.0
+Thai Oil Sri Racha (TH),2023-10-01,firms_detections_monthly,3.0
+Thai Oil Sri Racha (TH),2023-11-01,firms_detections_monthly,17.0
+Thai Oil Sri Racha (TH),2023-12-01,firms_detections_monthly,10.0
+Thai Oil Sri Racha (TH),2024-01-01,firms_detections_monthly,30.0
+Thai Oil Sri Racha (TH),2024-02-01,firms_detections_monthly,8.0
+Thai Oil Sri Racha (TH),2024-03-01,firms_detections_monthly,33.0
+Thai Oil Sri Racha (TH),2024-04-01,firms_detections_monthly,20.0
+Thai Oil Sri Racha (TH),2024-05-01,firms_detections_monthly,11.0
+Thai Oil Sri Racha (TH),2024-06-01,firms_detections_monthly,2.0
+Thai Oil Sri Racha (TH),2024-07-01,firms_detections_monthly,3.0
+Thai Oil Sri Racha (TH),2024-08-01,firms_detections_monthly,1.0
+Thai Oil Sri Racha (TH),2024-10-01,firms_detections_monthly,14.0
+Thai Oil Sri Racha (TH),2024-11-01,firms_detections_monthly,25.0
+Thai Oil Sri Racha (TH),2024-12-01,firms_detections_monthly,11.0
+Thai Oil Sri Racha (TH),2025-01-01,firms_detections_monthly,23.0
+Thai Oil Sri Racha (TH),2025-02-01,firms_detections_monthly,24.0
+Thai Oil Sri Racha (TH),2025-03-01,firms_detections_monthly,13.0
+Thai Oil Sri Racha (TH),2025-04-01,firms_detections_monthly,8.0
+Thai Oil Sri Racha (TH),2025-05-01,firms_detections_monthly,1.0
+Thai Oil Sri Racha (TH),2025-06-01,firms_detections_monthly,1.0
+Thai Oil Sri Racha (TH),2025-07-01,firms_detections_monthly,1.0
+Thai Oil Sri Racha (TH),2025-08-01,firms_detections_monthly,8.0
+Thai Oil Sri Racha (TH),2025-09-01,firms_detections_monthly,1.0
+Thai Oil Sri Racha (TH),2025-10-01,firms_detections_monthly,3.0
+Thai Oil Sri Racha (TH),2025-11-01,firms_detections_monthly,15.0
+Thai Oil Sri Racha (TH),2025-12-01,firms_detections_monthly,14.0
+Thai Oil Sri Racha (TH),2026-01-01,firms_detections_monthly,48.0
+Thai Oil Sri Racha (TH),2026-02-01,firms_detections_monthly,12.0
+Thai Oil Sri Racha (TH),2026-03-01,firms_detections_monthly,25.0
+Thai Oil Sri Racha (TH),2026-04-01,firms_detections_monthly,13.0
+Thai Oil Sri Racha (TH),2026-05-01,firms_detections_monthly,3.0
+Thai Oil Sri Racha (TH),2026-06-01,firms_detections_monthly,2.0
+Dangote / OK LNG site (NG),2013-02-01,firms_detections_monthly,2.0
+Dangote / OK LNG site (NG),2014-02-01,firms_detections_monthly,3.0
+Dangote / OK LNG site (NG),2014-03-01,firms_detections_monthly,1.0
+Dangote / OK LNG site (NG),2014-11-01,firms_detections_monthly,1.0
+Dangote / OK LNG site (NG),2014-12-01,firms_detections_monthly,7.0
+Dangote / OK LNG site (NG),2015-01-01,firms_detections_monthly,25.0
+Dangote / OK LNG site (NG),2015-02-01,firms_detections_monthly,8.0
+Dangote / OK LNG site (NG),2015-03-01,firms_detections_monthly,4.0
+Dangote / OK LNG site (NG),2015-04-01,firms_detections_monthly,7.0
+Dangote / OK LNG site (NG),2015-05-01,firms_detections_monthly,16.0
+Dangote / OK LNG site (NG),2017-11-01,firms_detections_monthly,2.0
+Dangote / OK LNG site (NG),2017-12-01,firms_detections_monthly,2.0
+Dangote / OK LNG site (NG),2018-05-01,firms_detections_monthly,2.0
+Dangote / OK LNG site (NG),2019-02-01,firms_detections_monthly,4.0
+Dangote / OK LNG site (NG),2020-02-01,firms_detections_monthly,3.0
+Dangote / OK LNG site (NG),2020-04-01,firms_detections_monthly,2.0
+Dangote / OK LNG site (NG),2021-01-01,firms_detections_monthly,2.0
+Dangote / OK LNG site (NG),2021-03-01,firms_detections_monthly,3.0
+Dangote / OK LNG site (NG),2021-04-01,firms_detections_monthly,2.0
+Dangote / OK LNG site (NG),2022-10-01,firms_detections_monthly,1.0
+Dangote / OK LNG site (NG),2022-12-01,firms_detections_monthly,4.0
+Dangote / OK LNG site (NG),2023-01-01,firms_detections_monthly,1.0
+Dangote / OK LNG site (NG),2023-10-01,firms_detections_monthly,1.0
+Dangote / OK LNG site (NG),2023-12-01,firms_detections_monthly,1.0
+Dangote / OK LNG site (NG),2024-01-01,firms_detections_monthly,1.0
+Dangote / OK LNG site (NG),2025-01-01,firms_detections_monthly,2.0
+Dangote / OK LNG site (NG),2025-10-01,firms_detections_monthly,2.0
+Pulau Muara Besar / Hengyi (BN),2016-03-01,firms_detections_monthly,1.0
+Pulau Muara Besar / Hengyi (BN),2017-12-01,firms_detections_monthly,1.0
+Pulau Muara Besar / Hengyi (BN),2020-02-01,firms_detections_monthly,2.0
+Pulau Muara Besar / Hengyi (BN),2020-05-01,firms_detections_monthly,1.0
+Pulau Muara Besar / Hengyi (BN),2024-03-01,firms_detections_monthly,1.0
+Pemex Olmeca / Dos Bocas (MX),2016-02-01,firms_detections_monthly,1.0
+Pemex Olmeca / Dos Bocas (MX),2016-05-01,firms_detections_monthly,1.0
+Pemex Olmeca / Dos Bocas (MX),2016-08-01,firms_detections_monthly,1.0
+Pemex Olmeca / Dos Bocas (MX),2017-04-01,firms_detections_monthly,1.0
+Pemex Olmeca / Dos Bocas (MX),2018-05-01,firms_detections_monthly,5.0
+Pemex Olmeca / Dos Bocas (MX),2020-02-01,firms_detections_monthly,1.0
+Pemex Olmeca / Dos Bocas (MX),2021-03-01,firms_detections_monthly,1.0
+Pemex Olmeca / Dos Bocas (MX),2023-05-01,firms_detections_monthly,1.0
+Pemex Olmeca / Dos Bocas (MX),2023-07-01,firms_detections_monthly,1.0
+Pemex Olmeca / Dos Bocas (MX),2023-08-01,firms_detections_monthly,2.0
+Pemex Olmeca / Dos Bocas (MX),2023-09-01,firms_detections_monthly,2.0
+Pemex Olmeca / Dos Bocas (MX),2023-10-01,firms_detections_monthly,1.0
+Pemex Olmeca / Dos Bocas (MX),2023-11-01,firms_detections_monthly,2.0
+Pemex Olmeca / Dos Bocas (MX),2023-12-01,firms_detections_monthly,26.0
+Pemex Olmeca / Dos Bocas (MX),2024-01-01,firms_detections_monthly,42.0
+Pemex Olmeca / Dos Bocas (MX),2024-02-01,firms_detections_monthly,76.0
+Pemex Olmeca / Dos Bocas (MX),2024-03-01,firms_detections_monthly,64.0
+Pemex Olmeca / Dos Bocas (MX),2024-04-01,firms_detections_monthly,61.0
+Pemex Olmeca / Dos Bocas (MX),2024-05-01,firms_detections_monthly,91.0
+Pemex Olmeca / Dos Bocas (MX),2024-06-01,firms_detections_monthly,24.0
+Pemex Olmeca / Dos Bocas (MX),2024-07-01,firms_detections_monthly,91.0
+Pemex Olmeca / Dos Bocas (MX),2024-08-01,firms_detections_monthly,146.0
+Pemex Olmeca / Dos Bocas (MX),2024-09-01,firms_detections_monthly,92.0
+Pemex Olmeca / Dos Bocas (MX),2024-10-01,firms_detections_monthly,35.0
+Pemex Olmeca / Dos Bocas (MX),2024-11-01,firms_detections_monthly,170.0
+Pemex Olmeca / Dos Bocas (MX),2024-12-01,firms_detections_monthly,183.0
+Pemex Olmeca / Dos Bocas (MX),2025-01-01,firms_detections_monthly,83.0
+Pemex Olmeca / Dos Bocas (MX),2025-02-01,firms_detections_monthly,85.0
+Pemex Olmeca / Dos Bocas (MX),2025-03-01,firms_detections_monthly,155.0
+Pemex Olmeca / Dos Bocas (MX),2025-04-01,firms_detections_monthly,323.0
+Pemex Olmeca / Dos Bocas (MX),2025-05-01,firms_detections_monthly,226.0
+Pemex Olmeca / Dos Bocas (MX),2025-06-01,firms_detections_monthly,166.0
+Pemex Olmeca / Dos Bocas (MX),2025-07-01,firms_detections_monthly,232.0
+Pemex Olmeca / Dos Bocas (MX),2025-08-01,firms_detections_monthly,127.0
+Pemex Olmeca / Dos Bocas (MX),2025-09-01,firms_detections_monthly,168.0
+Pemex Olmeca / Dos Bocas (MX),2025-10-01,firms_detections_monthly,230.0
+Pemex Olmeca / Dos Bocas (MX),2025-11-01,firms_detections_monthly,265.0
+Pemex Olmeca / Dos Bocas (MX),2025-12-01,firms_detections_monthly,267.0
+Pemex Olmeca / Dos Bocas (MX),2026-01-01,firms_detections_monthly,371.0
+Pemex Olmeca / Dos Bocas (MX),2026-02-01,firms_detections_monthly,296.0
+Pemex Olmeca / Dos Bocas (MX),2026-03-01,firms_detections_monthly,214.0
+Pemex Olmeca / Dos Bocas (MX),2026-04-01,firms_detections_monthly,89.0
+Pemex Olmeca / Dos Bocas (MX),2026-05-01,firms_detections_monthly,157.0
+Pemex Olmeca / Dos Bocas (MX),2026-06-01,firms_detections_monthly,25.0
+HPCL Barmer / HRRL (IN),2022-01-01,blackmarble_ntl_hybrid,14.113317065690396
+HPCL Barmer / HRRL (IN),2022-02-01,blackmarble_ntl_hybrid,16.65862120255916
+HPCL Barmer / HRRL (IN),2022-03-01,blackmarble_ntl_hybrid,17.43656207047976
+HPCL Barmer / HRRL (IN),2022-04-01,blackmarble_ntl_hybrid,16.40809978959123
+HPCL Barmer / HRRL (IN),2022-05-01,blackmarble_ntl_hybrid,15.770425977086175
+HPCL Barmer / HRRL (IN),2022-06-01,blackmarble_ntl_hybrid,14.65300166324751
+HPCL Barmer / HRRL (IN),2022-07-01,blackmarble_ntl_hybrid,5.48921599123213
+HPCL Barmer / HRRL (IN),2022-08-01,blackmarble_ntl_hybrid,20.569732578548454
+HPCL Barmer / HRRL (IN),2022-09-01,blackmarble_ntl_hybrid,15.742063877145215
+HPCL Barmer / HRRL (IN),2022-10-01,blackmarble_ntl_hybrid,17.118813324256763
+HPCL Barmer / HRRL (IN),2022-11-01,blackmarble_ntl_hybrid,21.438627111135855
+HPCL Barmer / HRRL (IN),2022-12-01,blackmarble_ntl_hybrid,24.067389369010925
+HPCL Barmer / HRRL (IN),2023-01-01,blackmarble_ntl_hybrid,25.065609134160557
+HPCL Barmer / HRRL (IN),2023-02-01,blackmarble_ntl_hybrid,26.324864968745665
+HPCL Barmer / HRRL (IN),2023-03-01,blackmarble_ntl_hybrid,27.66730512951958
+HPCL Barmer / HRRL (IN),2023-04-01,blackmarble_ntl_hybrid,37.722030992338645
+HPCL Barmer / HRRL (IN),2023-05-01,blackmarble_ntl_hybrid,36.2991257010127
+HPCL Barmer / HRRL (IN),2023-06-01,blackmarble_ntl_hybrid,37.88811892447387
+HPCL Barmer / HRRL (IN),2023-07-01,blackmarble_ntl_hybrid,30.485889043328324
+HPCL Barmer / HRRL (IN),2023-08-01,blackmarble_ntl_hybrid,28.492827223602838
+HPCL Barmer / HRRL (IN),2023-09-01,blackmarble_ntl_hybrid,32.64899846646912
+HPCL Barmer / HRRL (IN),2023-10-01,blackmarble_ntl_hybrid,36.13148688000335
+HPCL Barmer / HRRL (IN),2023-11-01,blackmarble_ntl_hybrid,45.466845874955666
+HPCL Barmer / HRRL (IN),2023-12-01,blackmarble_ntl_hybrid,48.88732207456284
+HPCL Barmer / HRRL (IN),2024-01-01,blackmarble_ntl_hybrid,48.835768350482695
+HPCL Barmer / HRRL (IN),2024-02-01,blackmarble_ntl_hybrid,45.20949746095217
+HPCL Barmer / HRRL (IN),2024-03-01,blackmarble_ntl_hybrid,50.56735408517736
+HPCL Barmer / HRRL (IN),2024-04-01,blackmarble_ntl_hybrid,50.22420376151271
+HPCL Barmer / HRRL (IN),2024-05-01,blackmarble_ntl_hybrid,48.98803326364099
+HPCL Barmer / HRRL (IN),2024-06-01,blackmarble_ntl_hybrid,51.57238739764197
+HPCL Barmer / HRRL (IN),2024-07-01,blackmarble_ntl_hybrid,41.10839857363842
+HPCL Barmer / HRRL (IN),2024-08-01,blackmarble_ntl_hybrid,35.81683651371115
+HPCL Barmer / HRRL (IN),2024-09-01,blackmarble_ntl_hybrid,32.17567396869321
+HPCL Barmer / HRRL (IN),2024-10-01,blackmarble_ntl_hybrid,35.75068732549453
+HPCL Barmer / HRRL (IN),2024-11-01,blackmarble_ntl_hybrid,50.36157515768469
+HPCL Barmer / HRRL (IN),2024-12-01,blackmarble_ntl_hybrid,58.02066902013925
+HPCL Barmer / HRRL (IN),2025-01-01,blackmarble_ntl_hybrid,54.690779536433475
+HPCL Barmer / HRRL (IN),2025-02-01,blackmarble_ntl_hybrid,54.504326065616496
+HPCL Barmer / HRRL (IN),2025-03-01,blackmarble_ntl_hybrid,57.19431503566764
+HPCL Barmer / HRRL (IN),2025-04-01,blackmarble_ntl_hybrid,57.81406248673885
+HPCL Barmer / HRRL (IN),2025-05-01,blackmarble_ntl_hybrid,50.7443668292119
+HPCL Barmer / HRRL (IN),2025-06-01,blackmarble_ntl_hybrid,50.47348268920853
+HPCL Barmer / HRRL (IN),2025-07-01,blackmarble_ntl_hybrid,77.86381648419172
+HPCL Barmer / HRRL (IN),2025-08-01,blackmarble_ntl_hybrid,32.88984438653528
+HPCL Barmer / HRRL (IN),2025-09-01,blackmarble_ntl_hybrid,33.24396575132065
+HPCL Barmer / HRRL (IN),2025-10-01,blackmarble_ntl_hybrid,46.305601891681285
+HPCL Barmer / HRRL (IN),2025-11-01,blackmarble_ntl_hybrid,53.79709364958769
+HPCL Barmer / HRRL (IN),2025-12-01,blackmarble_ntl_hybrid,57.89474887537533
+HPCL Barmer / HRRL (IN),2026-01-01,blackmarble_ntl_hybrid,61.61491690161665
+HPCL Barmer / HRRL (IN),2026-02-01,blackmarble_ntl_hybrid,59.36357762122295
+HPCL Barmer / HRRL (IN),2026-03-01,blackmarble_ntl_hybrid,62.757015026532684
+HPCL Barmer / HRRL (IN),2026-04-01,blackmarble_ntl_hybrid,56.3377631063292
+HPCL Barmer / HRRL (IN),2012-01-01,blackmarble_ntl_hybrid,0.0031901298190009663
+HPCL Barmer / HRRL (IN),2013-01-01,blackmarble_ntl_hybrid,0.0
+HPCL Barmer / HRRL (IN),2014-01-01,blackmarble_ntl_hybrid,0.0
+HPCL Barmer / HRRL (IN),2015-01-01,blackmarble_ntl_hybrid,0.0
+HPCL Barmer / HRRL (IN),2016-01-01,blackmarble_ntl_hybrid,0.0
+HPCL Barmer / HRRL (IN),2017-01-01,blackmarble_ntl_hybrid,0.0
+HPCL Barmer / HRRL (IN),2018-01-01,blackmarble_ntl_hybrid,0.018651412788932845
+HPCL Barmer / HRRL (IN),2019-01-01,blackmarble_ntl_hybrid,0.4646744756303595
+HPCL Barmer / HRRL (IN),2020-01-01,blackmarble_ntl_hybrid,1.9124454961725945
+HPCL Barmer / HRRL (IN),2021-01-01,blackmarble_ntl_hybrid,7.141584905646962
+IOCL Panipat (IN),2022-01-01,blackmarble_ntl_hybrid,42.97873656707402
+IOCL Panipat (IN),2022-02-01,blackmarble_ntl_hybrid,54.54591158861239
+IOCL Panipat (IN),2022-03-01,blackmarble_ntl_hybrid,43.28775784955222
+IOCL Panipat (IN),2022-04-01,blackmarble_ntl_hybrid,36.84356043042516
+IOCL Panipat (IN),2022-05-01,blackmarble_ntl_hybrid,33.645785620932045
+IOCL Panipat (IN),2022-06-01,blackmarble_ntl_hybrid,41.223759529858654
+IOCL Panipat (IN),2022-07-01,blackmarble_ntl_hybrid,38.256803103452604
+IOCL Panipat (IN),2022-08-01,blackmarble_ntl_hybrid,47.674065024189694
+IOCL Panipat (IN),2022-09-01,blackmarble_ntl_hybrid,34.87265472440325
+IOCL Panipat (IN),2022-10-01,blackmarble_ntl_hybrid,42.8190199101465
+IOCL Panipat (IN),2022-11-01,blackmarble_ntl_hybrid,49.59788506553018
+IOCL Panipat (IN),2022-12-01,blackmarble_ntl_hybrid,181.57993869245405
+IOCL Panipat (IN),2023-01-01,blackmarble_ntl_hybrid,60.23666729165252
+IOCL Panipat (IN),2023-02-01,blackmarble_ntl_hybrid,51.857356891124205
+IOCL Panipat (IN),2023-03-01,blackmarble_ntl_hybrid,60.08153129893647
+IOCL Panipat (IN),2023-04-01,blackmarble_ntl_hybrid,92.66860607954172
+IOCL Panipat (IN),2023-05-01,blackmarble_ntl_hybrid,44.310875734633946
+IOCL Panipat (IN),2023-06-01,blackmarble_ntl_hybrid,51.68028218083128
+IOCL Panipat (IN),2023-07-01,blackmarble_ntl_hybrid,33.12250829166209
+IOCL Panipat (IN),2023-08-01,blackmarble_ntl_hybrid,53.32059654258412
+IOCL Panipat (IN),2023-09-01,blackmarble_ntl_hybrid,45.3611880999345
+IOCL Panipat (IN),2023-10-01,blackmarble_ntl_hybrid,57.935859685818826
+IOCL Panipat (IN),2023-11-01,blackmarble_ntl_hybrid,109.23035156938451
+IOCL Panipat (IN),2023-12-01,blackmarble_ntl_hybrid,66.29196410489506
+IOCL Panipat (IN),2024-01-01,blackmarble_ntl_hybrid,82.63442028354028
+IOCL Panipat (IN),2024-02-01,blackmarble_ntl_hybrid,58.757487881113086
+IOCL Panipat (IN),2024-03-01,blackmarble_ntl_hybrid,85.60461648117156
+IOCL Panipat (IN),2024-04-01,blackmarble_ntl_hybrid,53.78607477238898
+IOCL Panipat (IN),2024-05-01,blackmarble_ntl_hybrid,51.31382850218101
+IOCL Panipat (IN),2024-06-01,blackmarble_ntl_hybrid,51.83788763700858
+IOCL Panipat (IN),2024-07-01,blackmarble_ntl_hybrid,66.96121930793898
+IOCL Panipat (IN),2024-08-01,blackmarble_ntl_hybrid,46.28817339902799
+IOCL Panipat (IN),2024-09-01,blackmarble_ntl_hybrid,103.06467164056541
+IOCL Panipat (IN),2024-10-01,blackmarble_ntl_hybrid,57.500805002697824
+IOCL Panipat (IN),2024-11-01,blackmarble_ntl_hybrid,66.35596369004108
+IOCL Panipat (IN),2024-12-01,blackmarble_ntl_hybrid,63.04638884053428
+IOCL Panipat (IN),2025-01-01,blackmarble_ntl_hybrid,75.21798872524465
+IOCL Panipat (IN),2025-02-01,blackmarble_ntl_hybrid,65.91955463702863
+IOCL Panipat (IN),2025-03-01,blackmarble_ntl_hybrid,59.44827445865383
+IOCL Panipat (IN),2025-04-01,blackmarble_ntl_hybrid,55.127233144094255
+IOCL Panipat (IN),2025-05-01,blackmarble_ntl_hybrid,55.14893423452885
+IOCL Panipat (IN),2025-06-01,blackmarble_ntl_hybrid,64.9039833644438
+IOCL Panipat (IN),2025-07-01,blackmarble_ntl_hybrid,61.75493437016504
+IOCL Panipat (IN),2025-08-01,blackmarble_ntl_hybrid,53.54493685445842
+IOCL Panipat (IN),2025-09-01,blackmarble_ntl_hybrid,54.96232497480494
+IOCL Panipat (IN),2025-10-01,blackmarble_ntl_hybrid,58.7902841680854
+IOCL Panipat (IN),2025-11-01,blackmarble_ntl_hybrid,64.65261064055403
+IOCL Panipat (IN),2025-12-01,blackmarble_ntl_hybrid,67.31423224217792
+IOCL Panipat (IN),2026-01-01,blackmarble_ntl_hybrid,65.7024226499027
+IOCL Panipat (IN),2026-02-01,blackmarble_ntl_hybrid,73.25591299519736
+IOCL Panipat (IN),2026-03-01,blackmarble_ntl_hybrid,74.78269703994842
+IOCL Panipat (IN),2026-04-01,blackmarble_ntl_hybrid,64.46797506625836
+IOCL Panipat (IN),2012-01-01,blackmarble_ntl_hybrid,34.0960657709449
+IOCL Panipat (IN),2013-01-01,blackmarble_ntl_hybrid,35.26897586873297
+IOCL Panipat (IN),2014-01-01,blackmarble_ntl_hybrid,31.1143648666743
+IOCL Panipat (IN),2015-01-01,blackmarble_ntl_hybrid,29.870702314658985
+IOCL Panipat (IN),2016-01-01,blackmarble_ntl_hybrid,33.62865515291338
+IOCL Panipat (IN),2017-01-01,blackmarble_ntl_hybrid,31.370182136106774
+IOCL Panipat (IN),2018-01-01,blackmarble_ntl_hybrid,36.21981045550849
+IOCL Panipat (IN),2019-01-01,blackmarble_ntl_hybrid,38.720265910470275
+IOCL Panipat (IN),2020-01-01,blackmarble_ntl_hybrid,34.533182169558735
+IOCL Panipat (IN),2021-01-01,blackmarble_ntl_hybrid,32.797091247062006
+Thai Oil Sri Racha (TH),2022-01-01,blackmarble_ntl_hybrid,54.3746471630751
+Thai Oil Sri Racha (TH),2022-02-01,blackmarble_ntl_hybrid,56.498258822063015
+Thai Oil Sri Racha (TH),2022-03-01,blackmarble_ntl_hybrid,55.685325501233166
+Thai Oil Sri Racha (TH),2022-04-01,blackmarble_ntl_hybrid,47.936953386611485
+Thai Oil Sri Racha (TH),2022-05-01,blackmarble_ntl_hybrid,26.594191551208496
+Thai Oil Sri Racha (TH),2022-06-01,blackmarble_ntl_hybrid,49.46484654290335
+Thai Oil Sri Racha (TH),2022-07-01,blackmarble_ntl_hybrid,46.54440367221832
+Thai Oil Sri Racha (TH),2022-08-01,blackmarble_ntl_hybrid,60.62976242530914
+Thai Oil Sri Racha (TH),2022-09-01,blackmarble_ntl_hybrid,66.57784881847817
+Thai Oil Sri Racha (TH),2022-10-01,blackmarble_ntl_hybrid,51.89367644917475
+Thai Oil Sri Racha (TH),2022-11-01,blackmarble_ntl_hybrid,54.682040663160514
+Thai Oil Sri Racha (TH),2022-12-01,blackmarble_ntl_hybrid,52.22121680699862
+Thai Oil Sri Racha (TH),2023-01-01,blackmarble_ntl_hybrid,49.75962940757797
+Thai Oil Sri Racha (TH),2023-02-01,blackmarble_ntl_hybrid,56.09321522007327
+Thai Oil Sri Racha (TH),2023-03-01,blackmarble_ntl_hybrid,56.302472044024945
+Thai Oil Sri Racha (TH),2023-04-01,blackmarble_ntl_hybrid,55.763380045016135
+Thai Oil Sri Racha (TH),2023-05-01,blackmarble_ntl_hybrid,53.99194941153893
+Thai Oil Sri Racha (TH),2023-06-01,blackmarble_ntl_hybrid,53.65025722658312
+Thai Oil Sri Racha (TH),2023-07-01,blackmarble_ntl_hybrid,60.057687282562256
+Thai Oil Sri Racha (TH),2023-08-01,blackmarble_ntl_hybrid,69.05643511552077
+Thai Oil Sri Racha (TH),2023-09-01,blackmarble_ntl_hybrid,65.25761758839643
+Thai Oil Sri Racha (TH),2023-10-01,blackmarble_ntl_hybrid,60.01491482474587
+Thai Oil Sri Racha (TH),2023-11-01,blackmarble_ntl_hybrid,61.54143428520338
+Thai Oil Sri Racha (TH),2023-12-01,blackmarble_ntl_hybrid,56.78507176235583
+Thai Oil Sri Racha (TH),2024-01-01,blackmarble_ntl_hybrid,56.46450039620935
+Thai Oil Sri Racha (TH),2024-02-01,blackmarble_ntl_hybrid,58.26784474750948
+Thai Oil Sri Racha (TH),2024-03-01,blackmarble_ntl_hybrid,57.32034129644992
+Thai Oil Sri Racha (TH),2024-04-01,blackmarble_ntl_hybrid,60.288993716945306
+Thai Oil Sri Racha (TH),2024-05-01,blackmarble_ntl_hybrid,55.05364354545548
+Thai Oil Sri Racha (TH),2024-06-01,blackmarble_ntl_hybrid,86.21767875367561
+Thai Oil Sri Racha (TH),2024-07-01,blackmarble_ntl_hybrid,
+Thai Oil Sri Racha (TH),2024-08-01,blackmarble_ntl_hybrid,72.3950136850958
+Thai Oil Sri Racha (TH),2024-09-01,blackmarble_ntl_hybrid,72.47202652003489
+Thai Oil Sri Racha (TH),2024-10-01,blackmarble_ntl_hybrid,65.67030268166897
+Thai Oil Sri Racha (TH),2024-11-01,blackmarble_ntl_hybrid,59.615532173912904
+Thai Oil Sri Racha (TH),2024-12-01,blackmarble_ntl_hybrid,61.84881976652427
+Thai Oil Sri Racha (TH),2025-01-01,blackmarble_ntl_hybrid,63.38796027031171
+Thai Oil Sri Racha (TH),2025-02-01,blackmarble_ntl_hybrid,59.89611845750075
+Thai Oil Sri Racha (TH),2025-03-01,blackmarble_ntl_hybrid,58.06203786861262
+Thai Oil Sri Racha (TH),2025-04-01,blackmarble_ntl_hybrid,62.81618476636482
+Thai Oil Sri Racha (TH),2025-05-01,blackmarble_ntl_hybrid,7.098384380340576
+Thai Oil Sri Racha (TH),2025-06-01,blackmarble_ntl_hybrid,17.89296865463257
+Thai Oil Sri Racha (TH),2025-07-01,blackmarble_ntl_hybrid,
+Thai Oil Sri Racha (TH),2025-08-01,blackmarble_ntl_hybrid,87.55154388291496
+Thai Oil Sri Racha (TH),2025-09-01,blackmarble_ntl_hybrid,
+Thai Oil Sri Racha (TH),2025-10-01,blackmarble_ntl_hybrid,85.4985182401046
+Thai Oil Sri Racha (TH),2025-11-01,blackmarble_ntl_hybrid,74.22955494378445
+Thai Oil Sri Racha (TH),2025-12-01,blackmarble_ntl_hybrid,57.31067852578925
+Thai Oil Sri Racha (TH),2026-01-01,blackmarble_ntl_hybrid,64.71102529164602
+Thai Oil Sri Racha (TH),2026-02-01,blackmarble_ntl_hybrid,58.00168299816064
+Thai Oil Sri Racha (TH),2026-03-01,blackmarble_ntl_hybrid,60.632586490473095
+Thai Oil Sri Racha (TH),2026-04-01,blackmarble_ntl_hybrid,64.80539277319372
+Thai Oil Sri Racha (TH),2016-01-01,blackmarble_ntl_hybrid,43.077402219264464
+Thai Oil Sri Racha (TH),2017-01-01,blackmarble_ntl_hybrid,45.988331664948774
+Thai Oil Sri Racha (TH),2018-01-01,blackmarble_ntl_hybrid,48.28488316338443
+Thai Oil Sri Racha (TH),2019-01-01,blackmarble_ntl_hybrid,49.06455560266619
+Thai Oil Sri Racha (TH),2020-01-01,blackmarble_ntl_hybrid,50.44453189499985
+Thai Oil Sri Racha (TH),2021-01-01,blackmarble_ntl_hybrid,48.81275906365298
+Dangote / OK LNG site (NG),2022-01-01,blackmarble_ntl_hybrid,10.643793334975046
+Dangote / OK LNG site (NG),2022-02-01,blackmarble_ntl_hybrid,10.808089738414132
+Dangote / OK LNG site (NG),2022-03-01,blackmarble_ntl_hybrid,12.409062432813215
+Dangote / OK LNG site (NG),2022-04-01,blackmarble_ntl_hybrid,12.425614129509446
+Dangote / OK LNG site (NG),2022-05-01,blackmarble_ntl_hybrid,9.533427637709668
+Dangote / OK LNG site (NG),2022-06-01,blackmarble_ntl_hybrid,15.630833148603609
+Dangote / OK LNG site (NG),2022-07-01,blackmarble_ntl_hybrid,19.668954392594674
+Dangote / OK LNG site (NG),2022-08-01,blackmarble_ntl_hybrid,14.565669689692703
+Dangote / OK LNG site (NG),2022-09-01,blackmarble_ntl_hybrid,9.832934952880207
+Dangote / OK LNG site (NG),2022-10-01,blackmarble_ntl_hybrid,10.763170684583088
+Dangote / OK LNG site (NG),2022-11-01,blackmarble_ntl_hybrid,18.057355415186233
+Dangote / OK LNG site (NG),2022-12-01,blackmarble_ntl_hybrid,21.42137487294406
+Dangote / OK LNG site (NG),2023-01-01,blackmarble_ntl_hybrid,20.867767423214996
+Dangote / OK LNG site (NG),2023-02-01,blackmarble_ntl_hybrid,21.747074319060737
+Dangote / OK LNG site (NG),2023-03-01,blackmarble_ntl_hybrid,25.41248703849386
+Dangote / OK LNG site (NG),2023-04-01,blackmarble_ntl_hybrid,30.619319276780075
+Dangote / OK LNG site (NG),2023-05-01,blackmarble_ntl_hybrid,29.83937164876588
+Dangote / OK LNG site (NG),2023-06-01,blackmarble_ntl_hybrid,24.13711774503031
+Dangote / OK LNG site (NG),2023-07-01,blackmarble_ntl_hybrid,38.039507178373114
+Dangote / OK LNG site (NG),2023-09-01,blackmarble_ntl_hybrid,29.68198842631129
+Dangote / OK LNG site (NG),2023-10-01,blackmarble_ntl_hybrid,18.71656138896942
+Dangote / OK LNG site (NG),2023-11-01,blackmarble_ntl_hybrid,26.260517240284447
+Dangote / OK LNG site (NG),2023-12-01,blackmarble_ntl_hybrid,15.355394250542455
+Dangote / OK LNG site (NG),2024-01-01,blackmarble_ntl_hybrid,16.954419504255938
+Dangote / OK LNG site (NG),2024-02-01,blackmarble_ntl_hybrid,15.147463384464647
+Dangote / OK LNG site (NG),2024-03-01,blackmarble_ntl_hybrid,19.559778361630862
+Dangote / OK LNG site (NG),2024-04-01,blackmarble_ntl_hybrid,23.350572020879813
+Dangote / OK LNG site (NG),2024-05-01,blackmarble_ntl_hybrid,19.423995428360424
+Dangote / OK LNG site (NG),2024-06-01,blackmarble_ntl_hybrid,17.15056687236546
+Dangote / OK LNG site (NG),2024-07-01,blackmarble_ntl_hybrid,22.649249292001493
+Dangote / OK LNG site (NG),2024-08-01,blackmarble_ntl_hybrid,18.490278833562677
+Dangote / OK LNG site (NG),2024-09-01,blackmarble_ntl_hybrid,29.287027733261084
+Dangote / OK LNG site (NG),2024-10-01,blackmarble_ntl_hybrid,24.18015411514446
+Dangote / OK LNG site (NG),2024-11-01,blackmarble_ntl_hybrid,25.279754774457604
+Dangote / OK LNG site (NG),2024-12-01,blackmarble_ntl_hybrid,20.512619191372888
+Dangote / OK LNG site (NG),2025-01-01,blackmarble_ntl_hybrid,22.38851158223914
+Dangote / OK LNG site (NG),2025-02-01,blackmarble_ntl_hybrid,24.33417111278294
+Dangote / OK LNG site (NG),2025-03-01,blackmarble_ntl_hybrid,29.38886749126562
+Dangote / OK LNG site (NG),2025-04-01,blackmarble_ntl_hybrid,28.692553149697222
+Dangote / OK LNG site (NG),2025-05-01,blackmarble_ntl_hybrid,24.65277212572669
+Dangote / OK LNG site (NG),2025-06-01,blackmarble_ntl_hybrid,24.90266884697808
+Dangote / OK LNG site (NG),2025-07-01,blackmarble_ntl_hybrid,27.503850177542805
+Dangote / OK LNG site (NG),2025-08-01,blackmarble_ntl_hybrid,21.690091909095646
+Dangote / OK LNG site (NG),2025-09-01,blackmarble_ntl_hybrid,20.841349287304336
+Dangote / OK LNG site (NG),2025-10-01,blackmarble_ntl_hybrid,23.444592346747715
+Dangote / OK LNG site (NG),2025-11-01,blackmarble_ntl_hybrid,20.370535628330074
+Dangote / OK LNG site (NG),2012-01-01,blackmarble_ntl_hybrid,0.015860593883243537
+Dangote / OK LNG site (NG),2013-01-01,blackmarble_ntl_hybrid,0.06310969520602706
+Dangote / OK LNG site (NG),2014-01-01,blackmarble_ntl_hybrid,0.044699561666454786
+Dangote / OK LNG site (NG),2015-01-01,blackmarble_ntl_hybrid,0.4937407423758648
+Dangote / OK LNG site (NG),2016-01-01,blackmarble_ntl_hybrid,0.9337559968409453
+Dangote / OK LNG site (NG),2017-01-01,blackmarble_ntl_hybrid,0.8657847946212136
+Dangote / OK LNG site (NG),2018-01-01,blackmarble_ntl_hybrid,1.9363612278678712
+Dangote / OK LNG site (NG),2019-01-01,blackmarble_ntl_hybrid,3.6623968390318065
+Dangote / OK LNG site (NG),2020-01-01,blackmarble_ntl_hybrid,7.3719049371205845
+Dangote / OK LNG site (NG),2021-01-01,blackmarble_ntl_hybrid,11.169134106509079
+Pulau Muara Besar / Hengyi (BN),2022-01-01,blackmarble_ntl_hybrid,14.235570947195859
+Pulau Muara Besar / Hengyi (BN),2022-02-01,blackmarble_ntl_hybrid,12.706517305063164
+Pulau Muara Besar / Hengyi (BN),2022-03-01,blackmarble_ntl_hybrid,12.541209465418106
+Pulau Muara Besar / Hengyi (BN),2022-04-01,blackmarble_ntl_hybrid,10.374198727896719
+Pulau Muara Besar / Hengyi (BN),2022-05-01,blackmarble_ntl_hybrid,9.658677207987482
+Pulau Muara Besar / Hengyi (BN),2022-06-01,blackmarble_ntl_hybrid,9.659170421569243
+Pulau Muara Besar / Hengyi (BN),2022-07-01,blackmarble_ntl_hybrid,15.276065692437433
+Pulau Muara Besar / Hengyi (BN),2022-08-01,blackmarble_ntl_hybrid,12.148311520038648
+Pulau Muara Besar / Hengyi (BN),2022-09-01,blackmarble_ntl_hybrid,14.685387372469702
+Pulau Muara Besar / Hengyi (BN),2022-10-01,blackmarble_ntl_hybrid,9.231009470634772
+Pulau Muara Besar / Hengyi (BN),2022-11-01,blackmarble_ntl_hybrid,11.828277753855653
+Pulau Muara Besar / Hengyi (BN),2022-12-01,blackmarble_ntl_hybrid,13.954783708353837
+Pulau Muara Besar / Hengyi (BN),2023-01-01,blackmarble_ntl_hybrid,10.515677591649498
+Pulau Muara Besar / Hengyi (BN),2023-02-01,blackmarble_ntl_hybrid,11.912974966528974
+Pulau Muara Besar / Hengyi (BN),2023-03-01,blackmarble_ntl_hybrid,12.366748998000187
+Pulau Muara Besar / Hengyi (BN),2023-04-01,blackmarble_ntl_hybrid,12.574959410365517
+Pulau Muara Besar / Hengyi (BN),2023-05-01,blackmarble_ntl_hybrid,12.036205781133551
+Pulau Muara Besar / Hengyi (BN),2023-06-01,blackmarble_ntl_hybrid,13.813351416355603
+Pulau Muara Besar / Hengyi (BN),2023-07-01,blackmarble_ntl_hybrid,13.007486931979656
+Pulau Muara Besar / Hengyi (BN),2023-08-01,blackmarble_ntl_hybrid,13.803362750854248
+Pulau Muara Besar / Hengyi (BN),2023-09-01,blackmarble_ntl_hybrid,11.30241316489959
+Pulau Muara Besar / Hengyi (BN),2023-10-01,blackmarble_ntl_hybrid,12.392733061454706
+Pulau Muara Besar / Hengyi (BN),2023-11-01,blackmarble_ntl_hybrid,9.404147206292008
+Pulau Muara Besar / Hengyi (BN),2023-12-01,blackmarble_ntl_hybrid,12.08979868924124
+Pulau Muara Besar / Hengyi (BN),2024-01-01,blackmarble_ntl_hybrid,12.11842099765697
+Pulau Muara Besar / Hengyi (BN),2017-01-01,blackmarble_ntl_hybrid,10.236944650051862
+Pulau Muara Besar / Hengyi (BN),2018-01-01,blackmarble_ntl_hybrid,9.22878537375546
+Pulau Muara Besar / Hengyi (BN),2019-01-01,blackmarble_ntl_hybrid,10.331206298086064
+Pulau Muara Besar / Hengyi (BN),2020-01-01,blackmarble_ntl_hybrid,9.691031427073055
+Pulau Muara Besar / Hengyi (BN),2021-01-01,blackmarble_ntl_hybrid,9.670958268219197
+Pemex Olmeca / Dos Bocas (MX),2022-01-01,blackmarble_ntl_hybrid,75.16050283161141
+Pemex Olmeca / Dos Bocas (MX),2022-02-01,blackmarble_ntl_hybrid,144.71713318062956
+Pemex Olmeca / Dos Bocas (MX),2022-03-01,blackmarble_ntl_hybrid,92.86814341037231
+Pemex Olmeca / Dos Bocas (MX),2022-04-01,blackmarble_ntl_hybrid,70.27794512771291
+Pemex Olmeca / Dos Bocas (MX),2022-05-01,blackmarble_ntl_hybrid,122.98021959553104
+Pemex Olmeca / Dos Bocas (MX),2022-06-01,blackmarble_ntl_hybrid,87.13976789543615
+Pemex Olmeca / Dos Bocas (MX),2022-07-01,blackmarble_ntl_hybrid,73.40284481697535
+Pemex Olmeca / Dos Bocas (MX),2022-08-01,blackmarble_ntl_hybrid,98.53034552843613
+Pemex Olmeca / Dos Bocas (MX),2022-09-01,blackmarble_ntl_hybrid,97.11158771592484
+Pemex Olmeca / Dos Bocas (MX),2022-10-01,blackmarble_ntl_hybrid,59.15415967004539
+Pemex Olmeca / Dos Bocas (MX),2022-11-01,blackmarble_ntl_hybrid,62.899260142851155
+Pemex Olmeca / Dos Bocas (MX),2022-12-01,blackmarble_ntl_hybrid,56.61561717366326
+Pemex Olmeca / Dos Bocas (MX),2023-01-01,blackmarble_ntl_hybrid,79.37891480062135
+Pemex Olmeca / Dos Bocas (MX),2023-02-01,blackmarble_ntl_hybrid,67.1472535344976
+Pemex Olmeca / Dos Bocas (MX),2023-03-01,blackmarble_ntl_hybrid,88.08820409746565
+Pemex Olmeca / Dos Bocas (MX),2023-04-01,blackmarble_ntl_hybrid,107.70079184142796
+Pemex Olmeca / Dos Bocas (MX),2023-05-01,blackmarble_ntl_hybrid,61.15983194148047
+Pemex Olmeca / Dos Bocas (MX),2023-06-01,blackmarble_ntl_hybrid,84.41489968356296
+Pemex Olmeca / Dos Bocas (MX),2023-07-01,blackmarble_ntl_hybrid,62.63932381297004
+Pemex Olmeca / Dos Bocas (MX),2023-08-01,blackmarble_ntl_hybrid,88.02058340529719
+Pemex Olmeca / Dos Bocas (MX),2023-09-01,blackmarble_ntl_hybrid,89.67632173363273
+Pemex Olmeca / Dos Bocas (MX),2023-10-01,blackmarble_ntl_hybrid,124.6561899890561
+Pemex Olmeca / Dos Bocas (MX),2023-11-01,blackmarble_ntl_hybrid,193.132909575863
+Pemex Olmeca / Dos Bocas (MX),2023-12-01,blackmarble_ntl_hybrid,141.56105627181262
+Pemex Olmeca / Dos Bocas (MX),2024-01-01,blackmarble_ntl_hybrid,90.28641401240107
+Pemex Olmeca / Dos Bocas (MX),2024-02-01,blackmarble_ntl_hybrid,144.20354992680296
+Pemex Olmeca / Dos Bocas (MX),2024-03-01,blackmarble_ntl_hybrid,132.62561002990904
+Pemex Olmeca / Dos Bocas (MX),2024-04-01,blackmarble_ntl_hybrid,130.47718235162588
+Pemex Olmeca / Dos Bocas (MX),2024-05-01,blackmarble_ntl_hybrid,151.44651313646304
+Pemex Olmeca / Dos Bocas (MX),2024-06-01,blackmarble_ntl_hybrid,242.66170996039577
+Pemex Olmeca / Dos Bocas (MX),2024-07-01,blackmarble_ntl_hybrid,230.07699963750218
+Pemex Olmeca / Dos Bocas (MX),2024-08-01,blackmarble_ntl_hybrid,328.7555921458634
+Pemex Olmeca / Dos Bocas (MX),2024-09-01,blackmarble_ntl_hybrid,364.5493117223812
+Pemex Olmeca / Dos Bocas (MX),2024-10-01,blackmarble_ntl_hybrid,209.05306003845874
+Pemex Olmeca / Dos Bocas (MX),2024-11-01,blackmarble_ntl_hybrid,274.2719664376163
+Pemex Olmeca / Dos Bocas (MX),2024-12-01,blackmarble_ntl_hybrid,1081.2689409763855
+Pemex Olmeca / Dos Bocas (MX),2025-01-01,blackmarble_ntl_hybrid,172.99530167269285
+Pemex Olmeca / Dos Bocas (MX),2025-02-01,blackmarble_ntl_hybrid,116.88451834825369
+Pemex Olmeca / Dos Bocas (MX),2025-03-01,blackmarble_ntl_hybrid,373.14503673124597
+Pemex Olmeca / Dos Bocas (MX),2025-04-01,blackmarble_ntl_hybrid,838.1845395804862
+Pemex Olmeca / Dos Bocas (MX),2025-05-01,blackmarble_ntl_hybrid,681.2990657196948
+Pemex Olmeca / Dos Bocas (MX),2025-06-01,blackmarble_ntl_hybrid,737.9808329971585
+Pemex Olmeca / Dos Bocas (MX),2025-07-01,blackmarble_ntl_hybrid,556.1016374847593
+Pemex Olmeca / Dos Bocas (MX),2025-08-01,blackmarble_ntl_hybrid,594.2707917647954
+Pemex Olmeca / Dos Bocas (MX),2025-09-01,blackmarble_ntl_hybrid,966.946861419452
+Pemex Olmeca / Dos Bocas (MX),2025-10-01,blackmarble_ntl_hybrid,596.8968901606002
+Pemex Olmeca / Dos Bocas (MX),2025-11-01,blackmarble_ntl_hybrid,869.217380828406
+Pemex Olmeca / Dos Bocas (MX),2025-12-01,blackmarble_ntl_hybrid,1845.3382055293878
+Pemex Olmeca / Dos Bocas (MX),2026-01-01,blackmarble_ntl_hybrid,1800.2483407139073
+Pemex Olmeca / Dos Bocas (MX),2026-02-01,blackmarble_ntl_hybrid,543.1084842286872
+Pemex Olmeca / Dos Bocas (MX),2026-03-01,blackmarble_ntl_hybrid,460.2444992150075
+Pemex Olmeca / Dos Bocas (MX),2026-04-01,blackmarble_ntl_hybrid,626.6566137844288
+Pemex Olmeca / Dos Bocas (MX),2016-01-01,blackmarble_ntl_hybrid,63.92898456232082
+Pemex Olmeca / Dos Bocas (MX),2017-01-01,blackmarble_ntl_hybrid,26.36645082256498
+Pemex Olmeca / Dos Bocas (MX),2018-01-01,blackmarble_ntl_hybrid,21.20329425744051
+Pemex Olmeca / Dos Bocas (MX),2019-01-01,blackmarble_ntl_hybrid,19.642060220241547
+Pemex Olmeca / Dos Bocas (MX),2020-01-01,blackmarble_ntl_hybrid,25.01126901884756
+Pemex Olmeca / Dos Bocas (MX),2021-01-01,blackmarble_ntl_hybrid,105.66286186353695

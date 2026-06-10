@@ -1,4 +1,4 @@
-# Refinery flares — NASA FIRMS (VIIRS / MODIS active fire)
+# Refinery flares — NASA FIRMS active fire + Black Marble night lights
 geopandas>=0.14
 pandas>=2.0
 numpy
@@ -6,9 +6,11 @@ matplotlib
 requests
 pyarrow
 shapely
-# --- later phases (not used yet) ---
-# Planetary Computer / Black Marble night lights:
-# pystac-client
-# planetary-computer
-# odc-stac
-# rioxarray
+# --- satellite maps (FIRMS points on imagery) ---
+contextily         # Esri World Imagery basemap tiles
+# --- Black Marble night lights (VNP46A3/A4, direct LAADS archive) — OPTIONAL ---
+h5py               # read the Black Marble HDF5 tiles
+# NOTE: we do NOT use the `blackmarblepy` package — it calls LAADS's retired
+# /api/v1/files endpoint (HTTP 404). The notebook downloads tiles straight from
+# the LAADS archive (collection 5200) with an Earthdata bearer token instead.
+# Requires a NASA Earthdata token + one-time "LAADS Web" app authorization (notebook section 5).
