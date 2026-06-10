@@ -35,7 +35,7 @@ import matplotlib.pyplot as plt
 from shapely.geometry import Point
 
 # ----------------------------- CONFIG -----------------------------
-FIRMS_MAP_KEY = "2b1c34df0e49ece7703e69e48ab89256"          # NASA FIRMS key
+FIRMS_MAP_KEY = ""          # NASA FIRMS key
 
 # Refineries come from this GPKG. If it does not exist it is created from REFINERIES below.
 REFINERIES_GPKG  = "data/refineries_2026.gpkg"
@@ -70,13 +70,13 @@ own GPKG (points *or* polygons) with a `name` column — optional `construction`
 co(r'''
 # Built-in table used only to bootstrap the GPKG if it does not exist yet.
 REFINERIES = [
-    # name, lat, lon, construction, production, note
-    ("HPCL Barmer / HRRL (IN)",            25.9436,  72.2037, "2018-01", "2026-01", "greenfield; pre-commissioning ~2026"),
-    ("IOCL Panipat (IN)",                  29.4731,  76.8783, "1996-01", "1998-07", "legacy; commissioned Jul 1998"),
-    ("Thai Oil Sri Racha (TH)",            13.1125, 100.9045, "1961-01", "1964-01", "legacy; CFP expansion 2018-2025"),
-    ("Dangote / OK LNG site (NG)",          6.4314,   4.0054, "2016-01", "2024-01", "greenfield; petrol from 2024-09"),
-    ("Pulau Muara Besar / Hengyi (BN)",     4.9920, 115.0480, "2017-01", "2019-11", "greenfield; phase 1 online 2019-11"),
-    ("Pemex Olmeca / Dos Bocas (MX)",      18.4228, -93.1956, "2019-08", "2024-10", "greenfield; ramping since late 2024"),
+    # name, lat, lon, construction, production, buffer_m, note
+    ("HPCL Barmer / HRRL (IN)",            25.9436,  72.2037, "2018-01", "2026-01", 3000, "greenfield; pre-commissioning ~2026"),
+    ("IOCL Panipat (IN)",                  29.4812,  76.8783, "1996-01", "1998-07", 1800, "legacy; commissioned Jul 1998"),
+    ("Thai Oil Sri Racha (TH)",            13.1125, 100.9045, "1961-01", "1964-01", 2100, "legacy; CFP expansion 2018-2025"),
+    ("Dangote / OK LNG site (NG)",          6.4516,   4.0054, "2016-01", "2024-01", 3000, "greenfield; petrol from 2024-09"),
+    ("Pulau Muara Besar / Hengyi (BN)",     5.0040, 115.1030, "2017-01", "2019-11", 3000, "greenfield; phase 1 online 2019-11"),
+    ("Pemex Olmeca / Dos Bocas (MX)",      18.4228, -93.1956, "2019-08", "2024-10", 3000, "greenfield; ramping since late 2024"),
 ]
 
 def _ts(x):
@@ -90,7 +90,8 @@ if not os.path.exists(REFINERIES_GPKG):
         {NAME_COL:       [r[0] for r in REFINERIES],
          "construction": [r[3] for r in REFINERIES],
          "production":   [r[4] for r in REFINERIES],
-         "note":         [r[5] for r in REFINERIES]},
+         "buffer_m":     [r[5] for r in REFINERIES],
+         "note":         [r[6] for r in REFINERIES]},
         geometry=[Point(r[2], r[1]) for r in REFINERIES], crs=4326)
     boot.to_file(REFINERIES_GPKG, driver="GPKG")
     print("created", REFINERIES_GPKG)
@@ -106,11 +107,14 @@ def load_refineries():
         g[c] = g[c].map(_ts) if c in g.columns else pd.NaT
     if g["production"].isna().all() and "start_year" in g.columns:
         g["production"] = g["start_year"].map(_ts)
-    keep = [NAME_COL, "construction", "production"] + (["note"] if "note" in g.columns else [])
+    g["buffer_m"] = g["buffer_m"].fillna(BUFFER_M) if "buffer_m" in g.columns else BUFFER_M
+    keep = [NAME_COL, "construction", "production", "buffer_m"] + (["note"] if "note" in g.columns else [])
     return g[keep + ["geometry"]].reset_index(drop=True)
 
 ref = load_refineries()
-ref_buf = ref.to_crs(3857).copy(); ref_buf["geometry"] = ref_buf.geometry.buffer(BUFFER_M); ref_buf = ref_buf.to_crs(4326)
+ref_buf = ref.to_crs(3857).copy()
+ref_buf["geometry"] = [geom.buffer(b) for geom, b in zip(ref_buf.geometry, ref_buf["buffer_m"])]
+ref_buf = ref_buf.to_crs(4326)
 print(ref[[NAME_COL, "construction", "production"]].to_string(index=False))
 ax = ref.plot(figsize=(11, 4), color="red", markersize=25); ax.set_title("Refineries"); plt.show()
 ''')
@@ -237,14 +241,13 @@ def _bm_value(path, lon, lat, half):
 def fetch_black_marble(ref_gdf):
     cols = ["refinery", "date", "radiance"]
     if not BLACKMARBLE_TOKEN:
-        print("No BLACKMARBLE_ -> FIRMS only."); return pd.DataFrame(columns=cols)
+        print("No BLACKMARBLE_TOKEN -> FIRMS only."); return pd.DataFrame(columns=cols)
     try:
         import h5py  # noqa
     except Exception as e:
         print("h5py missing -> FIRMS only:", e); return pd.DataFrame(columns=cols)
     hdr = {"Authorization": "Bearer " + BLACKMARBLE_TOKEN}
     bmdir = os.path.join(CACHE_DIR, "blackmarble")
-    half = max(1, round(BUFFER_M / 463))
     # Hybrid: yearly VNP46A4 before BM_MONTHLY_START, monthly VNP46A3 from then on.
     targets = ([("VNP46A4", date(y, 1, 1)) for y in range(BM_START.year, BM_MONTHLY_START.year)]
                + [("VNP46A3", d.date()) for d in pd.date_range(BM_MONTHLY_START, END, freq="MS")])
@@ -252,6 +255,7 @@ def fetch_black_marble(ref_gdf):
     rows = []
     for _, row in pts.iterrows():
         name = row[NAME_COL]; lon, lat = row.geometry.x, row.geometry.y
+        half = max(1, round(float(row.get("buffer_m", BUFFER_M)) / 463))
         H, V = int((lon + 180) // 10), int((90 - lat) // 10); got = 0
         for prod, d in targets:
             doy = d.timetuple().tm_yday

@@ -13,25 +13,25 @@ import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from shapely.geometry import Point
 
-FIRMS_MAP_KEY = "2b1c34df0e49ece7703e69e48ab89256"
+FIRMS_MAP_KEY = ""
 BLACKMARBLE_TOKEN = open("build_notebook.py", encoding="utf-8").read().split('BLACKMARBLE_TOKEN = "', 1)[1].split('"', 1)[0]
 BM_COLLECTION = "5200"                              # Black Marble collection
 BM_MONTHLY_START = date(2022, 1, 1)                 # hybrid: yearly VNP46A4 before, monthly VNP46A3 from here
 NAME_COL = "name"
 START, END = date(2016, 1, 1), date.today()   # 10-year analysis window
 BM_START = date(2016, 1, 1)
-BUFFER_M = 3000
 CACHE_DIR = "cache"; IMG_DIR = "images"; DATA_DIR = "data"
 for d in (CACHE_DIR, IMG_DIR, DATA_DIR, os.path.join(CACHE_DIR, "blackmarble")):
     os.makedirs(d, exist_ok=True)
 
+# name, lat, lon, construction, production, buffer_m (per-refinery sampling radius)
 SAMPLE = [
-    ("HPCL Barmer / HRRL (IN)",            25.9436,  72.2037, "2018-01", "2026-01"),
-    ("IOCL Panipat (IN)",                  29.4731,  76.8783, "1996-01", "1998-07"),
-    ("Thai Oil Sri Racha (TH)",            13.1125, 100.9045, "1961-01", "1964-01"),
-    ("Dangote / OK LNG site (NG)",          6.4314,   4.0054, "2016-01", "2024-01"),
-    ("Pulau Muara Besar / Hengyi (BN)",     4.9920, 115.0480, "2017-01", "2019-11"),
-    ("Pemex Olmeca / Dos Bocas (MX)",      18.4228, -93.1956, "2019-08", "2024-10"),
+    ("HPCL Barmer / HRRL (IN)",            25.9436,  72.2037, "2018-01", "2026-01", 3000),
+    ("IOCL Panipat (IN)",                  29.4812,  76.8783, "1996-01", "1998-07", 1800),
+    ("Thai Oil Sri Racha (TH)",            13.1125, 100.9045, "1961-01", "1964-01", 2100),
+    ("Dangote / OK LNG site (NG)",          6.4516,   4.0054, "2016-01", "2024-01", 3000),
+    ("Pulau Muara Besar / Hengyi (BN)",     5.0040, 115.1030, "2017-01", "2019-11", 3000),
+    ("Pemex Olmeca / Dos Bocas (MX)",      18.4228, -93.1956, "2019-08", "2024-10", 3000),
 ]
 slug = lambda s: re.sub(r"[^0-9A-Za-z]+", "_", s).strip("_")
 
@@ -71,11 +71,11 @@ def firms_dl(name, sources, bbox, start, end):
     return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
 
 # ---------------- Black Marble ----------------
-def bm_series(lon, lat):
+def bm_series(lon, lat, buffer_m=3000):
     import h5py
     hdr = {"Authorization": "Bearer " + BLACKMARBLE_TOKEN}
     H, V = int((lon + 180) // 10), int((90 - lat) // 10)
-    half = max(1, round(BUFFER_M / 463))
+    half = max(1, round(buffer_m / 463))
     targets = ([("VNP46A4", date(y, 1, 1)) for y in range(BM_START.year, BM_MONTHLY_START.year)]
                + [("VNP46A3", d.date()) for d in pd.date_range(BM_MONTHLY_START, END, freq="MS")])
     bmdir = os.path.join(CACHE_DIR, "blackmarble"); rows = []
@@ -120,11 +120,11 @@ def panel(ax, name, monthly, bm, cons, prod):
 # ---------------- main loop ----------------
 firms_all, bm_all, summ = [], [], []
 fig_all, axes = plt.subplots(len(SAMPLE), 1, figsize=(13, 2.7 * len(SAMPLE)), sharex=True)
-for ax, (name, lat, lon, cons_s, prod_s) in zip(np.atleast_1d(axes), SAMPLE):
+for ax, (name, lat, lon, cons_s, prod_s, buf) in zip(np.atleast_1d(axes), SAMPLE):
     cons, prod = pd.Timestamp(cons_s), pd.Timestamp(prod_s)
-    print("==", name, flush=True)
+    print("==", name, f"(buffer {buf} m)", flush=True)
     ref = gpd.GeoDataFrame({NAME_COL: [name]}, geometry=[Point(lon, lat)], crs=4326)
-    rb = ref.to_crs(3857); rb["geometry"] = rb.buffer(BUFFER_M); rb = rb.to_crs(4326)
+    rb = ref.to_crs(3857); rb["geometry"] = rb.buffer(buf); rb = rb.to_crs(4326)
     minx, miny, maxx, maxy = rb.geometry.iloc[0].bounds
     bbox = f"{minx:.4f},{miny:.4f},{maxx:.4f},{maxy:.4f}"
     nrt0 = END - timedelta(days=60)
@@ -145,7 +145,7 @@ for ax, (name, lat, lon, cons_s, prod_s) in zip(np.atleast_1d(axes), SAMPLE):
     monthly.insert(0, "refinery", name); firms_all.append(monthly)
 
     try:
-        bm = bm_series(lon, lat)
+        bm = bm_series(lon, lat, buf)
     except Exception as e:
         print("  ! BM:", e); bm = pd.DataFrame(columns=["date", "radiance"])
     bm2 = bm.copy(); bm2.insert(0, "refinery", name); bm_all.append(bm2)

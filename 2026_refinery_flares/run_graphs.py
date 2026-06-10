@@ -13,21 +13,21 @@ from shapely.geometry import Point
 
 START, END = date(2016, 1, 1), date.today()   # 10-year analysis window
 BM_MONTHLY_START = date(2022, 1, 1)           # hybrid: yearly VNP46A4 before, monthly VNP46A3 from here
-BUFFER_M = 3000
 CACHE_DIR, IMG_DIR = "cache", "images"
 os.makedirs(IMG_DIR, exist_ok=True)
 slug = lambda s: re.sub(r"[^0-9A-Za-z]+", "_", str(s)).strip("_")
 
+# name, lat, lon, construction, production, buffer_m
 SAMPLE = [
-    ("HPCL Barmer / HRRL (IN)",            25.9436,  72.2037, "2018-01", "2026-01"),
-    ("IOCL Panipat (IN)",                  29.4731,  76.8783, "1996-01", "1998-07"),
-    ("Thai Oil Sri Racha (TH)",            13.1125, 100.9045, "1961-01", "1964-01"),
-    ("Dangote / OK LNG site (NG)",          6.4314,   4.0054, "2016-01", "2024-01"),
-    ("Pulau Muara Besar / Hengyi (BN)",     4.9920, 115.0480, "2017-01", "2019-11"),
-    ("Pemex Olmeca / Dos Bocas (MX)",      18.4228, -93.1956, "2019-08", "2024-10"),
+    ("HPCL Barmer / HRRL (IN)",            25.9436,  72.2037, "2018-01", "2026-01", 3000),
+    ("IOCL Panipat (IN)",                  29.4812,  76.8783, "1996-01", "1998-07", 1800),
+    ("Thai Oil Sri Racha (TH)",            13.1125, 100.9045, "1961-01", "1964-01", 2100),
+    ("Dangote / OK LNG site (NG)",          6.4516,   4.0054, "2016-01", "2024-01", 3000),
+    ("Pulau Muara Besar / Hengyi (BN)",     5.0040, 115.1030, "2017-01", "2019-11", 3000),
+    ("Pemex Olmeca / Dos Bocas (MX)",      18.4228, -93.1956, "2019-08", "2024-10", 3000),
 ]
 
-def firms_monthly(name, lon, lat):
+def firms_monthly(name, lon, lat, buffer_m=3000):
     tag = name.replace("/", "-").replace(" ", "_")
     frames = []
     for f in glob.glob(os.path.join(CACHE_DIR, f"{tag}__*.csv")):
@@ -42,21 +42,21 @@ def firms_monthly(name, lon, lat):
     fires = pd.concat(frames, ignore_index=True)
     fires["acq_date"] = pd.to_datetime(fires["acq_date"], errors="coerce")
     fp = gpd.GeoDataFrame(fires, geometry=gpd.points_from_xy(fires.longitude, fires.latitude), crs=4326)
-    buf = gpd.GeoDataFrame(geometry=[Point(lon, lat)], crs=4326).to_crs(3857).buffer(BUFFER_M).to_crs(4326).iloc[0]
+    buf = gpd.GeoDataFrame(geometry=[Point(lon, lat)], crs=4326).to_crs(3857).buffer(buffer_m).to_crs(4326).iloc[0]
     h = fp[fp.within(buf)].copy()
     if not len(h):
         return pd.DataFrame(columns=["month", "detections"])
     h["month"] = h["acq_date"].values.astype("datetime64[M]")
     return h.groupby("month").size().reset_index(name="detections")
 
-def bm_cached(lon, lat):
+def bm_cached(lon, lat, buffer_m=3000):
     """Read Black Marble values from already-downloaded tiles only (no network)."""
     try:
         import h5py
     except Exception:
         return pd.DataFrame(columns=["date", "radiance"])
     H, V = int((lon + 180) // 10), int((90 - lat) // 10)
-    half = max(1, round(BUFFER_M / 463))
+    half = max(1, round(buffer_m / 463))
     rows = []
     files = (glob.glob(os.path.join(CACHE_DIR, "blackmarble", f"VNP46A4.*h{H:02d}v{V:02d}.h5"))
              + glob.glob(os.path.join(CACHE_DIR, "blackmarble", f"VNP46A3.*h{H:02d}v{V:02d}.h5")))
@@ -105,8 +105,8 @@ def panel(ax, name, m, bm, cons, prod):
 
 fig, axes = plt.subplots(len(SAMPLE), 1, figsize=(13, 2.7*len(SAMPLE)), sharex=True)
 firms_rows, bm_rows = [], []
-for ax, (name, lat, lon, cs, ps) in zip(np.atleast_1d(axes), SAMPLE):
-    m = firms_monthly(name, lon, lat); bm = bm_cached(lon, lat)
+for ax, (name, lat, lon, cs, ps, buf) in zip(np.atleast_1d(axes), SAMPLE):
+    m = firms_monthly(name, lon, lat, buf); bm = bm_cached(lon, lat, buf)
     cons, prod = pd.Timestamp(cs), pd.Timestamp(ps)
     panel(ax, name, m, bm, cons, prod)
     if len(m): firms_rows.append(m.assign(refinery=name)[["refinery", "month", "detections"]])

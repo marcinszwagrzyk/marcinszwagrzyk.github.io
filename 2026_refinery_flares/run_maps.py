@@ -19,18 +19,18 @@ CACHE_DIR = "cache"; IMG_DIR = "images"; MAP_DIR = os.path.join(IMG_DIR, "maps")
 os.makedirs(MAP_DIR, exist_ok=True)
 SAT = cx.providers.Esri.WorldImagery
 
-SAMPLE = [
-    ("HPCL Barmer / HRRL (IN)",            25.9436,  72.2037),
-    ("IOCL Panipat (IN)",                  29.4731,  76.8783),
-    ("Thai Oil Sri Racha (TH)",            13.1125, 100.9045),
-    ("Dangote / OK LNG site (NG)",          6.4314,   4.0054),
-    ("Pulau Muara Besar / Hengyi (BN)",     4.9920, 115.0480),
-    ("Pemex Olmeca / Dos Bocas (MX)",      18.4228, -93.1956),
+SAMPLE = [  # name, lat, lon, buffer_m
+    ("HPCL Barmer / HRRL (IN)",            25.9436,  72.2037, 3000),
+    ("IOCL Panipat (IN)",                  29.4812,  76.8783, 1800),
+    ("Thai Oil Sri Racha (TH)",            13.1125, 100.9045, 2100),
+    ("Dangote / OK LNG site (NG)",          6.4516,   4.0054, 3000),
+    ("Pulau Muara Besar / Hengyi (BN)",     5.0040, 115.1030, 3000),
+    ("Pemex Olmeca / Dos Bocas (MX)",      18.4228, -93.1956, 3000),
 ]
 slug = lambda s: re.sub(r"[^0-9A-Za-z]+", "_", s).strip("_")
 sub = (sys.argv[1].lower() if len(sys.argv) > 1 else None)
 
-def load_hits(name, lon, lat):
+def load_hits(name, lon, lat, buffer_m=3000):
     tag = f"{name}".replace("/", "-").replace(" ", "_")
     files = glob.glob(os.path.join(CACHE_DIR, f"{tag}__*.csv"))
     frames = []
@@ -48,13 +48,13 @@ def load_hits(name, lon, lat):
     fires = fires[fires["acq_date"] >= pd.Timestamp(2016, 1, 1)]          # 10-year window
     fp = gpd.GeoDataFrame(fires, geometry=gpd.points_from_xy(fires.longitude, fires.latitude), crs=4326)
     ref = gpd.GeoDataFrame(geometry=[Point(lon, lat)], crs=4326).to_crs(3857)
-    buf = ref.buffer(BUFFER_M).to_crs(4326).iloc[0]
+    buf = ref.buffer(buffer_m).to_crs(4326).iloc[0]
     return fp[fp.within(buf)].copy()
 
-def make_map(name, lon, lat):
-    hits = load_hits(name, lon, lat)
+def make_map(name, lon, lat, buffer_m=3000):
+    hits = load_hits(name, lon, lat, buffer_m)
     ref = gpd.GeoDataFrame(geometry=[Point(lon, lat)], crs=4326).to_crs(3857)
-    buf = gpd.GeoDataFrame(geometry=ref.buffer(BUFFER_M), crs=3857)
+    buf = gpd.GeoDataFrame(geometry=ref.buffer(buffer_m), crs=3857)
     fig, ax = plt.subplots(figsize=(9, 9))
     buf.boundary.plot(ax=ax, color="cyan", lw=1.5, ls="--")
     ref.plot(ax=ax, color="red", marker="*", markersize=180, zorder=5, edgecolor="white")
@@ -103,11 +103,11 @@ def overview():
     print("  saved", out)
 
 if __name__ == "__main__":
-    for name, lat, lon in SAMPLE:
+    for name, lat, lon, buf in SAMPLE:
         if sub and sub not in name.lower():
             continue
         print("==", name, flush=True)
-        make_map(name, lon, lat)
+        make_map(name, lon, lat, buf)
     if not sub:
         overview()
     print("done.")
