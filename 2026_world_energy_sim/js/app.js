@@ -13,7 +13,7 @@ class App {
 
     this.ui = new UI(this.engine, this.view, this);
 
-    this.playing = false;
+    this.playing = true;       // autoplay: tankers are moving as soon as the page opens
     this.speed = 3;            // simulated days per second
     this.acc = 0;              // fractional-day accumulator
     this.lastT = performance.now();
@@ -24,6 +24,7 @@ class App {
     this.ui.refreshKPIs();
     this.ui.refreshLog();
     this.ui.drawChart();
+    this.ui.setPlaying(this.playing);
 
     this._wireKeys();
     requestAnimationFrame(t => this.loop(t));
@@ -48,8 +49,10 @@ class App {
   }
 
   reset() {
-    this.playing = false;
-    this.ui.setPlaying(false);
+    this.playing = true;              // reset restarts the clock, it does not park it
+    this.lastT = performance.now();
+    this.acc = 0;
+    this.ui.setPlaying(true);
     this.engine.reset();
     this.view.routeState = {};        // drop cached paths and tanker phases
     this.ui.buildChokes();
