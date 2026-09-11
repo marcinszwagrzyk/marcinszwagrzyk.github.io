@@ -50,11 +50,11 @@ const COL = {
   ok: '#3fc98b', watch: '#e0c341', alert: '#f09033', crisis: '#ef4b5c',
   flow: '#35c7d6', imp: '#4a8fe0', pipe: '#b07be0', track: '#1c2735',
   shutin: '#b07be0',
-  ocean: '#070d15', land: '#15202c', coast: '#3d6284',
-  landOn: '#1b2937',            // one of the 34 modelled countries
-  landSel: '#26394d',           // the selected one
+  ocean: '#070d15', land: '#18242f', coast: '#4d7aa2',
+  landOn: '#1f2e3d',            // one of the 34 modelled countries
+  landSel: '#2b4159',           // the selected one
   halo: '#2e7aa8',              // coastal glow, only where land meets water
-  border: '#2b4058',
+  border: '#35526f',
   grid: 'rgba(86,132,178,.055)',
 };
 
@@ -125,6 +125,25 @@ function quadInto(p0, c, p1, out) {
     const t = i / 10, u = 1 - t, a = u * u, b = 2 * u * t, d = t * t;
     out.push([a * p0[0] + b * c[0] + d * p1[0], a * p0[1] + b * c[1] + d * p1[1]]);
   }
+}
+
+/**
+ * Splices in the land-avoiding detours from js/data/sea-detours.js.
+ *
+ * The route data names the waypoints a lane must pass; between two of them the
+ * great circle is free to cut across Yemen or Sumatra. tools/build-detours.ps1
+ * routes those legs around the coastline offline and the result is spliced back
+ * in here, so what is drawn stays at sea without the data losing its shape.
+ */
+function withDetours(wps) {
+  if (typeof SEA_DETOURS === 'undefined') return wps;
+  const out = [wps[0]];
+  for (let i = 1; i < wps.length; i++) {
+    const d = SEA_DETOURS[`${wps[i - 1][0]},${wps[i - 1][1]}|${wps[i][0]},${wps[i][1]}`];
+    if (d) for (const p of d) out.push(p);
+    out.push(wps[i]);
+  }
+  return out;
 }
 
 /**
@@ -467,7 +486,7 @@ class MapView {
     let st = this.routeState[r.id];
     if (st && st.key === key) return st;
 
-    const path = geoPath(this.engine._pathOf(r));
+    const path = geoPath(withDetours(this.engine._pathOf(r)));
     const meta = pathLengths(path);
     const n = Math.max(2, Math.min(9, Math.round(r.vol * 3.2)));
     const tankers = [];

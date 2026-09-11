@@ -22,6 +22,7 @@ $scripts = @(
   'js/data/world-shapes.js',
   'js/data/world.js',
   'js/data/routes.js',
+  'js/data/sea-detours.js',
   'js/data/scenarios.js',
   'js/engine.js',
   'js/mapview.js',

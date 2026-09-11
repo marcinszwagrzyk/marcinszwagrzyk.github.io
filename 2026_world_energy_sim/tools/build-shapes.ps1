@@ -12,9 +12,9 @@
 
 param(
   [double]$TolFine   = 0.025,   # degrees; ~2 px at max zoom
-  [double]$TolCoarse = 0.35,
+  [double]$TolCoarse = 0.16,
   [double]$MinFine   = 0.22,    # drop islands smaller than this (degrees across)
-  [double]$MinCoarse = 1.2
+  [double]$MinCoarse = 0.7
 )
 
 $ErrorActionPreference = 'Stop'

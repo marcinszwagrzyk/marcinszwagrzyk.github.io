@@ -97,7 +97,9 @@ Figures are deliberately rounded — this is a teaching model.
   which is why Japan holds ~200 days and Nigeria ~15
 - **Route directions and volumes** — published crude flow tabulations, rounded to
   0.05 mb/d
-- **Coastlines** — Natural Earth 1:110m, simplified to 4,702 points
+- **Country boundaries** — Natural Earth 1:50m admin-0, Douglas-Peucker simplified
+  to 39k points (plus a 9.5k coarse level for the zoomed-out view) and packed as
+  delta-encoded strings
 
 The modelled world carries a +3.45 mb/d surplus, because 34 countries are not the
 whole planet (the missing buyers sit outside the grid). Price is therefore
@@ -107,18 +109,41 @@ otherwise small disruptions would fall into a dead zone and never move it.
 ## Structure
 
 ```
-index.html            layout
-css/main.css          dark instrument theme
-js/data/world-shapes.js  Natural Earth coastlines, 66 KB
-js/data/world.js      countries, chokepoints, 118 waypoints, bypass pipelines, model constants
-js/data/routes.js     51 routes with paths and reroute variants
-js/data/scenarios.js  9 preset crises
-js/engine.js          daily simulation (balance, transit, stocks, price)
-js/mapview.js         Web Mercator renderer on two canvases, no mapping library
-js/ui.js              panels, balance table, chart, event log
-js/app.js             simulation clock and animation loop
-build.py              inlines everything into dist/ as one self-contained file
+index.html               layout
+css/main.css             dark instrument theme
+js/data/world-shapes.js  Natural Earth 1:50m country boundaries, packed, 152 KB
+js/data/world.js         countries, chokepoints, 118 waypoints, bypass pipelines, model constants
+js/data/routes.js        51 routes with paths and reroute variants
+js/data/sea-detours.js   generated: the extra points that keep each leg at sea
+js/data/scenarios.js     9 preset crises
+js/engine.js             daily simulation (balance, transit, stocks, price)
+js/mapview.js            Web Mercator renderer on two canvases, no mapping library
+js/ui.js                 panels, balance table, chart, event log
+js/app.js                simulation clock and animation loop
+build.ps1 / build.py     inline everything into dist/ as one self-contained file
+tools/build-shapes.ps1   regenerates world-shapes.js from Natural Earth
+tools/build-detours.ps1  regenerates sea-detours.js and verifies every lane
+tools/searoute.js        the offline A* sea router the generator runs
+tools/shot.ps1           screenshots the app in headless Edge
 ```
+
+## How the lanes are drawn
+
+A route is authored as the waypoints it has to pass - load port, straits,
+discharge port. Between two of them the line is a **great circle**, sampled every
+1.5 degrees of arc, which is why the ocean crossings arc polewards the way a ship
+actually steers; corners between two long legs are eased into a short arc, while a
+waypoint sitting in a strait keeps its exact position.
+
+A great circle is indifferent to coastlines, and the authored ones happily cut
+across Yemen, Sumatra and Fujian. `tools/build-detours.ps1` rasterises the same
+boundaries the map draws at 1/6 degree, runs A* through the water for every leg
+that touches land - with a cost that buys clearance from the coast, and hand-cut
+corridors for the lanes a raster loses (Suez, Bosphorus, Panama, the Danish
+straits) - and bakes the result into `js/data/sea-detours.js`. The renderer
+splices those points back in, so the data keeps its readable shape and the drawn
+lane stays at sea. The generator verifies its own output: it redraws every route
+exactly as the map does and reports any sample still on land.
 
 Every country's balance closes by construction:
 
@@ -133,9 +158,16 @@ had to produce or receive it first.
 
 ## Verification
 
-There is no Node.js on the development machine, so the JavaScript is checked with
-Python scripts rather than executed from a CLI: waypoint/country/chokepoint
-reference integrity, bracket and template-literal balance, cross-class method
-resolution, DOM id resolution, and a baseline balance check over the data. These
-catch reference and structural errors, not runtime behaviour — open the page to
-confirm that.
+There is no Node.js or Python on the development machine, so the JavaScript is
+run through headless Edge instead:
+
+- `tools/build-detours.ps1` loads the real renderer and the real data, redraws
+  every route and every reroute variant, and reports any point that ends up on
+  land. A clean run prints `VERIFY CLEAN`.
+- `tools/shot.ps1` screenshots the running app (optionally after steering the
+  view, e.g. `-Setup "w.app.view.flyTo(16, 68, 4.2)"`), which is how the map is
+  checked without a browser open.
+
+Both catch reference and structural errors as a side effect - the page cannot
+load at all if something is broken - but not simulation behaviour; open the page
+to confirm that.
