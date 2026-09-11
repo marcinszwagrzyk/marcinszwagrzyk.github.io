@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>World Oil Routes</title>
+<link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+<div id="map">
+  <canvas id="mapbase"></canvas>
+  <canvas id="mapfx"></canvas>
+  <div id="zoomctl">
+    <button id="zoomIn" title="Zoom in">+</button>
+    <button id="zoomOut" title="Zoom out">−</button>
+  </div>
+  <div id="credit">Natural Earth &middot; data: EI Statistical Review, EIA</div>
+</div>
+
+<!-- ===================== TOP BAR ===================== -->
+<header id="topbar" class="glass">
+  <div class="brand">
+    <span class="dot"></span>
+    <div>
+      <h1>World Oil Routes</h1>
+      <p>export chokepoint simulator</p>
+    </div>
+  </div>
+
+  <div class="clock">
+    <div class="date" id="simDate">01 Jan 2026</div>
+    <div class="dayno">day <span id="simDay">0</span></div>
+  </div>
+
+  <div class="transport">
+    <button id="btnPlay" class="tbtn primary" title="Play / pause (space)">▶</button>
+    <div class="speeds">
+      <button class="sbtn" data-speed="1">1×</button>
+      <button class="sbtn active" data-speed="3">3×</button>
+      <button class="sbtn" data-speed="10">10×</button>
+      <button class="sbtn" data-speed="30">30×</button>
+    </div>
+    <span class="speedhint">days per second</span>
+    <button id="btnReset" class="tbtn" title="Reset simulation">⟲</button>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi" id="kpiPrice">
+      <span class="klabel">Crude price</span>
+      <span class="kval">78<small>USD/bbl</small></span>
+      <span class="kdelta">&mdash;</span>
+    </div>
+    <div class="kpi" id="kpiGap">
+      <span class="klabel">Supply gap</span>
+      <span class="kval">0.0<small>%</small></span>
+      <span class="kdelta">demand vs supply</span>
+    </div>
+    <div class="kpi" id="kpiUnmet">
+      <span class="klabel">Unmet demand</span>
+      <span class="kval">0.00<small>mb/d</small></span>
+      <span class="kdelta">0 countries</span>
+    </div>
+    <div class="kpi" id="kpiCover">
+      <span class="klabel">Importer stocks</span>
+      <span class="kval">0<small>days</small></span>
+      <span class="kdelta">weighted average</span>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== LEFT PANEL ===================== -->
+<aside id="left" class="glass panel">
+  <div class="panel-tabs">
+    <button class="ptab active" data-tab="chokes">Chokepoints</button>
+    <button class="ptab" data-tab="scenarios">Scenarios</button>
+    <button class="ptab" data-tab="routes">Routes</button>
+  </div>
+
+  <div class="panel-body">
+    <section class="tabpane active" data-pane="chokes">
+      <p class="hint">The slider sets throughput. Below 50% shippers start diverting to the best
+        available variant &ndash; if one exists at all.</p>
+      <div id="chokeList"></div>
+      <div class="pipes">
+        <h4>Bypass pipelines</h4>
+        <div id="pipeList"></div>
+      </div>
+    </section>
+
+    <section class="tabpane" data-pane="scenarios">
+      <p class="hint">Click to apply a set of constraints. The clock keeps running &ndash;
+        effects appear after the transit time, not immediately.</p>
+      <div id="scenarioList"></div>
+    </section>
+
+    <section class="tabpane" data-pane="routes">
+      <p class="hint">Filter and throttle individual routes. <b>Reroute</b> in the inspector forces
+        a variant even when the primary route is open.</p>
+      <input id="routeFilter" class="filter" type="text" placeholder="search: country, port, pipeline...">
+      <div id="routeList"></div>
+    </section>
+  </div>
+</aside>
+
+<!-- ===================== RIGHT PANEL: BALANCES ===================== -->
+<aside id="right" class="glass panel">
+  <div class="panel-head">
+    <h3>Country energy balance</h3>
+    <div class="sortbar">
+      <button class="sortb active" data-sort="risk">by risk</button>
+      <button class="sortb" data-sort="cons">by demand</button>
+      <button class="sortb" data-sort="dep">by dependence</button>
+    </div>
+  </div>
+  <div class="legend-balance">
+    <span><i class="sw dom"></i>own output</span>
+    <span><i class="sw imp"></i>imports</span>
+    <span><i class="sw sto"></i>from stocks</span>
+    <span><i class="sw def"></i>unmet</span>
+  </div>
+  <div id="balanceList" class="panel-body"></div>
+</aside>
+
+<!-- ===================== BOTTOM: CHART + LOG ===================== -->
+<section id="bottom" class="glass">
+  <div class="chartbox">
+    <div class="chart-head">
+      <span>Price and shortfall over time</span>
+      <span class="chart-legend"><i class="sw price"></i>USD/bbl <i class="sw unmet"></i>unmet demand</span>
+    </div>
+    <canvas id="chart"></canvas>
+  </div>
+  <div class="logbox">
+    <div class="chart-head"><span>Event log</span><button id="btnClearLog" class="linkbtn">clear</button></div>
+    <div id="log"></div>
+  </div>
+</section>
+
+<!-- ===================== INSPECTOR ===================== -->
+<div id="inspector" class="glass hidden">
+  <button id="inspClose" class="closebtn">×</button>
+  <div id="inspBody"></div>
+</div>
+
+<div id="tooltip" class="tip hidden"></div>
+
+<script src="js/data/world-shapes.js"></script>
+<script src="js/data/world.js"></script>
+<script src="js/data/routes.js"></script>
+<script src="js/data/scenarios.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/mapview.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
