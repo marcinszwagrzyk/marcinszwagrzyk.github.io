@@ -23,7 +23,6 @@ class App {
     this.ui.refreshBalances();
     this.ui.refreshKPIs();
     this.ui.refreshLog();
-    this.ui.drawChart();
     this.ui.setPlaying(this.playing);
 
     this._wireKeys();
@@ -39,7 +38,6 @@ class App {
         if (b) b.click();
       }
     });
-    window.addEventListener('resize', () => this.ui.drawChart());
   }
 
   togglePlay() {
@@ -61,7 +59,6 @@ class App {
     this.ui.refreshKPIs();
     this.engine.log('good', 'Simulation reset to baseline', null);
     this.ui.refreshLog();
-    this.ui.drawChart();
   }
 
   loop(t) {
@@ -98,7 +95,6 @@ class App {
         this.ui.refreshRouteRows();
         this.ui.refreshChokes();
         this.ui.refreshLog();
-        this.ui.drawChart();
       }
     }
 

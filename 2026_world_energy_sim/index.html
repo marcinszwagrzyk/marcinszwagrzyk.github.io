@@ -16,6 +16,90 @@
     <button id="zoomOut" title="Zoom out">−</button>
   </div>
   <div id="credit">Natural Earth &middot; data: EI Statistical Review, EIA</div>
+
+  <!-- Map key: every mark on the map, explained in place. -->
+  <div id="legend" class="glass">
+    <button id="legendToggle" title="Hide the key">
+      <span>Map key</span><span class="chev">▾</span>
+    </button>
+    <div id="legendBody">
+
+      <h6>Flows &mdash; a line <em>is</em> the oil</h6>
+      <div class="lrow">
+        <svg viewBox="0 0 30 14"><path d="M1 7h28" stroke="#5cd8e3" stroke-width="9" stroke-linecap="round"/></svg>
+        <span>Sea lane &mdash; thickness <b>is</b> the volume: twice as thick, twice the mb/d.</span>
+      </div>
+      <div class="lrow">
+        <svg viewBox="0 0 30 14">
+          <path d="M1 7h28" stroke="#5a7691" stroke-width="9" stroke-linecap="round"/>
+          <path d="M1 7h28" stroke="#5cd8e3" stroke-width="3.5" stroke-linecap="round"/>
+        </svg>
+        <span>Grey = normal volume, bright core = moving today. The gap is oil not sailing.</span>
+      </div>
+      <div class="lrow">
+        <svg viewBox="0 0 30 14"><path d="M1 3.5h28M1 10.5h28" stroke="#5cd8e3" stroke-width="2.6" stroke-linecap="round"/></svg>
+        <span>Shared corridors run as parallel lanes; the bundle is their total flow.</span>
+      </div>
+      <div class="lrow">
+        <svg viewBox="0 0 30 14"><path d="M1 7h28" stroke="#c096e9" stroke-width="4" stroke-dasharray="7 5"/></svg>
+        <span>Pipeline &mdash; overland, unaffected by straits.</span>
+      </div>
+      <div class="lrow">
+        <svg viewBox="0 0 30 14"><path d="M1 7h28" stroke="#e0c341" stroke-width="6" stroke-linecap="round"/></svg>
+        <span>Diverted &mdash; sailing a longer way round.</span>
+      </div>
+      <div class="lrow">
+        <svg viewBox="0 0 30 14"><path d="M1 7h28" stroke="#f09033" stroke-width="6" stroke-linecap="round"/></svg>
+        <span>Throttled &mdash; under half its normal volume.</span>
+      </div>
+      <div class="lrow">
+        <svg viewBox="0 0 30 14"><path d="M1 7h28" stroke="#ef4b5c" stroke-width="4" stroke-dasharray="3 7" stroke-linecap="round"/></svg>
+        <span>Severed &mdash; nothing is getting through.</span>
+      </div>
+      <div class="lrow">
+        <svg viewBox="0 0 30 14"><circle cx="15" cy="7" r="3" fill="#e8f6ff"/><circle cx="15" cy="7" r="5" fill="#fff" opacity=".18"/></svg>
+        <span>A cargo under way, at the route&rsquo;s real transit time.</span>
+      </div>
+
+      <h6>Chokepoints &mdash; the slider sets throughput</h6>
+      <div class="lrow">
+        <svg viewBox="0 0 30 14"><rect x="10.5" y="2.5" width="9" height="9" transform="rotate(45 15 7)" fill="rgba(13,19,28,.9)" stroke="#35c7d6" stroke-width="2"/></svg>
+        <span>Open &mdash; full throughput.</span>
+      </div>
+      <div class="lrow">
+        <svg viewBox="0 0 30 14"><rect x="10.5" y="2.5" width="9" height="9" transform="rotate(45 15 7)" fill="rgba(13,19,28,.9)" stroke="#f09033" stroke-width="2"/></svg>
+        <span>Restricted &mdash; below 50% shippers start diverting.</span>
+      </div>
+      <div class="lrow">
+        <svg viewBox="0 0 30 14"><rect x="10.5" y="2.5" width="9" height="9" transform="rotate(45 15 7)" fill="#ef4b5c" stroke="#ef4b5c" stroke-width="2"/></svg>
+        <span>Closed, and pulsing until you reopen it.</span>
+      </div>
+
+      <h6>Countries &mdash; one glyph, one balance</h6>
+      <div class="lrow">
+        <svg viewBox="0 0 30 22">
+          <circle cx="15" cy="11" r="6.5" fill="#3fc98b"/>
+          <path d="M15 11 L15 4.5 A6.5 6.5 0 0 1 20.6 14.3 Z" fill="#4a8fe0"/>
+          <path d="M15 11 L20.6 14.3 A6.5 6.5 0 0 1 17.2 17.2 Z" fill="#e0c341"/>
+          <circle cx="15" cy="11" r="9" fill="none" stroke="#35c7d6" stroke-width="1.6"
+                  stroke-dasharray="42 15" transform="rotate(-90 15 11)"/>
+        </svg>
+        <span>Disc size = daily consumption. Wedges = what covers it today:
+          <b class="k-ok">own output</b>, <b class="k-imp">imports</b>,
+          <b class="k-watch">stocks</b>, <b class="k-crisis">unmet</b>.</span>
+      </div>
+      <div class="lrow">
+        <svg viewBox="0 0 30 22">
+          <circle cx="15" cy="11" r="9" fill="none" stroke="#1c2735" stroke-width="1.6"/>
+          <circle cx="15" cy="11" r="9" fill="none" stroke="#35c7d6" stroke-width="1.6"
+                  stroke-dasharray="34 23" transform="rotate(-90 15 11)"/>
+        </svg>
+        <span>The ring: days of cover left for an importer, share of exports still moving for an exporter.</span>
+      </div>
+
+      <p class="lfoot">Hover a lane to fade the rest &middot; click anything to open it &middot; space plays and pauses</p>
+    </div>
+  </div>
 </div>
 
 <!-- ===================== TOP BAR ===================== -->
@@ -122,17 +206,10 @@
   <div id="balanceList" class="panel-body"></div>
 </aside>
 
-<!-- ===================== BOTTOM: CHART + LOG ===================== -->
+<!-- ===================== BOTTOM: EVENT LOG ===================== -->
 <section id="bottom" class="glass">
-  <div class="chartbox">
-    <div class="chart-head">
-      <span>Price and shortfall over time</span>
-      <span class="chart-legend"><i class="sw price"></i>USD/bbl <i class="sw unmet"></i>unmet demand</span>
-    </div>
-    <canvas id="chart"></canvas>
-  </div>
   <div class="logbox">
-    <div class="chart-head"><span>Event log</span><button id="btnClearLog" class="linkbtn">clear</button></div>
+    <div class="log-head"><span>Event log</span><button id="btnClearLog" class="linkbtn">clear</button></div>
     <div id="log"></div>
   </div>
 </section>

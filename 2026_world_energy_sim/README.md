@@ -109,7 +109,7 @@ otherwise small disruptions would fall into a dead zone and never move it.
 ## Structure
 
 ```
-index.html               layout
+index.html               layout, and the map key that explains every mark
 css/main.css             dark instrument theme
 js/data/world-shapes.js  Natural Earth 1:50m country boundaries, packed, 152 KB
 js/data/world.js         countries, chokepoints, 118 waypoints, bypass pipelines, model constants
@@ -144,6 +144,16 @@ straits) - and bakes the result into `js/data/sea-detours.js`. The renderer
 splices those points back in, so the data keeps its readable shape and the drawn
 lane stays at sea. The generator verifies its own output: it redraws every route
 exactly as the map does and reports any sample still on land.
+
+Routes that share a corridor - the Mediterranean, the Red Sea, Malacca - are
+then dealt **parallel lanes** rather than being stacked on one line, so the
+bundle's thickness is the corridor's total flow and each route stays pickable.
+Lanes are ordered by one global route order applied identically on every leg, so
+two routes running together never swap sides; a route peels off smoothly where it
+leaves the bundle. The sideways shift is in pixels and capped (13 px), because
+fifteen routes share the Hormuz leg and the strait is 0.4 degrees wide - a lane
+can therefore sit a little off its verified centreline at low zoom, where the
+coastline is a few pixels wide anyway.
 
 Every country's balance closes by construction:
 

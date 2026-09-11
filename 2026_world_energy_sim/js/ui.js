@@ -21,12 +21,12 @@ class UI {
       routeList: document.getElementById('routeList'),
       balanceList: document.getElementById('balanceList'),
       log: document.getElementById('log'),
-      chart: document.getElementById('chart'),
       inspector: document.getElementById('inspector'),
       inspBody: document.getElementById('inspBody'),
     };
 
     this._wireTabs();
+    this._wireLegend();
     this._wireTransport();
     this._wireSort();
     this._wireInspector();
@@ -47,6 +47,19 @@ class UI {
     f.addEventListener('input', () => { this.routeFilter = f.value.toLowerCase(); this.buildRoutes(); });
     document.getElementById('btnClearLog').addEventListener('click', () => {
       this.e.events.length = 0; this.refreshLog();
+    });
+  }
+
+  /** The map key folds away - it is scaffolding once you know the marks. */
+  _wireLegend() {
+    const box = document.getElementById('legend');
+    const btn = document.getElementById('legendToggle');
+    if (!box || !btn) return;
+    // short viewports have no room for the open key next to the panels
+    if (window.innerHeight < 760) box.classList.add('closed');
+    btn.addEventListener('click', () => {
+      const closed = box.classList.toggle('closed');
+      btn.title = closed ? 'Show the key' : 'Hide the key';
     });
   }
 
@@ -290,62 +303,6 @@ class UI {
     this.el.log.innerHTML = this.e.events.slice(0, 90).map(ev =>
       `<div class="lrow ${ev.kind}"><span class="lday">${ev.day ? 'd+' + ev.day : 'start'}</span><span class="ltxt">${ev.text}</span></div>`
     ).join('') || '<div class="lrow"><span class="ltxt" style="color:var(--txt-faint)">No events yet. Close a chokepoint or run a scenario.</span></div>';
-  }
-
-  // ===================== chart =====================
-  drawChart() {
-    const cv = this.el.chart, ctx = cv.getContext('2d');
-    const dpr = window.devicePixelRatio || 1;
-    const w = cv.clientWidth, h = cv.clientHeight;
-    if (!w || !h) return;
-    if (cv.width !== w * dpr || cv.height !== h * dpr) { cv.width = w * dpr; cv.height = h * dpr; }
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, w, h);
-
-    const hist = this.e.history.slice(-420);
-    if (hist.length < 2) {
-      ctx.fillStyle = '#4e5e73'; ctx.font = '11px "Segoe UI", system-ui, sans-serif';
-      ctx.fillText('Press play to see the market respond', 8, h / 2);
-      return;
-    }
-
-    const pad = { l: 34, r: 36, t: 8, b: 16 };
-    const iw = w - pad.l - pad.r, ih = h - pad.t - pad.b;
-    const maxP = Math.max(120, ...hist.map(p => p.price)) * 1.08;
-    const maxU = Math.max(0.5, ...hist.map(p => p.unmet)) * 1.15;
-    const X = i => pad.l + iw * (i / (hist.length - 1));
-
-    ctx.strokeStyle = '#16202c'; ctx.lineWidth = 1;
-    for (let g = 0; g <= 3; g++) {
-      const y = pad.t + ih * g / 3;
-      ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke();
-    }
-    ctx.fillStyle = '#4e5e73'; ctx.font = '9px ui-monospace, Consolas, monospace';
-    ctx.fillText(Math.round(maxP), 4, pad.t + 8);
-    ctx.fillText('USD', 4, pad.t + 19);
-    ctx.fillText(maxU.toFixed(1), w - pad.r + 5, pad.t + 8);
-    ctx.fillText('mb/d', w - pad.r + 5, pad.t + 19);
-
-    // shortfall (area)
-    ctx.beginPath();
-    ctx.moveTo(pad.l, pad.t + ih);
-    hist.forEach((p, i) => ctx.lineTo(X(i), pad.t + ih - ih * (p.unmet / maxU)));
-    ctx.lineTo(w - pad.r, pad.t + ih); ctx.closePath();
-    ctx.fillStyle = 'rgba(239,75,92,.28)'; ctx.fill();
-    ctx.strokeStyle = 'rgba(239,75,92,.85)'; ctx.lineWidth = 1.2;
-    ctx.beginPath();
-    hist.forEach((p, i) => { const y = pad.t + ih - ih * (p.unmet / maxU); i ? ctx.lineTo(X(i), y) : ctx.moveTo(X(i), y); });
-    ctx.stroke();
-
-    // price (line)
-    ctx.strokeStyle = '#f2b13d'; ctx.lineWidth = 1.7;
-    ctx.beginPath();
-    hist.forEach((p, i) => { const y = pad.t + ih - ih * (p.price / maxP); i ? ctx.lineTo(X(i), y) : ctx.moveTo(X(i), y); });
-    ctx.stroke();
-
-    const last = hist[hist.length - 1];
-    ctx.fillStyle = '#f2b13d';
-    ctx.beginPath(); ctx.arc(w - pad.r, pad.t + ih - ih * (last.price / maxP), 2.8, 0, 6.283); ctx.fill();
   }
 
   // ===================== inspector =====================

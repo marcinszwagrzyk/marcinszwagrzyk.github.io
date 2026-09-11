@@ -61,6 +61,45 @@ html, body {
   background: rgba(8,13,20,.7); padding: 2px 7px; border-radius: 5px;
 }
 
+/* ---- map key -------------------------------------------------------------
+   Sits over the map's own top-left corner, between the control panel and the
+   country table, so it explains the marks where the marks are. */
+#legend {
+  position: fixed; left: 350px; top: 88px; z-index: 600;
+  width: 236px; overflow: hidden;
+  font-size: 10.5px; line-height: 1.35;
+}
+#legendToggle {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  width: 100%; padding: 7px 10px; cursor: pointer;
+  background: none; border: 0; color: var(--txt);
+  font: 600 10px/1 var(--ui); letter-spacing: .09em; text-transform: uppercase;
+}
+#legendToggle:hover { color: var(--flow); }
+#legendToggle .chev { color: var(--txt-dim); transition: transform .18s ease; }
+#legend.closed #legendToggle .chev { transform: rotate(-90deg); }
+#legend.closed #legendBody { display: none; }
+
+#legendBody { padding: 0 10px 9px; max-height: calc(100vh - 360px); overflow-y: auto; }
+#legendBody h6 {
+  margin: 8px 0 4px; padding-top: 7px; border-top: 1px solid var(--line-soft);
+  font: 600 9.5px/1 var(--ui); letter-spacing: .08em; text-transform: uppercase;
+  color: var(--txt-dim);
+}
+#legendBody h6:first-child { border-top: 0; padding-top: 0; margin-top: 2px; }
+.lrow { display: grid; grid-template-columns: 30px 1fr; gap: 8px; align-items: center; margin: 4px 0; }
+.lrow svg { width: 30px; height: auto; overflow: visible; }
+.lrow span { color: var(--txt-dim); }
+.lrow b { font-weight: 600; color: var(--txt); }
+.lrow b.k-ok { color: var(--ok); }
+.lrow b.k-imp { color: var(--imp); }
+.lrow b.k-watch { color: var(--watch); }
+.lrow b.k-crisis { color: var(--crisis); }
+.lfoot {
+  margin: 8px 0 0; padding-top: 6px; border-top: 1px solid var(--line-soft);
+  color: var(--txt-faint); font-size: 9.5px;
+}
+
 .glass {
   background: var(--glass);
   border: 1px solid var(--line);
@@ -235,7 +274,6 @@ html, body {
 .sw { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
 .sw.dom { background: var(--ok); } .sw.imp { background: var(--imp); }
 .sw.sto { background: var(--watch); } .sw.def { background: var(--crisis); }
-.sw.price { background: var(--price); } .sw.unmet { background: var(--crisis); }
 
 .brow {
   display: grid; grid-template-columns: 88px 1fr 54px; gap: 8px; align-items: center;
@@ -257,17 +295,14 @@ html, body {
 /* ===================== BOTTOM BAR ===================== */
 #bottom {
   position: fixed; left: 340px; right: 372px; bottom: 10px; height: 194px; z-index: 900;
-  display: grid; grid-template-columns: 1.35fr 1fr; gap: 0;
+  display: flex;
 }
-.chartbox { padding: 9px 12px; display: flex; flex-direction: column; min-width: 0; }
-.logbox   { padding: 9px 12px; border-left: 1px solid var(--line); display: flex; flex-direction: column; min-width: 0; }
-.chart-head {
+.logbox { padding: 9px 12px; display: flex; flex-direction: column; min-width: 0; flex: 1 1 auto; }
+.log-head {
   display: flex; justify-content: space-between; align-items: center;
   font-size: 10px; text-transform: uppercase; letter-spacing: .8px; color: var(--txt-faint);
   margin-bottom: 6px; flex: 0 0 auto;
 }
-.chart-legend { display: flex; gap: 8px; align-items: center; text-transform: none; letter-spacing: 0; }
-#chart { flex: 1 1 auto; width: 100%; min-height: 0; }
 .linkbtn { background: none; border: 0; color: var(--txt-faint); cursor: pointer; font-size: 10px; text-decoration: underline; }
 .linkbtn:hover { color: var(--flow); }
 
@@ -344,6 +379,7 @@ html, body {
   #left  { width: 288px; }
   #right { width: 312px; }
   #bottom { left: 308px; right: 332px; }
+  #legend { left: 318px; }
   #zoomctl { bottom: 216px; }
   #inspector { left: 308px; width: 320px; }
   .kpi { min-width: 96px; }
@@ -354,6 +390,7 @@ html, body {
   #left  { width: 250px; }
   #right { width: 268px; }
   #bottom { left: 270px; right: 288px; height: 168px; }
+  #legend { left: 280px; width: 218px; }
   #left, #right { bottom: 188px; }
   #zoomctl { bottom: 190px; }
   #inspector { left: 270px; width: 300px; max-height: calc(100vh - 286px); }
@@ -364,6 +401,7 @@ html, body {
 }
 @media (max-width: 900px) {
   #left, #right, #bottom { display: none; }
+  #legend { left: 10px; width: 218px; }
   #inspector { left: 10px; right: 10px; width: auto; top: auto; bottom: 10px; max-height: 46vh; }
   #topbar { height: auto; flex-wrap: wrap; padding: 8px 12px; gap: 10px; }
   #zoomctl { bottom: 20px; }

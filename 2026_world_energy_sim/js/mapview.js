@@ -51,6 +51,9 @@ const COL = {
   flow: '#35c7d6', imp: '#4a8fe0', pipe: '#b07be0', track: '#1c2735',
   shutin: '#b07be0',
   ocean: '#070d15', land: '#18242f', coast: '#4d7aa2',
+  // the lanes themselves run a shade lighter than the UI accent they share a
+  // meaning with - a ribbon is a big area of colour, a diamond is a few pixels
+  flowLine: '#5cd8e3', pipeLine: '#c096e9', ghost: '#5a7691',
   landOn: '#1f2e3d',            // one of the 34 modelled countries
   landSel: '#2b4159',           // the selected one
   halo: '#2e7aa8',              // coastal glow, only where land meets water
@@ -135,15 +138,19 @@ function quadInto(p0, c, p1, out) {
  * routes those legs around the coastline offline and the result is spliced back
  * in here, so what is drawn stays at sea without the data losing its shape.
  */
-function withDetours(wps) {
-  if (typeof SEA_DETOURS === 'undefined') return wps;
-  const out = [wps[0]];
+function expandPath(wps) {
+  const pts = [wps[0]], legs = [];
   for (let i = 1; i < wps.length; i++) {
-    const d = SEA_DETOURS[`${wps[i - 1][0]},${wps[i - 1][1]}|${wps[i][0]},${wps[i][1]}`];
-    if (d) for (const p of d) out.push(p);
-    out.push(wps[i]);
+    const a = wps[i - 1], b = wps[i];
+    const pa = `${a[0]},${a[1]}`, pb = `${b[0]},${b[1]}`;
+    // Direction-free key, so the two directions of a corridor share one bundle,
+    // plus the sign that says which way this route runs along it.
+    const tag = pa < pb ? { k: pa + '|' + pb, s: 1 } : { k: pb + '|' + pa, s: -1 };
+    const d = typeof SEA_DETOURS !== 'undefined' && SEA_DETOURS[pa + '|' + pb];
+    if (d) for (const p of d) { pts.push(p); legs.push(tag); }
+    pts.push(b); legs.push(tag);
   }
-  return out;
+  return { pts, legs };
 }
 
 /**
@@ -154,9 +161,17 @@ function withDetours(wps) {
  * strait or a port approach has short legs on at least one side, and those keep
  * their exact position - the line still threads Hormuz, Malacca and Suez.
  */
-function geoPath(wps) {
+function geoPath(wps) { return geoPathTagged(wps).path; }
+
+/**
+ * As geoPath, but every emitted point also carries the authored leg it came
+ * from (`tags[i]`, or the leg index when no tags are given). That is what lets
+ * the renderer know which bundle a piece of line belongs to.
+ */
+function geoPathTagged(wps, tags) {
   const n = wps.length;
-  if (n < 2) return wps.slice();
+  const tagOf = i => (tags ? tags[i] : i);
+  if (n < 2) return { path: wps.slice(), tag: wps.map(() => tagOf(0)) };
 
   const len = [];
   for (let i = 0; i < n - 1; i++) len.push(Math.max(1e-6, arcDeg(wps[i], wps[i + 1])));
@@ -166,7 +181,7 @@ function geoPath(wps) {
     r[i] = Math.min(0.18 * len[i - 1], 0.18 * len[i], ROUND_MAX);
   }
 
-  const out = [];
+  const out = [], tag = [];
   for (let i = 0; i < n - 1; i++) {
     const A = wps[i], B = wps[i + 1];
     const s = r[i] / len[i], e = r[i + 1] / len[i];
@@ -178,8 +193,33 @@ function geoPath(wps) {
       const C = wps[i + 2];
       quadInto(P1, B, arcAt(B, C, r[i + 1] / len[i + 1]), out);
     }
+    while (tag.length < out.length) tag.push(tagOf(i));
   }
-  return out;
+  return { path: out, tag };
+}
+
+// Lane spacing. A lane is narrower than the ribbon it carries, so a busy bundle
+// overlaps a little rather than sprawling, and the whole bundle is capped: at
+// Hormuz fifteen routes share one leg, and a strait is 0.4 degrees wide.
+const LANE_PITCH = 0.6;    // share of a route's ribbon width its lane reserves
+const LANE_GAP = 1.4;      // px of air between neighbouring lanes
+const LANE_MAX = 13;       // px, half-width of the widest bundle
+
+/**
+ * Softens the steps in a per-point offset array. A route that leaves a bundle
+ * would otherwise jump sideways at the waypoint where it parts company; this
+ * spreads the move over a stretch of line so lanes peel off instead.
+ */
+function smoothOffsets(v, passes = 6) {
+  let a = v.slice(), b = new Array(v.length);
+  const last = v.length - 1;
+  for (let p = 0; p < passes; p++) {
+    for (let i = 0; i <= last; i++) {
+      b[i] = 0.25 * a[i > 0 ? i - 1 : 0] + 0.5 * a[i] + 0.25 * a[i < last ? i + 1 : last];
+    }
+    const t = a; a = b; b = t;
+  }
+  return a;
 }
 
 // --- path geometry ----------------------------------------------------------
@@ -195,6 +235,7 @@ function pathLengths(path) {
   return { segs, total };
 }
 
+/** Position at fraction t along a path, plus the segment it fell on. */
 function pointAt(path, meta, t) {
   const target = Math.max(0, Math.min(1, t)) * meta.total;
   let acc = 0;
@@ -202,11 +243,12 @@ function pointAt(path, meta, t) {
     if (acc + meta.segs[i] >= target) {
       const f = (target - acc) / meta.segs[i];
       const [y1, x1] = path[i], [y2, x2] = path[i + 1];
-      return [y1 + (y2 - y1) * f, x1 + (x2 - x1) * f];
+      return [y1 + (y2 - y1) * f, x1 + (x2 - x1) * f, i, f];
     }
     acc += meta.segs[i];
   }
-  return path[path.length - 1];
+  const last = path.length - 1;
+  return [path[last][0], path[last][1], Math.max(0, last - 1), 1];
 }
 
 function distToSeg(px, py, x1, y1, x2, y2) {
@@ -291,6 +333,7 @@ class MapView {
       dragging = true; moved = 0; lastX = e.clientX; lastY = e.clientY;
       el.style.cursor = 'grabbing';
       this.anim = null;
+      this.hover = null;               // panning is not hovering
     });
     window.addEventListener('mouseup', e => {
       if (dragging && moved < 4) this._click(e);
@@ -309,7 +352,9 @@ class MapView {
         this._hover(e);
       }
     });
-    el.addEventListener('mouseleave', () => this._hideTip());
+    // the cursor leaving the canvas has to drop the hover too, or the map stays
+    // faded out while you are over a panel
+    el.addEventListener('mouseleave', () => { this.hover = null; this._hideTip(); });
     el.addEventListener('wheel', e => {
       e.preventDefault();
       const r = el.getBoundingClientRect();
@@ -486,7 +531,9 @@ class MapView {
     let st = this.routeState[r.id];
     if (st && st.key === key) return st;
 
-    const path = geoPath(withDetours(this.engine._pathOf(r)));
+    const ex = expandPath(this.engine._pathOf(r));
+    const g = geoPathTagged(ex.pts, ex.legs);
+    const path = g.path;
     const meta = pathLengths(path);
     const n = Math.max(2, Math.min(9, Math.round(r.vol * 3.2)));
     const tankers = [];
@@ -494,10 +541,91 @@ class MapView {
     for (let i = 0; i < n; i++) {
       tankers.push({ phase: prev && prev[i] ? prev[i].phase : i / n, active: true });
     }
-    st = { key, path, meta, tankers, bbox: bboxOf(path),
+    st = { key, path, meta, tankers, bbox: bboxOf(path), tag: g.tag, off: null,
            r: r.mode === 'pipe' ? 1.5 : 1.5 + Math.sqrt(r.vol) * 1.1 };
     this.routeState[r.id] = st;
+    this._laneSig = null;                     // geometry changed - lanes must be redealt
     return st;
+  }
+
+  /**
+   * Deals every route a lane inside the corridors it shares with others, so the
+   * Mediterranean, the Red Sea or Malacca carry a combed bundle of parallel
+   * lines instead of one line with five routes hidden under it. The width of
+   * the bundle is then the total flow through that corridor.
+   *
+   * Lanes are ordered by one global route order, applied identically on every
+   * leg: two routes that run together never swap sides, so the bundle stays
+   * parallel and only fans out where routes actually join or leave.
+   */
+  /**
+   * Projects a route onto world copy k and pushes every point sideways into its
+   * lane. The shift is in screen space and in pixels, so a bundle keeps the same
+   * spacing at every zoom instead of collapsing when you pull back.
+   */
+  _laneScreen(st, k) {
+    const n = st.path.length;
+    if (!this._sx || this._sx.length < n) {
+      this._sx = new Float64Array(n * 2); this._sy = new Float64Array(n * 2);
+      this._lx = new Float64Array(n * 2); this._ly = new Float64Array(n * 2);
+    }
+    const sx = this._sx, sy = this._sy, lx = this._lx, ly = this._ly;
+    for (let i = 0; i < n; i++) {
+      const p = this.toScreen(wxOf(st.path[i][1]), wyOf(st.path[i][0]), k);
+      sx[i] = p[0]; sy[i] = p[1];
+    }
+    for (let i = 0; i < n; i++) {
+      const o = st.off ? st.off[i] : 0;
+      if (!o) { lx[i] = sx[i]; ly[i] = sy[i]; continue; }
+      const a = i > 0 ? i - 1 : 0, b = i < n - 1 ? i + 1 : n - 1;
+      const dx = sx[b] - sx[a], dy = sy[b] - sy[a];
+      const d = Math.hypot(dx, dy) || 1;
+      lx[i] = sx[i] - dy / d * o;             // left normal of the travel direction
+      ly[i] = sy[i] + dx / d * o;
+    }
+    return n;
+  }
+
+  _lanePath(st, k) {
+    const n = this._laneScreen(st, k);
+    const p = new Path2D();
+    for (let i = 0; i < n; i++) i ? p.lineTo(this._lx[i], this._ly[i]) : p.moveTo(this._lx[i], this._ly[i]);
+    return p;
+  }
+
+  _relane() {
+    const routes = Object.values(this.engine.routes);
+    const sig = routes.map(r => r.id + ':' + this._variantKey(r)).join(',');
+    if (this._laneSig === sig) return;
+
+    const ordered = routes.slice().sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+    const lane = r => ribbon(r.vol) * LANE_PITCH + LANE_GAP;
+
+    const total = new Map();
+    for (const r of ordered) {
+      for (const k of new Set(this._ensureRoute(r).tag.map(t => t.k))) {
+        total.set(k, (total.get(k) || 0) + lane(r));
+      }
+    }
+    const squeeze = new Map();
+    for (const [k, w] of total) squeeze.set(k, Math.min(1, LANE_MAX / (w / 2)));
+
+    const used = new Map();
+    for (const r of ordered) {
+      const st = this.routeState[r.id];
+      const w = lane(r);
+      const mine = new Map();
+      for (const k of new Set(st.tag.map(t => t.k))) {
+        const u = used.get(k) || 0;
+        mine.set(k, (u + w / 2 - total.get(k) / 2) * squeeze.get(k));
+        used.set(k, u + w);
+      }
+      // Per point, then smoothed: where a route leaves a bundle its lane has to
+      // drift back to the centre over a stretch of line, not step sideways.
+      const raw = st.tag.map(t => mine.get(t.k) * t.s);
+      st.off = smoothOffsets(raw);
+    }
+    this._laneSig = sig;          // set last: _ensureRoute above may have cleared it
   }
 
   _routeColor(r) {
@@ -505,7 +633,7 @@ class MapView {
     if (ratio <= 0.02) return { c: COL.crisis, o: .8, dash: [3, 7], ratio };
     if (ratio < 0.55) return { c: COL.alert, o: .65, dash: r.mode === 'pipe' ? [7, 5] : null, ratio };
     if (this.engine._alt(r)) return { c: COL.watch, o: .68, dash: r.mode === 'pipe' ? [7, 5] : null, ratio };
-    return { c: r.mode === 'pipe' ? COL.pipe : COL.flow, o: .55, dash: r.mode === 'pipe' ? [7, 5] : null, ratio };
+    return { c: r.mode === 'pipe' ? COL.pipeLine : COL.flowLine, o: .68, dash: r.mode === 'pipe' ? [7, 5] : null, ratio };
   }
 
   animate(dDays) {
@@ -527,7 +655,11 @@ class MapView {
    * and every country on either end - that is the "who is affected" answer.
    */
   _highlight() {
-    const s = this.selected;
+    // Hovering a lane previews the same focus a click would lock in: everything
+    // that is not that route and its two ends drops back. A click still wins, so
+    // sweeping the mouse cannot knock a selection out of focus.
+    const soft = !this.selected && this.hover && this.hover.type === 'route';
+    const s = this.selected || (soft ? this.hover : null);
     if (!s) return null;
     const routes = new Set(), countries = new Set(), chokes = new Set();
     const add = r => {
@@ -547,7 +679,7 @@ class MapView {
         if (a && a.requires === s.id) add(r);
       }
     }
-    return { routes, countries, chokes, type: s.type, id: s.id };
+    return { routes, countries, chokes, type: s.type, id: s.id, soft };
   }
 
   // ---------------- dynamic layer ----------------
@@ -562,6 +694,7 @@ class MapView {
     const hl = this._highlight();
     const DIM = 0.14;
 
+    this._relane();
     this._drawPipelines(ctx, copies, hl);
 
     // --- routes, drawn as a flow ribbon: width is the volume itself.
@@ -576,32 +709,26 @@ class MapView {
       const sel = hl && hl.type === 'route' && hl.id === r.id;
       const boost = sel ? 1.5 : (hov || (hl && on)) ? 1.2 : 1;
 
-      const trace = k => {
-        ctx.beginPath();
-        for (let i = 0; i < st.path.length; i++) {
-          const [lat, lon] = st.path[i];
-          const [x, y] = this.toScreen(wxOf(lon), wyOf(lat), k);
-          i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
-        }
-        ctx.stroke();
-      };
-
       // ghost band = what this route carries when nothing is in the way
       const shown = copies.filter(k => this._copyVisible(st.bbox, k));
       if (!shown.length) continue;
 
+      // one path per world copy, stroked twice - the lane offsets make it too
+      // expensive to walk the geometry once per band
+      const lanes = shown.map(k => this._lanePath(st, k));
+
       ctx.setLineDash(r.mode === 'pipe' ? [7, 5] : []);
-      ctx.strokeStyle = style.ratio <= 0.02 ? COL.crisis : '#4a6076';
-      ctx.globalAlpha = on ? (style.ratio < 0.98 ? 0.22 : 0.10) : DIM * 0.5;
+      ctx.strokeStyle = style.ratio <= 0.02 ? COL.crisis : COL.ghost;
+      ctx.globalAlpha = on ? (style.ratio < 0.98 ? 0.18 : 0.09) : DIM * 0.5;
       ctx.lineWidth = ribbon(r.vol) * boost;
-      for (const k of shown) trace(k);
+      for (const p of lanes) ctx.stroke(p);
 
       // live band = today's flow
       if (r.flow > 0.005) {
         ctx.strokeStyle = style.c;
-        ctx.globalAlpha = on ? ((sel || hov) ? 1 : style.o + 0.15) : DIM;
+        ctx.globalAlpha = on ? ((sel || hov) ? 1 : style.o - 0.12) : DIM;
         ctx.lineWidth = ribbon(r.flow) * boost;
-        for (const k of shown) trace(k);
+        for (const p of lanes) ctx.stroke(p);
       }
     }
     ctx.setLineDash([]);
@@ -611,18 +738,30 @@ class MapView {
     // --- tankers
     for (const r of Object.values(this.engine.routes)) {
       const st = this.routeState[r.id];
-      if (hl && !hl.routes.has(r.id)) continue;      // dimmed routes drop their traffic
+      const lit = !hl || hl.routes.has(r.id);
+      // A locked selection drops the other traffic entirely; a hover only fades
+      // it, so the map does not blink every time the cursor crosses a lane.
+      if (!lit && !hl.soft) continue;
       const shown = copies.filter(k => this._copyVisible(st.bbox, k));
       if (!shown.length) continue;
       const style = this._routeColor(r);
       const glow = style.c === COL.crisis ? 'rgba(239,75,92,.15)' : 'rgba(255,255,255,.18)';
       // tankers ride inside the ribbon, so they scale with it
       const tr = Math.max(1.1, ribbon(r.flow) * 0.3);
+      ctx.globalAlpha = lit ? 1 : DIM;
       for (const t of st.tankers) {
         if (!t.active) continue;
-        const [lat, lon] = pointAt(st.path, st.meta, t.phase);
+        const [lat, lon, si, sf] = pointAt(st.path, st.meta, t.phase);
+        // a tanker rides its own lane, not the centre of the bundle
+        const off = st.off ? st.off[si] + (st.off[si + 1] - st.off[si]) * sf : 0;
         for (const k of shown) {
-          const [x, y] = this.toScreen(wxOf(lon), wyOf(lat), k);
+          let [x, y] = this.toScreen(wxOf(lon), wyOf(lat), k);
+          if (off) {
+            const a = this.toScreen(wxOf(st.path[si][1]), wyOf(st.path[si][0]), k);
+            const b = this.toScreen(wxOf(st.path[si + 1][1]), wyOf(st.path[si + 1][0]), k);
+            const dx = b[0] - a[0], dy = b[1] - a[1], d = Math.hypot(dx, dy) || 1;
+            x -= dy / d * off; y += dx / d * off;
+          }
           if (x < -20 || y < -20 || x > this.W + 20 || y > this.H + 20) continue;
           ctx.beginPath(); ctx.arc(x, y, tr + 1.6, 0, 6.2832);
           ctx.fillStyle = glow; ctx.fill();
@@ -630,6 +769,7 @@ class MapView {
           ctx.fillStyle = '#e8f6ff'; ctx.fill();
         }
       }
+      ctx.globalAlpha = 1;
     }
 
     // --- chokepoints
@@ -858,9 +998,19 @@ class MapView {
       }
     };
 
+    // routes are picked on the lane they are drawn in, not on the centreline
+    this._relane();
     for (const r of Object.values(this.engine.routes)) {
       const st = this._ensureRoute(r);
-      probe(st.path, ribbon(r.vol) / 2 + 4, { type: 'route', id: r.id, obj: r });
+      const tol = ribbon(r.vol) / 2 + 4;
+      const hit = { type: 'route', id: r.id, obj: r };
+      for (const k of copies) {
+        const n = this._laneScreen(st, k);
+        for (let i = 1; i < n; i++) {
+          const score = tol - distToSeg(px, py, this._lx[i - 1], this._ly[i - 1], this._lx[i], this._ly[i]);
+          if (score > 0 && score > bestScore) { bestScore = score; best = hit; }
+        }
+      }
     }
     for (const p of INFRASTRUCTURE) {
       probe(p._geo || p.path, 6, { type: 'pipe', id: p.id, obj: p });
