@@ -34,11 +34,28 @@ function bboxOf(path) {
   return { minWx, maxWx, minWy, maxWy };
 }
 
+function bboxOfLonLat(ring) {
+  let minWx = Infinity, maxWx = -Infinity, minWy = Infinity, maxWy = -Infinity;
+  for (const [lon, lat] of ring) {
+    const wx = wxOf(lon), wy = wyOf(lat);
+    if (wx < minWx) minWx = wx;
+    if (wx > maxWx) maxWx = wx;
+    if (wy < minWy) minWy = wy;
+    if (wy > maxWy) maxWy = wy;
+  }
+  return { minWx, maxWx, minWy, maxWy };
+}
+
 const COL = {
   ok: '#3fc98b', watch: '#e0c341', alert: '#f09033', crisis: '#ef4b5c',
   flow: '#35c7d6', imp: '#4a8fe0', pipe: '#b07be0', track: '#1c2735',
   shutin: '#b07be0',
-  ocean: '#070d15', land: '#131c27', coast: '#243448',
+  ocean: '#070d15', land: '#15202c', coast: '#3d6284',
+  landOn: '#1b2937',            // one of the 34 modelled countries
+  landSel: '#26394d',           // the selected one
+  halo: '#2e7aa8',              // coastal glow, only where land meets water
+  border: '#2b4058',
+  grid: 'rgba(86,132,178,.055)',
 };
 
 // --- projection -------------------------------------------------------------
@@ -52,6 +69,99 @@ const latOf = wy => {
   const n = Math.PI * (1 - 2 * wy);
   return 180 / Math.PI * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n)));
 };
+
+// --- great-circle geometry --------------------------------------------------
+// Waypoints say where a route has to pass; the line between two of them is the
+// route a ship actually steers - a great circle, not a straight line on the
+// Mercator sheet. Every leg is therefore sampled along its orthodrome, which is
+// why the long ocean crossings arc polewards instead of running flat.
+const D2R = Math.PI / 180, R2D = 180 / Math.PI;
+
+const ARC_STEP = 1.5;    // degrees of arc between sampled vertices
+const ROUND_MIN = 4.0;   // only corners between legs this long get rounded
+const ROUND_MAX = 1.1;   // and never by more than this (degrees of arc)
+
+/** Great-circle distance in degrees. */
+function arcDeg(p1, p2) {
+  const f1 = p1[0] * D2R, f2 = p2[0] * D2R;
+  let dLon = p2[1] - p1[1];
+  while (dLon > 180) dLon -= 360;
+  while (dLon < -180) dLon += 360;
+  const sh = Math.sin((f2 - f1) / 2), sl = Math.sin(dLon * D2R / 2);
+  return 2 * Math.asin(Math.min(1, Math.sqrt(sh * sh + Math.cos(f1) * Math.cos(f2) * sl * sl))) * R2D;
+}
+
+/**
+ * Point at fraction t of the great circle p1 -> p2.
+ *
+ * Longitude comes back as p1's longitude plus the travelled angle, never
+ * re-wrapped: the trans-Pacific legs are authored with longitudes below -180 so
+ * the line stays continuous across the antimeridian, and that has to survive.
+ */
+function arcAt(p1, p2, t) {
+  const f1 = p1[0] * D2R, f2 = p2[0] * D2R;
+  let dLon = p2[1] - p1[1];
+  while (dLon > 180) dLon -= 360;
+  while (dLon < -180) dLon += 360;
+  const dl = dLon * D2R;
+  const sh = Math.sin((f2 - f1) / 2), sl = Math.sin(dl / 2);
+  const d = 2 * Math.asin(Math.min(1, Math.sqrt(sh * sh + Math.cos(f1) * Math.cos(f2) * sl * sl)));
+  const sd = Math.sin(d);
+  if (sd < 1e-9) return [p1[0] + (p2[0] - p1[0]) * t, p1[1] + dLon * t];
+  const A = Math.sin((1 - t) * d) / sd, B = Math.sin(t * d) / sd;
+  const x = A * Math.cos(f1) + B * Math.cos(f2) * Math.cos(dl);
+  const y = B * Math.cos(f2) * Math.sin(dl);
+  const z = A * Math.sin(f1) + B * Math.sin(f2);
+  return [Math.atan2(z, Math.hypot(x, y)) * R2D, p1[1] + Math.atan2(y, x) * R2D];
+}
+
+function arcInto(p1, p2, out) {
+  const n = Math.max(1, Math.ceil(arcDeg(p1, p2) / ARC_STEP));
+  for (let i = 1; i <= n; i++) out.push(arcAt(p1, p2, i / n));
+}
+
+function quadInto(p0, c, p1, out) {
+  for (let i = 1; i <= 10; i++) {
+    const t = i / 10, u = 1 - t, a = u * u, b = 2 * u * t, d = t * t;
+    out.push([a * p0[0] + b * c[0] + d * p1[0], a * p0[1] + b * c[1] + d * p1[1]]);
+  }
+}
+
+/**
+ * Waypoint list -> drawable path: every leg on its great circle, and corners
+ * between two long legs eased with a short arc instead of a hard kink.
+ *
+ * Corners are only rounded where there is room for it. A waypoint sitting in a
+ * strait or a port approach has short legs on at least one side, and those keep
+ * their exact position - the line still threads Hormuz, Malacca and Suez.
+ */
+function geoPath(wps) {
+  const n = wps.length;
+  if (n < 2) return wps.slice();
+
+  const len = [];
+  for (let i = 0; i < n - 1; i++) len.push(Math.max(1e-6, arcDeg(wps[i], wps[i + 1])));
+  const r = new Array(n).fill(0);
+  for (let i = 1; i < n - 1; i++) {
+    if (len[i - 1] < ROUND_MIN || len[i] < ROUND_MIN) continue;
+    r[i] = Math.min(0.18 * len[i - 1], 0.18 * len[i], ROUND_MAX);
+  }
+
+  const out = [];
+  for (let i = 0; i < n - 1; i++) {
+    const A = wps[i], B = wps[i + 1];
+    const s = r[i] / len[i], e = r[i + 1] / len[i];
+    const P0 = s > 0 ? arcAt(A, B, s) : A;
+    const P1 = e > 0 ? arcAt(A, B, 1 - e) : B;
+    if (!out.length) out.push(P0);
+    arcInto(P0, P1, out);
+    if (r[i + 1] > 0) {
+      const C = wps[i + 2];
+      quadInto(P1, B, arcAt(B, C, r[i + 1] / len[i + 1]), out);
+    }
+  }
+  return out;
+}
 
 // --- path geometry ----------------------------------------------------------
 function pathLengths(path) {
@@ -248,36 +358,105 @@ class MapView {
   }
 
   // ---------------- base layer: land ----------------
+  /**
+   * Country rings for the current zoom, with a screen-reject box each.
+   * LAND_LOW is a heavily simplified copy of the same boundaries: below the
+   * threshold the detail is smaller than a pixel, and it is 8x cheaper to draw.
+   */
+  _landSet() {
+    const key = this.zoom >= 3 ? 'fine' : 'low';
+    if (!this._land) this._land = {};
+    if (!this._land[key]) {
+      this._land[key] = (key === 'fine' ? LAND : LAND_LOW).map(p => ({
+        iso: p.iso,
+        ring: p.ring,
+        bb: bboxOfLonLat(p.ring),
+        modelled: !!this.engine.countries[p.iso],
+      }));
+    }
+    return this._land[key];
+  }
+
+  /** Faint lat/lon grid, drawn on the water and painted over by the land. */
+  _graticule(ctx, copies) {
+    const step = this.zoom >= 4.5 ? 10 : this.zoom >= 3 ? 15 : 30;
+    ctx.strokeStyle = COL.grid;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let lat = -80; lat <= 80; lat += step) {
+      const y = this.toScreen(0, wyOf(lat))[1];
+      if (y < 0 || y > this.H) continue;
+      ctx.moveTo(0, y); ctx.lineTo(this.W, y);
+    }
+    for (const k of copies) {
+      for (let lon = -180; lon < 180; lon += step) {
+        const x = this.toScreen(wxOf(lon), 0, k)[0];
+        if (x < 0 || x > this.W) continue;
+        ctx.moveTo(x, 0); ctx.lineTo(x, this.H);
+      }
+    }
+    ctx.stroke();
+  }
+
   drawBase() {
     if (!this.W) return;
     const ctx = this.base.getContext('2d');
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-    ctx.fillStyle = COL.ocean;
+
+    const sea = ctx.createLinearGradient(0, 0, 0, this.H);
+    sea.addColorStop(0, '#060c15');
+    sea.addColorStop(0.55, '#081220');
+    sea.addColorStop(1, '#060b13');
+    ctx.fillStyle = sea;
     ctx.fillRect(0, 0, this.W, this.H);
 
-    ctx.lineWidth = 0.7;
-    ctx.strokeStyle = COL.coast;
-    ctx.fillStyle = COL.land;
+    const copies = this.visibleCopies();
+    this._graticule(ctx, copies);
 
-    if (!this._landBB) {
-      this._landBB = WORLD_SHAPES.map(ring => bboxOf(ring.map(([lon, lat]) => [lat, lon])));
-    }
+    const selId = this.selected && this.selected.type === 'country' ? this.selected.id : null;
 
-    for (const k of this.visibleCopies()) {
-      for (let ri = 0; ri < WORLD_SHAPES.length; ri++) {
-        if (!this._copyVisible(this._landBB[ri], k)) continue;
-        const ring = WORLD_SHAPES[ri];
-        ctx.beginPath();
-        for (let i = 0; i < ring.length; i++) {
-          const [lon, lat] = ring[i];
-          const [x, y] = this.toScreen(wxOf(lon), wyOf(lat), k);
-          i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+    // One Path2D per visible ring, reused by all five passes below.
+    const paths = [];
+    for (const k of copies) {
+      for (const L of this._landSet()) {
+        if (!this._copyVisible(L.bb, k)) continue;
+        const p = new Path2D();
+        let px = 0, py = 0, on = false;
+        for (let i = 0; i < L.ring.length; i++) {
+          const [x, y] = this.toScreen(wxOf(L.ring[i][0]), wyOf(L.ring[i][1]), k);
+          // skip vertices that would land on the pixel we are already at
+          if (on && Math.abs(x - px) < 0.4 && Math.abs(y - py) < 0.4) continue;
+          on ? p.lineTo(x, y) : p.moveTo(x, y);
+          on = true; px = x; py = y;
         }
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
+        p.closePath();
+        paths.push({ p, L });
       }
     }
+
+    // Halo and coastline go UNDER the fills on purpose: along an inland border
+    // the neighbour paints over them, so the glow survives only where land
+    // actually meets water. Coasts read as coasts, borders as hairlines.
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.strokeStyle = COL.halo;
+    ctx.lineWidth = 9; ctx.globalAlpha = 0.09;
+    for (const q of paths) ctx.stroke(q.p);
+    ctx.lineWidth = 3.5; ctx.globalAlpha = 0.15;
+    for (const q of paths) ctx.stroke(q.p);
+    ctx.strokeStyle = COL.coast;
+    ctx.lineWidth = 1.4; ctx.globalAlpha = 0.9;
+    for (const q of paths) ctx.stroke(q.p);
+
+    ctx.globalAlpha = 1;
+    for (const q of paths) {
+      ctx.fillStyle = q.L.iso === selId ? COL.landSel : q.L.modelled ? COL.landOn : COL.land;
+      ctx.fill(q.p);
+    }
+
+    ctx.strokeStyle = COL.border;
+    ctx.lineWidth = 0.6; ctx.globalAlpha = 0.6;
+    for (const q of paths) ctx.stroke(q.p);
+    ctx.globalAlpha = 1;
   }
 
   // ---------------- route bookkeeping ----------------
@@ -288,7 +467,7 @@ class MapView {
     let st = this.routeState[r.id];
     if (st && st.key === key) return st;
 
-    const path = this.engine._pathOf(r);
+    const path = geoPath(this.engine._pathOf(r));
     const meta = pathLengths(path);
     const n = Math.max(2, Math.min(9, Math.round(r.vol * 3.2)));
     const tankers = [];
@@ -515,12 +694,13 @@ class MapView {
       ctx.globalAlpha = (hov || isSel) ? 1 : carrying ? 0.55 + 0.4 * frac : (hl ? 0.12 : 0.28);
       // idle pipelines stay hairlines; once they carry oil the ribbon rule applies
       ctx.lineWidth = carrying ? ribbon(load) * (isSel ? 1.4 : 1) : 1.6;
-      p._bb = p._bb || bboxOf(p.path);
+      p._geo = p._geo || geoPath(p.path);       // same great-circle treatment as the sea lanes
+      p._bb = p._bb || bboxOf(p._geo);
       for (const k of copies) {
         if (!this._copyVisible(p._bb, k)) continue;
         ctx.beginPath();
-        for (let i = 0; i < p.path.length; i++) {
-          const [x, y] = this.toScreen(wxOf(p.path[i][1]), wyOf(p.path[i][0]), k);
+        for (let i = 0; i < p._geo.length; i++) {
+          const [x, y] = this.toScreen(wxOf(p._geo[i][1]), wyOf(p._geo[i][0]), k);
           i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
         }
         ctx.stroke();
@@ -529,7 +709,7 @@ class MapView {
 
       // label at the midpoint, only when it matters or on hover
       if (carrying || hov) {
-        const mid = p.path[Math.floor(p.path.length / 2)];
+        const mid = p._geo[Math.floor(p._geo.length / 2)];
         for (const k of copies) {
           const [x, y] = this.toScreen(wxOf(mid[1]), wyOf(mid[0]), k);
           if (x < -70 || y < -20 || x > this.W + 70 || y > this.H + 20) continue;
@@ -664,7 +844,7 @@ class MapView {
       probe(st.path, ribbon(r.vol) / 2 + 4, { type: 'route', id: r.id, obj: r });
     }
     for (const p of INFRASTRUCTURE) {
-      probe(p.path, 6, { type: 'pipe', id: p.id, obj: p });
+      probe(p._geo || p.path, 6, { type: 'pipe', id: p.id, obj: p });
     }
     return best;
   }
@@ -710,7 +890,13 @@ class MapView {
       ${users.length ? '<div class="muted" style="margin-top:4px;font-size:10px">click to highlight them</div>' : ''}`;
   }
 
-  select(sel) { this.selected = sel; }
+  select(sel) {
+    // the land layer tints the selected country, so it has to be repainted
+    const was = this.selected && this.selected.type === 'country' ? this.selected.id : null;
+    const now = sel && sel.type === 'country' ? sel.id : null;
+    if (was !== now) this.baseDirty = true;
+    this.selected = sel;
+  }
 
   // API kept for the app loop; everything is drawn live from engine state
   refreshRoutes() {}
