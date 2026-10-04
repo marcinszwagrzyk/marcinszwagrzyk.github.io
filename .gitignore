@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+
+# 2026_datacenter_stages — surowe dane i artefakty pośrednie (GB), odtwarzalne skryptami.
+# Do repo idą tylko kod, notebooki i wyniki (etapy, krzywe, mozaiki, rows).
+2026_datacenter_stages/out/cache/
+2026_datacenter_stages/out/maps/
+2026_datacenter_stages/out/osm/
+2026_datacenter_stages/out/model.joblib
+2026_datacenter_stages/out/_NIEAKTUALNE_*
+2026_datacenter_stages/2026_datacenter_stages/
