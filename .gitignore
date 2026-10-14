@@ -13,3 +13,5 @@ __pycache__/
 
 # 2026_el_nino — raw downloads (~350 MB), reproducible with run.py
 2026_el_nino/data/
+# 2026_el_nino — only outputs go to git (charts, maps, csv, notebook, README); the code stays local
+2026_el_nino/*.py
