@@ -128,13 +128,12 @@ shown as a scenario.
 | path | contents |
 |---|---|
 | `analysis.ipynb` | executed notebook with all figures and tables |
-| `out/forecast_maps.png` | part 1: the two forecast maps |
+| `maps/forecast_maps.png` | part 1: the two forecast maps |
+| `maps/hex_*.png` | part 3: one 3-map hex image per hazard |
 | `out/0_*.png … 9b_*.png` | part 2: ENSO timeline, GDACS and IBTrACS phase comparisons |
-| `out/hex_*.png` | part 3: one 3-map hex image per hazard (`hex_*_values.csv`: values per year × hexagon) |
-| `out/comparison.csv` | every measure: groups, means, % vs Neutral, p-value |
-| `out/yearly.csv`, `out/droughts_monthly.csv` | the raw yearly / monthly values behind each bar |
-| `out/enso_years.csv`, `out/after_strong_el_nino.csv` | ENSO classification, post-El Niño composite |
-| `out/gdacs_events.csv`, `out/ibtracs_storms.csv` | event tables after basin/category classification |
+
+The CSV tables behind every chart and map (`comparison.csv`, `yearly.csv`, `hex_*_values.csv`, …)
+are written to `out/` by `run.py` but are not kept in git.
 
 | module | role |
 |---|---|

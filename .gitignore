@@ -24,3 +24,5 @@ __pycache__/
 2026_world_energy_sim/*.py
 2026_world_energy_sim/*.ps1
 2026_world_energy_sim/tools/
+# CSV files are not kept in git (they stay local)
+*.csv
