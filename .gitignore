@@ -10,3 +10,6 @@ __pycache__/
 2026_datacenter_stages/out/model.joblib
 2026_datacenter_stages/out/_NIEAKTUALNE_*
 2026_datacenter_stages/2026_datacenter_stages/
+
+# 2026_el_nino — raw downloads (~350 MB), reproducible with run.py
+2026_el_nino/data/
