@@ -2,14 +2,14 @@
 __pycache__/
 *.pyc
 
-# 2026_datacenter_stages — surowe dane i artefakty pośrednie (GB), odtwarzalne skryptami.
+# 2026_centers — surowe dane i artefakty pośrednie (GB), odtwarzalne skryptami.
 # Do repo idą tylko kod, notebooki i wyniki (etapy, krzywe, mozaiki, rows).
-2026_datacenter_stages/out/cache/
-2026_datacenter_stages/out/maps/
-2026_datacenter_stages/out/osm/
-2026_datacenter_stages/out/model.joblib
-2026_datacenter_stages/out/_NIEAKTUALNE_*
-2026_datacenter_stages/2026_datacenter_stages/
+2026_centers/out/cache/
+2026_centers/out/maps/
+2026_centers/out/osm/
+2026_centers/out/model.joblib
+2026_centers/out/_NIEAKTUALNE_*
+2026_centers/2026_datacenter_stages/
 
 # 2026_el_nino — raw downloads (~350 MB), reproducible with run.py
 2026_el_nino/data/
@@ -17,8 +17,8 @@ __pycache__/
 2026_el_nino/*.py
 # 2026 projects — only outputs go to git (charts, maps, data, notebooks, READMEs, published web pages);
 # the pipeline / build code stays local
-2026_datacenter_stages/*.py
-2026_datacenter_stages/*.sh
+2026_centers/*.py
+2026_centers/*.sh
 2026_refinery_flares/*.py
 2026_tatra_3d_explorer/dem/*.py
 2026_world_energy_sim/*.py
