@@ -31,3 +31,4 @@ __pycache__/
 2026_strip_mine_volumes/data/
 2026_strip_mine_volumes/*.py
 2026_strip_mine_volumes/viewer_template.html
+2026_strip_mine_volumes/halda_viewer_template.html

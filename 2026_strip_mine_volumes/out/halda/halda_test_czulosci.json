@@ -1,0 +1,20 @@
+[
+  {
+    "wstrzykniete_m": 3.0,
+    "od_kwartalu": "2021Q3",
+    "odzyskane_po_m": 2.314506158358858,
+    "odzyskane_przed_m": -4.532683450797492e-07
+  },
+  {
+    "wstrzykniete_m": -3.0,
+    "od_kwartalu": "2021Q3",
+    "odzyskane_po_m": -2.329817041763678,
+    "odzyskane_przed_m": 7.050694432741977e-07
+  },
+  {
+    "wstrzykniete_m": 6.0,
+    "od_kwartalu": "2021Q3",
+    "odzyskane_po_m": 4.981743664197856,
+    "odzyskane_przed_m": -1.4170271978031224e-06
+  }
+]

@@ -1,74 +1,66 @@
-# Kopalnia X — objętość robót ziemnych w czasie
+# Hałda węgla — objętość w czasie
 
-**Copernicus DEM + Sentinel-1** (oraz SRTM 2000 i ALOS AW3D30 jako dodatkowe epoki wysokości)
-dla dużej kopalni pasowej węgla. Nazwa i położenie są celowo zamaskowane — mapy mają współrzędne w km
-od punktu odniesienia.
+**Copernicus DEM + Sentinel-1 + Sentinel-2** (oraz SRTM 2000 i ALOS AW3D30) dla obwałowanej hałdy
+czarnego materiału (węgiel / odpady węglowe) przy zakładzie przeróbczym kopalni odkrywkowej.
+Nazwa i położenie celowo zamaskowane: mapy mają współrzędne w km od punktu hałdy.
 
-![kiedy zdjęto nadkład](out/wykresy/01_mapa_wykopu.png)
+![hałda](out/halda/h01_mapa.png)
 
 ## Wyniki
 
 | | |
 |---|---|
-| okres Sentinel-1 | 2016Q3 – 2026Q3, 41 kwartałów (jedna orbita zstępująca) |
-| **nadkład zdjęty 2016Q4 – 2026Q1** | **≈ 1 340 mln m³** (zakres 1 220 – 1 455 przy błędzie spągu ±10 m) |
-| średnie tempo | **≈ 140 mln m³/rok**, rekord 2024: ~230 mln m³ |
-| luka 2012 → 2016Q3 (przed S1) | ≈ 650 mln m³, czyli ~160 mln m³/rok |
-| powierzchnia nowych pasów | ≈ 1 180 ha |
-| średnia głębokość wykopu | ≈ 114 m, rośnie z ~85 m (2017) do ~130–150 m (2024–25) |
-| zmierzone z DEM 2000 → ~2008 → ~2012 | wykop 700 / 278 mln m³, nasyp 698 / 283 mln m³ (bilans się zamyka) |
+| powierzchnia hałdy (obrys z S2) | **49 ha** |
+| 2000 (SRTM) | płaski teren, hałdy jeszcze nie ma |
+| ~2008 (ALOS) | **3,8 mln m³**, średnio 7,9 m wysokości |
+| ~2012 (Copernicus) | **5,6 mln m³**, średnio 11,6 m, do ~19 m |
+| 2016Q3 → 2026Q3 (Sentinel-1) | wysokość **stabilna**: roczne mediany w zakresie −1,2 … +1,8 m |
+| trend 2016–2026 | **+0,09 ± 0,10 m/rok** → +0,04 ± 0,05 mln m³/rok (zero w granicach błędu) |
+| pokrycie czarnym materiałem (S2) | 45–48 ha (2016–18) → 33–35 ha (2024–26) |
 
-Liczony jest tylko nadkład pierwotny (bez przerzutów zwałowisk), w kadrze 18 × 22 km.
+Wniosek: hałda urosła do ~5,6 mln m³ w latach 2000–2012, a od 2016 r. jej objętość się nie zmienia
+(±1 mln m³). Sentinel-2 pokazuje za to, że od ok. 2021 r. coraz mniejszą część powierzchni pokrywa świeży,
+czarny materiał, a aktywność radarowa (zwałowanie, ruch spycharek) jest po 2019 r. wyraźnie niższa.
+Oba sygnały pasują do hałdy, na którą niewiele się już dosypuje i której powierzchnia szarzeje. Z danych
+satelitarnych nie da się jednak ustalić przyczyny.
 
 ## Jak to jest mierzone
 
-1. **Trzy DEM-y → zmierzone zmiany.** SRTM (2000), ALOS AW3D30 (2006–11) i Copernicus GLO-30
-   (TanDEM-X 2011–15) z Planetary Computer, na wspólnej siatce 30 m, wyrównane pionowo
-   medianą różnic na stepie. Różnica = m³ wykopu i nasypu (dolna granica: pas wykopany i zasypany między
-   epokami nie zostawia śladu).
-2. **Model spągu pokładu.** Dna wyrobisk z trzech epok (minima przekrojów W–E, prominencja ≥ 40 m,
-   bez płaskich luster wody) → regresja kwantylowa dolnego kwartyla: liniowa w osi upadu, spline wzdłuż
-   rozciągłości. Test ekstrapolacji: model z 2000 + 2008 przewiduje dna z 2012 (leżące dalej na wschód)
-   z 10. i 25. percentylem błędu −9 / +3 m. Upad ~2,6° na wschód.
-3. **Gdzie pokład leżał jeszcze w 2012 r.** Bez obrysu kopalni z 2000 r., bez miejsc, gdzie wyrobisko
-   sięgnęło spągu, i bez zwałów (> 8 m nad terenem z 2000 r.). Zostaje step i ławy pre-stripu.
-4. **Sentinel-1 RTC → kiedy.** Kwartalne mediany VV/VH (10 m → 30 m) z korektą sezonu względem stepu.
-   Klasyfikator *pokład zdjęty (wyrobisko/zwał) vs pokład na miejscu* uczony na etykietach z DEM
-   (AUC 0,81 na blokach przestrzennych; drugi, *kopalnia vs step*: AUC 0,96). Kwartał wykopu = pierwszy
-   kwartał, od którego „pokład zdjęty” trzyma się w ≥ 80% dalszych kwartałów.
-5. **m³ = Σ (teren ~2012 − spąg) × 900 m²** po komórkach wykopanych w danym kwartale.
-
-Walidacja na surowym sygnale: kymografy (`07_kymografy.png`) pokazują ukośne prążki pasów wędrujących
-na wschód, a wykryte kwartały wykopu leżą na tych frontach. Głębokość nie jest wejściem detekcji, a rośnie
-z czasem wykopu, tak jak powinna przy schodzeniu w dół upadu.
+1. **DEM → zmierzona objętość do 2012.** Wysokość = DEM epoki − SRTM 2000 (płaski step przed hałdą),
+   po wyrównaniu pionowym na stabilnym terenie (rozrzut 1,3–1,7 m).
+2. **Sentinel-2 → obrys i pokrycie.** Węgiel ma płaskie, niskie widmo (NIR < 0,10, czerwony < 0,09).
+   Woda też jest ciemna, ale nie w SWIR (B11 < 0,04). Kwartalne mediany scen bez chmur, z poprawką
+   offsetu BOA (baseline 04.00).
+3. **Sentinel-1 → zmiana wysokości po 2016 (radargrametria z geokodowania).** Sceny RTC są geokodowane
+   Copernicus DEM. Punkt wyższy o Δh przesuwa się na obrazie w stronę satelity o Δh·ctg θ
+   (θ = 38,2° z adnotacji sceny, 1 m wysokości = 1,27 m przesunięcia). Kroki:
+   * znormalizowana korelacja w zakresie ±60 m z paraboliczną precyzją podpikselową,
+   * **sieć par** kwartałów odległych o 1–4 kwartały i inwersja najmniejszych kwadratów (jak w SBAS),
+     bo tekstura hałdy zmienia się po zwałowaniu i porównanie z 2016 r. traci korelację,
+   * odniesienie: **mediana trzech stabilnych okien**. Wszystkie okna przesuwają się wspólnie o ~8 m między
+     2016Q3 a 2017Q3, co jest zmianą geolokacji S1, a nie terenu,
+   * szum = rozrzut okien kontrolnych (σ ≈ 1,9 m na kwartał),
+   * **test wstrzyknięcia**: znany skok ±3 m i +6 m dodany do prawdziwych obrazów wraca z właściwym
+     znakiem i bez fałszywego sygnału przed skokiem. Czułość 0,79 jest skalibrowana.
 
 ## Pliki
 
 | ścieżka | zawartość |
 |---|---|
-| `analiza.ipynb` | **notatnik ze wszystkimi wykresami**, wykonany |
-| `out/viewer_3d.html` | **viewer 3D kwartał po kwartale** (three.js, jeden plik, działa z dysku) |
-| `out/wykresy/*.png` | 10 wykresów i map |
-| `out/objetosci_kwartalne.csv` | kwartał: ha, głębokość, mln m³ (min/max), narastająco |
-| `out/objetosci_dem.csv` | zmierzone objętości z par DEM |
-| `out/aktywnosc.csv` | powierzchnia zmian radarowych kwartał do kwartału |
-| `out/podsumowanie.json` | liczby z tabeli wyżej + metryki walidacji |
-
-Kod (lokalnie, poza gitem): `s1.py` (kompozyty, ~25 min) → `dem.py` → `run.py` → `plot.py` →
-`build_viewer.py` → `build_notebook.py`. Moduły: `config`, `seam` (spąg), `detect` (S1),
-`volume` (bilans + schemat powierzchni).
+| `analiza.ipynb` | notatnik ze wszystkimi wykresami, wykonany |
+| `out/halda/halda_3d.html` | **viewer 3D**: 2000 → ~2008 → ~2012 → kwartały 2016–2026 (three.js, działa z dysku) |
+| `out/halda/h01…h06_*.png` | mapa, historia DEM, wysokość z S1, pokrycie i aktywność, mozaika S2, test czułości |
+| `out/halda/halda_kwartalnie.csv` | kwartał: pokrycie S2, Δh i ΔV z S1, aktywność |
+| `out/halda/halda_dem.csv` | objętość i wysokość z trzech DEM |
+| `out/halda/halda_podsumowanie.json` | liczby z tabeli wyżej + metryki metody |
 
 ## Ograniczenia
 
-* Liczony jest **nadkład pierwotny** (calizna nad pokładem). Przerzuty, zwałowanie i drogi widać
-  w aktywności (`10_aktywnosc.png`), ale nie w m³.
-* Data wykopu ma dokładność kwartału–dwóch: pas przechodzi przez stan wyrobiska i zwału.
-* **2026Q2–Q3 niepotwierdzone**: warunek trwałości wymaga ≥ 3 kwartałów obserwacji.
-* Luka 2012 → 2016Q3 (brak S1 na tej orbicie) jest zebrana w jednym kwartale.
-* Jeden pokład; błąd ekstrapolacji spągu ~±10 m. Pojedyncze plamy na zachodnim skraju (zwały na
-  wychodni) mogą być zaliczone do wykopu.
-* Kadr nie obejmuje całego kompleksu: pasy ciągną się dalej na południe.
-* Kształt zwałowisk w 3D jest schematyczny (pas zasypany po 4 kwartałach, rozluzowanie 1,25).
-  Rzeczywiste są położenie i czas wykopu (S1) oraz głębokość (DEM + spąg).
+* **Luka 2012 → 2016Q3** nie jest pokryta żadnym darmowym pomiarem wysokości. Szereg S1 jest względny (od 2016Q3).
+* S1 mierzy **średnią** zmianę wysokości w oknie hałdy. Przerzuty wewnątrz (tu wybrane, tam dosypane) się znoszą.
+* Wykrywalna zmiana roczna to ~2 m, czyli ~1 mln m³ na tej powierzchni.
+* Ostatnie kwartały szeregu mają mniej par w sieci, więc są słabiej związane.
+* Optyka nie odróżni węgla handlowego od odpadów węglowych: oba są czarne.
 
-Źródła danych: Microsoft Planetary Computer (`sentinel-1-rtc`, `cop-dem-glo-30`, `nasadem`, `alos-dem`).
+Źródła danych: Microsoft Planetary Computer (`sentinel-1-rtc`, `sentinel-1-grd`, `sentinel-2-l2a`,
+`cop-dem-glo-30`, `nasadem`, `alos-dem`).
