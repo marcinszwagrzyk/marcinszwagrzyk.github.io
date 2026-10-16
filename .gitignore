@@ -27,8 +27,9 @@ __pycache__/
 # CSV files are not kept in git (they stay local)
 *.csv
 
-# 2026_strip_mine_volumes — surowe dane (odtwarzalne); kod zostaje lokalnie
-2026_strip_mine_volumes/data/
-2026_strip_mine_volumes/*.py
-2026_strip_mine_volumes/viewer_template.html
-2026_strip_mine_volumes/halda_viewer_template.html
+# 2026_strip_mine_volumes — local only (superseded by 2026_stockpile_volume)
+2026_strip_mine_volumes/
+
+# 2026_stockpile_volume — code and results go to git; raw downloads and the real site file stay local
+2026_stockpile_volume/data/
+2026_stockpile_volume/site.json

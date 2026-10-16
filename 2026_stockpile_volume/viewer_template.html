@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stockpile 3D</title>
+<style>
+  :root { --panel: rgba(252,252,251,0.92); --ink: #0b0b0b; --ink2: #52514e; --muted: #898781;
+    --grid: #e1e0d9; --accent: #2a78d6; --hot: #eb6834; --sky: #e9eef3; --border: rgba(11,11,11,0.10); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --panel: rgba(26,26,25,0.90); --ink: #f0efec; --ink2: #c3c2b7; --grid: #2c2c2a; --accent: #3987e5;
+    --hot: #d95926; --sky: #0f1113; --border: rgba(255,255,255,0.10); } }
+  :root[data-theme="dark"] { --panel: rgba(26,26,25,0.90); --ink: #f0efec; --ink2: #c3c2b7; --grid: #2c2c2a;
+    --accent: #3987e5; --hot: #d95926; --sky: #0f1113; --border: rgba(255,255,255,0.10); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--sky); color: var(--ink);
+    font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; overflow: hidden; }
+  #c { position: fixed; inset: 0; }
+  .panel { position: fixed; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; backdrop-filter: blur(6px); }
+  #info { top: 16px; left: 16px; width: min(320px, calc(100vw - 32px)); padding: 14px 16px; }
+  #info h1 { font-size: 16px; margin: 0 0 2px; }
+  .sub { color: var(--ink2); font-size: 12px; margin-bottom: 10px; }
+  #q { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  #src { font-size: 12px; color: var(--ink2); margin-bottom: 6px; }
+  .row { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; border-top: 1px solid var(--grid); font-size: 13px; }
+  .row b { font-variant-numeric: tabular-nums; } .row span { color: var(--ink2); }
+  label.ex { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink2); margin-top: 10px; }
+  #time { left: 16px; right: 16px; bottom: 16px; padding: 10px 14px 12px; }
+  .top { display: flex; align-items: center; gap: 12px; }
+  #slider { flex: 1; accent-color: var(--accent); }
+  #play { font: inherit; font-size: 12px; padding: 5px 9px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--ink); cursor: pointer; }
+  #spark { width: 100%; height: 64px; display: block; margin-top: 6px; }
+  #note { font-size: 11px; color: var(--muted); margin-top: 6px; }
+</style>
+<script type="importmap">
+{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
+</script>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="info" class="panel">
+  <h1>Stockpile — volume through time</h1>
+  <div class="sub">DEM 2000 / ~2008 / ~2012 · Sentinel-1 (height) · Sentinel-2 (texture)</div>
+  <div id="q">—</div>
+  <div id="src">—</div>
+  <div class="row"><span>volume above the 2000 ground</span><b id="v">—</b></div>
+  <div class="row"><span>mean stockpile height</span><b id="h">—</b></div>
+  <label class="ex">vertical exaggeration <input id="ex" type="range" min="1" max="8" step="0.5" value="4"> <b id="exv">4×</b></label>
+</div>
+<div id="time" class="panel">
+  <div class="top"><button id="play">▶ play</button><input id="slider" type="range" min="0" step="1" value="0"></div>
+  <canvas id="spark"></canvas>
+  <div id="note">2000–2012: measured from DEMs. From 2016Q3: Copernicus DEM height + change measured by Sentinel-1
+    (±σ on the chart). The 2012→2016 gap is not covered by any measurement.</div>
+</div>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+const D = /*__DATA__*/null, TEX = /*__TEX__*/null;
+const NX = D.nx, NY = D.ny, N = NX * NY, F = D.frames.length;
+const dec = s => new Int16Array(Uint8Array.from(atob(s), c => c.charCodeAt(0)).buffer);
+const Z = D.frames.map(f => Float32Array.from(dec(f.z), v => v / 10));
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const canvas = document.getElementById("c");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(40, 1, 10, 50000);
+const controls = new OrbitControls(camera, canvas); controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.48;
+scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1.5));
+const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(-2000, 3000, -1500); scene.add(sun);
+const W = (NX - 1) * D.res, H = (NY - 1) * D.res;
+const geo = new THREE.BufferGeometry(), pos = new Float32Array(N * 3), uv = new Float32Array(N * 2);
+for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) { const k = j * NX + i;
+  pos[3 * k] = i * D.res - W / 2; pos[3 * k + 2] = j * D.res - H / 2; uv[2 * k] = i / (NX - 1); uv[2 * k + 1] = 1 - j / (NY - 1); }
+const idx = []; for (let j = 0; j < NY - 1; j++) for (let i = 0; i < NX - 1; i++) { const a = j * NX + i; idx.push(a, a + NX, a + 1, a + 1, a + NX, a + NX + 1); }
+geo.setAttribute("position", new THREE.BufferAttribute(pos, 3)); geo.setAttribute("uv", new THREE.BufferAttribute(uv, 2)); geo.setIndex(idx);
+const mat = new THREE.MeshStandardMaterial({ roughness: 0.95 }); scene.add(new THREE.Mesh(geo, mat));
+camera.position.set(-W * 0.75, W * 0.6, H * 0.9);
+const loader = new THREE.TextureLoader(), cache = {};
+const tex = i => { if (!cache[i]) { cache[i] = loader.load("data:image/jpeg;base64," + TEX[i]); cache[i].colorSpace = THREE.SRGBColorSpace; } return cache[i]; };
+let ex = 4, cur = 0;
+function apply() { const z = Z[cur]; for (let k = 0; k < N; k++) pos[3 * k + 1] = (z[k] - D.zmin) * ex;
+  geo.attributes.position.needsUpdate = true; geo.computeVertexNormals(); }
+const fmt = (v, d = 1) => v == null ? "—" : v.toLocaleString("en-GB", { maximumFractionDigits: d, minimumFractionDigits: d });
+function set(i) {
+  cur = i; apply(); const f = D.frames[i]; mat.map = tex(f.tex); mat.needsUpdate = true;
+  document.getElementById("q").textContent = f.label;
+  document.getElementById("src").textContent = f.src;
+  document.getElementById("v").textContent = f.v == null ? "—" : `${fmt(f.v)} ± ${fmt(f.sv)} Mm³`;
+  document.getElementById("h").textContent = f.h == null ? "—" : `${fmt(f.h)} m`;
+  slider.value = i; spark();
+}
+const slider = document.getElementById("slider"); slider.max = F - 1; slider.addEventListener("input", () => set(+slider.value));
+const sp = document.getElementById("spark"), sc = sp.getContext("2d");
+function spark() {
+  const dpr = devicePixelRatio || 1, w = sp.clientWidth, h = sp.clientHeight; sp.width = w * dpr; sp.height = h * dpr; sc.setTransform(dpr, 0, 0, dpr, 0, 0);
+  sc.clearRect(0, 0, w, h);
+  const vals = D.frames.map(f => f.v), mx = Math.max(...vals.filter(v => v != null).map((v, i) => v + 1)) * 1.1;
+  const X = i => 6 + (w - 12) * i / (F - 1), Y = v => h - 14 - (h - 24) * v / mx;
+  sc.strokeStyle = css("--grid"); sc.beginPath(); sc.moveTo(0, h - 14); sc.lineTo(w, h - 14); sc.stroke();
+  sc.fillStyle = css("--grid");
+  D.frames.forEach((f, i) => { if (f.v != null && f.sv) sc.fillRect(X(i) - 2, Y(f.v + f.sv), 4, Y(f.v - f.sv) - Y(f.v + f.sv)); });
+  sc.strokeStyle = css("--accent"); sc.lineWidth = 2; sc.beginPath(); let s = false;
+  D.frames.forEach((f, i) => { if (f.v == null) { s = false; return; } s ? sc.lineTo(X(i), Y(f.v)) : sc.moveTo(X(i), Y(f.v)); s = true; }); sc.stroke();
+  sc.fillStyle = css("--accent"); D.frames.forEach((f, i) => { if (f.v != null && f.dem) { sc.beginPath(); sc.arc(X(i), Y(f.v), 4, 0, 7); sc.fill(); } });
+  sc.strokeStyle = css("--hot"); sc.lineWidth = 2; sc.beginPath(); sc.moveTo(X(cur), 2); sc.lineTo(X(cur), h - 14); sc.stroke();
+  sc.fillStyle = css("--muted"); sc.font = "11px system-ui, sans-serif"; sc.textAlign = "left"; sc.fillText(D.frames[0].label, 4, h - 2);
+  sc.textAlign = "right"; sc.fillText(D.frames[F - 1].label, w - 4, h - 2);
+}
+let timer = null; const play = document.getElementById("play");
+play.addEventListener("click", () => { if (timer) { clearInterval(timer); timer = null; play.textContent = "▶ play"; return; }
+  if (cur >= F - 1) set(0); play.textContent = "❚❚ pause"; timer = setInterval(() => { if (cur >= F - 1) { play.click(); return; } set(cur + 1); }, 500); });
+const exIn = document.getElementById("ex"); exIn.addEventListener("input", () => { ex = +exIn.value; document.getElementById("exv").textContent = ex + "×"; apply(); });
+addEventListener("keydown", e => { if (e.key === "ArrowRight") set(Math.min(F - 1, cur + 1)); if (e.key === "ArrowLeft") set(Math.max(0, cur - 1)); if (e.key === " ") { e.preventDefault(); play.click(); } });
+function resize() { renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); spark(); }
+addEventListener("resize", resize); scene.background = new THREE.Color(css("--sky"));
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { scene.background = new THREE.Color(css("--sky")); spark(); });
+resize(); const hp = new URLSearchParams(location.hash.slice(1)); set(Math.min(F - 1, +(hp.get("f") ?? 0)));
+renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
+</script>
+</body>
+</html>

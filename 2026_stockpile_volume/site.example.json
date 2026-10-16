@@ -1,0 +1,10 @@
+{
+  "name": "Stockpile X",
+  "lat": 0.0,
+  "lon": 0.0,
+  "half_size_m": 1500,
+  "first_quarter": "2016Q3",
+  "last_quarter": "2026Q3",
+  "control_windows_km": [[-1.4, -0.3, -0.25, 0.45], [-1.4, -0.3, -0.95, -0.25], [0.0, 1.2, -1.4, -0.5]],
+  "natural_window_km": [-0.9, 1.5, 0.55, 1.5]
+}

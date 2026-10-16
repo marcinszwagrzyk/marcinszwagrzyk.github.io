@@ -1,0 +1,20 @@
+[
+  {
+    "injected_m": 3.0,
+    "from_quarter": "2021Q3",
+    "recovered_after_m": 2.313671313918201,
+    "recovered_before_m": -4.570032459128015e-07
+  },
+  {
+    "injected_m": -3.0,
+    "from_quarter": "2021Q3",
+    "recovered_after_m": -2.32897892210719,
+    "recovered_before_m": 7.116349389768573e-07
+  },
+  {
+    "injected_m": 6.0,
+    "from_quarter": "2021Q3",
+    "recovered_after_m": 4.980571855191654,
+    "recovered_before_m": -1.4170109992051039e-06
+  }
+]
