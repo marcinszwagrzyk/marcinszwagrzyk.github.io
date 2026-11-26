@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zasięg radaru Patriot — planer stanowisk w Polsce</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<aside id="panel">
+  <header>
+    <h1>Zasięg radaru Patriot</h1>
+    <p class="sub">Ile „widzi” radar AN/MPQ-65 nad terenem Polski — dla celów lecących nisko nad ziemią.</p>
+  </header>
+
+  <section>
+    <h2>Baterie</h2>
+    <p class="hint">Kliknij mapę, aby postawić baterię. Znacznik można przeciągać.</p>
+    <form id="search" autocomplete="off">
+      <input id="q" type="search" placeholder="Szukaj miejsca (np. Jasionka)">
+      <button type="submit">Szukaj</button>
+    </form>
+    <ul id="batteries"></ul>
+    <div class="row">
+      <button id="addEprz" type="button">+ EPRZ Rzeszów-Jasionka</button>
+      <button id="clearAll" type="button" class="ghost">Usuń wszystkie</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Parametry nowych baterii</h2>
+    <label>Wysokość anteny nad terenem [m]<input id="defAnt" type="number" value="5" min="0" max="100" step="1"></label>
+    <label>Zasięg instrumentalny [km]<input id="defRange" type="number" value="150" min="10" max="250" step="5"></label>
+    <label>Sektor [°] <small>360 = dookólnie</small><input id="defSector" type="number" value="360" min="10" max="360" step="10"></label>
+    <label>Azymut osi sektora [°]<input id="defAz" type="number" value="90" min="0" max="359" step="5"></label>
+  </section>
+
+  <section>
+    <h2>Cele i model</h2>
+    <label>Wysokości lotu celu nad terenem [m]<input id="thresholds" type="text" value="100, 200, 500"></label>
+    <label>Rozdzielczość DEM
+      <select id="zoom">
+        <option value="10" selected>~100 m (szybko)</option>
+        <option value="11">~50 m (dokładniej, wolniej)</option>
+      </select>
+    </label>
+    <label>Współczynnik refrakcji k<input id="kfac" type="number" value="1.333" min="1" max="2" step="0.01"></label>
+    <label>Przezroczystość pokrycia<input id="opacity" type="range" min="0.2" max="1" step="0.05" value="0.7"></label>
+  </section>
+
+  <section class="about">
+    <h2>Jak to liczy</h2>
+    <p>Dla każdej baterii ~3600 promieni co ~90 m sprawdza linię wzroku z anteny do celu nad terenem, z krzywizną Ziemi i refrakcją standardową (k = 4/3). Wynik to <b>najniższa wysokość nad terenem, na której cel jest w polu widzenia radaru</b>; klasy na mapie to Twoje progi wysokości.</p>
+    <p>Teren: Terrarium (AWS Open Data, głównie SRTM), bez lasów i zabudowy — w rzeczywistości zasłon jest więcej. Model geometryczny: bez wielodrogowości, echa od terenu, zakłóceń i energetyki radaru. Pokazuje ograniczenie wynikające z ukształtowania terenu, a nie skuteczność systemu.</p>
+    <p class="src">Inspiracja: mapa z Command: Modern Operations dla EPRZ. Kod: <a href="https://github.com/marcinszwagrzyk/marcinszwagrzyk.github.io/tree/master/2026_patriot_radar">GitHub</a>.</p>
+  </section>
+</aside>
+
+<main id="map"></main>
+<div id="status" hidden></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
